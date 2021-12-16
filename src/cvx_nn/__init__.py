@@ -3,7 +3,7 @@
 """
 
 # Expose easy-to-use wrappers for optimizing convex models.
-from cvx_nn.wrappers import optimize
+from cvx_nn.wrappers import optimize, optimize_path
 from cvx_nn.wrappers import (
     GReLU_MLP,
     GReLU_LN,
@@ -17,4 +17,5 @@ from cvx_nn.wrappers import (
 
 __all__ = [
     "optimize",
+    "optimize_path",
 ]
