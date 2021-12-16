@@ -4,14 +4,6 @@ cvx\_nn.utils.linear package
 Submodules
 ----------
 
-cvx\_nn.utils.linear.block\_cg module
--------------------------------------
-
-.. automodule:: cvx_nn.utils.linear.block_cg
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 cvx\_nn.utils.linear.direct\_solvers module
 -------------------------------------------
 

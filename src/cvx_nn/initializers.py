@@ -8,7 +8,6 @@ import numpy as np
 
 import lab
 
-from cvx_nn.methods import get_method
 from cvx_nn.models.model import Model
 from cvx_nn.models.regularizers.l2 import L2Regularizer
 from cvx_nn.models import ConvexMLP, ReLUMLP
@@ -88,6 +87,9 @@ def get_initializer(
             model_to_init.set_weights(lab.zeros_like(model_to_init.weights))
 
         elif name == LEAST_SQRS:
+            # TODO: Fixme!
+            raise NotImplementedError("TODO! Fix least squares initialization.")
+
             if not isinstance(model_to_init, ConvexMLP):
                 raise ValueError(
                     "Initializing with the ridge-regression solution is only for ConvexMLPs and subclasses."
@@ -121,7 +123,8 @@ def get_initializer(
                 regularizer=l2,
             )
 
-            solver = get_method(logger, rng, model_to_fit, np_train_data, solver_config)
+            # solver = get_method(logger, rng, model_to_fit, np_train_data, solver_config)
+            solver = None
             exit_status, fit_model, metrics_log = solver(
                 logger,
                 model_to_fit,

@@ -146,3 +146,4 @@ cython_debug/
 
 # system files
 .DS_Store
+tags

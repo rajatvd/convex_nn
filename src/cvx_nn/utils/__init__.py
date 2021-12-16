@@ -2,11 +2,9 @@
 Utilities.
 """
 
-from .linear_operators import MatVecOperator, BlockDiagonalMatrix
-from .root_finding import secant, newton
+from .linear_operators import MatVecOperator
 
 from .linear import (
-    block_cg_solve,
     solve_ne,
     lstsq_iterative_solve,
     linear_iterative_solve,
@@ -14,10 +12,6 @@ from .linear import (
 )
 
 __all__ = [
-    "BlockDiagonalMatrix",
-    "secant",
-    "newton",
-    "block_cg_solve",
     "solve_ne",
     "lstsq_iterative_solve",
     "linear_iterative_solve",

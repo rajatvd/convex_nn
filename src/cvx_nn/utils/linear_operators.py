@@ -67,25 +67,3 @@ class MatVecOperator(LinearOperator):
             )
 
         return lab.stack([self.rmatvec(col) for col in V.T], axis=1)
-
-
-class BlockDiagonalMatrix(LinearOperator):
-
-    """Implementation of a block-diagonal matrix."""
-
-    def __init__(
-        self, forward: Callable[[lab.Tensor, Optional[lab.Tensor]], lab.Tensor]
-    ):
-        """
-        :param forward: the function which computes matrix-vector products for the block diagonal matrix.
-        """
-        self.forward = forward
-
-    def dot(self, v: lab.Tensor, indices: Optional[lab.Tensor] = None) -> lab.Tensor:
-        return self.forward(v, indices)
-
-    def matvec(self, v: lab.Tensor, indices: Optional[lab.Tensor] = None) -> lab.Tensor:
-        return self.forward(v, indices)
-
-    def _matvec(self, v: lab.Tensor):
-        return self.forward(v, None)

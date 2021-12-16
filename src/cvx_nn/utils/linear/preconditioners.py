@@ -1,6 +1,7 @@
 """
 Preconditioners for iterative linear-system solvers.
 """
+
 from typing import Optional, Union
 
 from cvx_nn.utils.linear_operators import MatVecOperator
@@ -14,7 +15,7 @@ def get_preconditioner(
     :param name: the name of the preconditioner to return.
     :param X: (n,d) feature matrix of training examples.
     :param D: (optional) a matrix of sign patterns for the expanded
-        feature matrix.
+    feature matrix.
     """
     if name == "column_norm":
         return column_norm(X, D)
@@ -25,13 +26,13 @@ def get_preconditioner(
         raise ValueError(f"Preconditioner {name} not recognized!")
 
 
-# TODO: move Hessian computation into model.
-
-
 def hessian_diagonal(X: lab.Tensor, D: Optional[lab.Tensor] = None) -> lab.Tensor:
     """Compute the diagonal of the Hessian for the squared loss.
     If D is not None, then the diagonal the expanded matrix
+    .. math::
+
         [diag(D[:,1] X, ...., diag(D[:,P]) X],
+
     is computed.
     :param X: the (n,d) matrix of data examples.
     :param D: (optional) a (d, p) associated with a convex neural network. See 'models/nns.py'.
@@ -51,7 +52,10 @@ def column_norm(X: lab.Tensor, D: Optional[lab.Tensor] = None) -> MatVecOperator
     """Compute a diagonal preconditioner that unitizes the columns of 'X', as described
     here: https://web.stanford.edu/group/SOL/software/lsmr/.
     If D is not None, then a preconditioner for the expanded matrix
+    .. math::
+
         [diag(D[:,1] X, ...., diag(D[:,P]) X],
+
     is computed.
     :param X: the (n,d) matrix of data examples.
     :param D: (optional) a (d, p) associated with a convex neural network. See 'models/nns.py'.

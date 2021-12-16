@@ -32,7 +32,7 @@ class AL_LassoNet(AL_MLP):
         :param U: array of hyperplanes creating the sign patterns.
         :param kernel: the kernel to drive the matrix-vector operations.
         :param delta: parameter controlling the strength of the quadratic penalty
-            in the augmented Lagrangian.
+        in the augmented Lagrangian.
         :param regularizer: (optional) a penalty function controlling the flexibility of the model.
         :param lam: (optional) strength of the L1 penalty on the linear skip connections.
         """
@@ -109,7 +109,7 @@ class AL_LassoNet(AL_MLP):
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :returns: predictions for X.
         """
         network_w, skip_w = self._split_weights(w)
@@ -132,7 +132,7 @@ class AL_LassoNet(AL_MLP):
         :param y: (n,d) array containing the data targets.
         :param w: specific parameter at which to compute the objective.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: the objective
         """
@@ -167,7 +167,7 @@ class AL_LassoNet(AL_MLP):
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the gradient.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :param flatten: whether or not to flatten the blocks of the gradient into a single vector.
         :returns: the gradient
         """
@@ -220,12 +220,16 @@ class AL_LassoNet(AL_MLP):
         index_range: Optional[Tuple[int, int]] = None,
     ):
         """Compute violation of the linear constraints
-            X v_i = a_i
-            X w_i = b_i,
+        .. math::
+
+            X v_i - a_i
+
+            X w_i - b_i,
+
         where a_i, b_i are the slack variables.
         :param X: (n,d) array containing the data examples.
         :param w: (optional) specific parameter at which to compute the gradient.
-            Defaults to 'None', in which case the current model state is used.
+        Defaults to 'None', in which case the current model state is used.
         :returns: the constraint gaps.
         """
         if w is None or w.shape[2] == self.p + 1:

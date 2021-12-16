@@ -12,7 +12,7 @@ import lab
 from cvx_nn.models.model import Model
 from cvx_nn.models.regularizers import Regularizer
 from . import operators
-from cvx_nn.utils import BlockDiagonalMatrix, MatVecOperator
+from cvx_nn.utils import MatVecOperator
 from cvx_nn.loss_functions import squared_error, relu
 
 # two-layer MLPs with ReLU activations.
@@ -88,7 +88,7 @@ class ConvexMLP(Model):
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :returns: predictions for X.
         """
         return self._data_mvp(w, X, self._signs(X, D))
@@ -107,7 +107,7 @@ class ConvexMLP(Model):
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the objective.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: the objective
         """
@@ -131,7 +131,7 @@ class ConvexMLP(Model):
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the gradient.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :param flatten: whether or not to flatten the blocks of the gradient into a single vector.
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: the gradient
@@ -149,13 +149,16 @@ class ConvexMLP(Model):
         D: Optional[lab.Tensor] = None,
     ) -> LinearOperator:
         """Construct a matrix operator to evaluate the matrix-vector equivalent to the sum,
-            $ sum_i D_i X v_i$
+        .. math::
+
+            \\sum_i D_i X v_i
+
         where v_i is the i'th block of the input vector 'v'. This is equivalent to
-        constructing the expanded matrix A = [D_1 X, D_2 X, ..., D_P X] and then evaluating $Av$.
+        constructing the expanded matrix :math:`A = [D_1 X, D_2 X, ..., D_P X]` and then evaluating :math:`Av`.
         Use 'data_matrix' to directly compute $A$.
         :param X: (n,d) array containing the data examples.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :returns: LinearOperator which computes the desired product.
         """
         n, _ = X.shape
@@ -293,13 +296,13 @@ class ConvexMLP(Model):
         :param X: (n,d) array containing the data examples.
         :param y: (NOT USED) (n) array containing the data targets.
         :param w: (NOT USED) specific parameter at which to compute the Hessian.
-                    Defaults to 'None', in which case the current model state is used.
+        Defaults to 'None', in which case the current model state is used.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :param block_diagonal: compute only the diagonal blocks of the Hessian.
         :param flatten: whether or not to flatten the blocks of the Hessian into a single array.
-            This parameter is *not* compatible with 'block_diagonal' = True and will be ignored
-            when in this case.
+        This parameter is *not* compatible with 'block_diagonal' = True and will be ignored
+        when in this case.
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: the Hessian matrix.
         """
@@ -320,7 +323,6 @@ class ConvexMLP(Model):
         y: lab.Tensor,
         w: Optional[lab.Tensor] = None,
         D: Optional[lab.Tensor] = None,
-        block_diagonal: bool = False,
         blocks: Optional[lab.Tensor] = None,
         flatten: bool = False,
         **kwargs,
@@ -331,31 +333,18 @@ class ConvexMLP(Model):
         :param X: (n,d) array containing the data examples.
         :param y: (NOT USED) (n) array containing the data targets.
         :param w: (NOT USED) specific parameter at which to compute the Hessian.
-            Defaults to 'None', in which case the current model state is used.
+        Defaults to 'None', in which case the current model state is used.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
-            Defaults to self.D or manual computation depending on the value of self._train.
-        :param block_diagonal: use only the diagonal blocks of the Hessian when computing the product.
+        Defaults to self.D or manual computation depending on the value of self._train.
         :param blocks: (optional) indices for specific blocks to include in the block-diagonal operator.
-            Defaults to all blocks.
+        Defaults to all blocks.
         :returns: LinearOperator which computes Hessian-vector products.
         """
 
         D_local = self._signs(X, D)
         pd = self.d * self.p
-        if block_diagonal:
-            # use only a subset of blocks.
-            if blocks is not None:
-                D_local = D_local[:, blocks]
 
-            def forward(w, blocks=None):
-                D_local = self.D if blocks is None else self.D[:, blocks]
-                return self._bd_hessian_mvp(v=w, X=X, D=D_local) / X.shape[0]
+        def forward(w, blocks=None):
+            return self._hessian_mvp(v=w, X=X, D=D_local) / X.shape[0]
 
-            return BlockDiagonalMatrix(forward=forward)
-
-        else:
-
-            def forward(w, blocks=None):
-                return self._hessian_mvp(v=w, X=X, D=D_local) / X.shape[0]
-
-            return MatVecOperator(shape=(pd, pd), forward=forward, transpose=forward)
+        return MatVecOperator(shape=(pd, pd), forward=forward, transpose=forward)

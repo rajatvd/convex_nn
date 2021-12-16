@@ -32,17 +32,20 @@ def lstsq_iterative_solve(
     tol: float = TOL,
 ) -> Tuple[np.ndarray, Dict[str, Any]]:
     """Use an iterative method to solve the l2-regularized least-squares problem,
-        ||X w - y||_2^2 + (lambda/2) * ||w||_2^2,
+    .. math::
+
+        \|X w - y\|_2^2 + (\lambda/2) * \|w\|_2^2,
+
     where X is given by 'linear_op', y by 'targets', and lambda by 'lam'.
     WARNING: this function *only* supports NumPy and cannot be used with the generic backend
     in 'cvx_nn.backend'.
     :param linear_op: a generalized linear-operator that evaluates matrix-vector products for
-        the data matrix matrix X.
+    the data matrix matrix X.
     :param targets: the response/targets y to predict.
     :param lam: (optional) the strength of the l2 regularization used. Defaults to no regularization.
-        See [SciPy Documentation](https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html) for details.
+    See [SciPy Documentation](https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html) for details.
     :param preconditioner: (optional) a preconditioner to use when solving the system.
-        See 'methods/linear/preconditioners.py'.
+    See 'methods/linear/preconditioners.py'.
     :param solver: (optional) which solver to use. Valid options are LMSR and LSQR.
     :param max_iters: (optional) the maximum number of iterations to run the solver.
     :param tol: (optional) the tolerance to which the least-squares problem should be solved.
@@ -101,15 +104,18 @@ def linear_iterative_solve(
     tol: float = TOL,
 ) -> Tuple[np.ndarray, Dict[str, Any]]:
     """Use an iterative method to solve the linear system
+    .. math::
+
         Xw = b,
+
     where X is given by 'linear_op', y by 'targets', and lambda by 'lam'.
     WARNING: this function *only* supports NumPy and cannot be used with the generic backend
     in 'cvx_nn.backend'.
     :param linear_op: a generalized linear-operator that evaluates matrix-vector products for
-        the data matrix matrix X.
+    the data matrix matrix X.
     :param targets: the response/targets y to predict.
     :param preconditioner: (optional) a preconditioner to use when solving the system.
-        See 'methods/linear/preconditioners.py'.
+    See 'methods/linear/preconditioners.py'.
     :param solver: (optional) which solver to use. Valid options are CG.
     :param max_iters: (optional) the maximum number of iterations to run the solver.
     :returns: (solution, exit_status) -- the solution to the least-squares problem and status of the solver.

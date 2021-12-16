@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    cvx_nn.utils.linear
-   cvx_nn.utils.root_finding
 
 Submodules
 ----------

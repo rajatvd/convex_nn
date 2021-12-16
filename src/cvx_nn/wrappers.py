@@ -77,9 +77,9 @@ def _get_logger(
     """Construct a logging.Logger instance with an appropriate configuration.
     :param name: name for the Logger instance.
     :param verbose: (optional) whether or not the logger should print verbosely (ie. at the INFO level).
-        Defaults to False.
+    Defaults to False.
     :param debug: (optional) whether or not the logger should print in debug mode (ie. at the DEBUG level).
-        Defaults to False.
+    Defaults to False.
     :param log_file: (optional) path to a file where the log should be stored. The log is printed to stdout when 'None'.
     :returns: instance of logging.Logger.
     """
