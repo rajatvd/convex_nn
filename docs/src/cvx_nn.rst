@@ -47,14 +47,6 @@ cvx\_nn.metrics module
    :undoc-members:
    :show-inheritance:
 
-cvx\_nn.runners module
-----------------------
-
-.. automodule:: cvx_nn.runners
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 cvx\_nn.uci\_names module
 -------------------------
 

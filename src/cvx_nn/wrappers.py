@@ -1,5 +1,5 @@
 """
-Convenience functions creating and optimizing convex neural networks.
+Create and optimize convex neural networks.
 """
 import logging
 from typing import Optional, Literal, cast, List
@@ -75,13 +75,17 @@ def _get_logger(
     name: str, verbose: bool = False, debug: bool = False, log_file: str = None
 ) -> logging.Logger:
     """Construct a logging.Logger instance with an appropriate configuration.
-    :param name: name for the Logger instance.
-    :param verbose: (optional) whether or not the logger should print verbosely (ie. at the INFO level).
-    Defaults to False.
-    :param debug: (optional) whether or not the logger should print in debug mode (ie. at the DEBUG level).
-    Defaults to False.
-    :param log_file: (optional) path to a file where the log should be stored. The log is printed to stdout when 'None'.
-    :returns: instance of logging.Logger.
+
+    Args:
+        name: name for the Logger instance.
+        verbose: (optional) whether or not the logger should print verbosely (ie. at the INFO level).
+            Defaults to False.
+        debug: (optional) whether or not the logger should print in debug mode (ie. at the DEBUG level).
+            Defaults to False.
+        log_file: (optional) path to a file where the log should be stored. The log is printed to stdout when 'None'.
+
+    Returns:
+         Instance of logging.Logger.
     """
 
     level = logging.WARNING
@@ -373,80 +377,115 @@ def optimize(
     seed: int = 650,
 ):
     """Use convex optimization to fit a two-layer neural network to a given data set.
-    :param X_train: the (n,d) matrix of training examples.
-    :param y_train: the (n,1) vector of training targets.
-    :param X_test: (optional) the (t,d) matrix of test examples.
-    :param y_test: (optional) the (t,1) vector of test targets.
-    :param train_metrics: (optional) a list of training-set metrics to record. Objective and gradient norm are always recorded.
-        Valid options are: "objective" -- the optimization objective with constraint penalty terms. For ReLU networks, this is
-                                            the augmented Lagrangian.
-                           "base_objective": the training objective **without** constraint penalty terms. This is usually
-                                            squared error + regularization.
-                           "grad_norm": 2-norm of the minimum-norm subgradient of the optimization objective **with**
-                                            penalty terms *or* 2- norm of the gradient mapping if the problem is constrained.
-                           "accuracy": accuracy.
-                           "squared_error": average squared error.
-                           "constraint_gaps": 2-norm of constraint violations.
-                           "lagrangian_grad": 2-norm of the (primal) subgradient of the Lagrangian function.
-    :param test_metrics: (optional) a list of test-set metrics to record. Defaults to no test-set metrics. See 'train_metrics'
-        for valid options.
-    :param additional_metrics: (optional) a list of "additional" metrics to record. Defaults to no additional metrics.
-        Valid options are: "time_stamp": time between iterations.
-                           "total_neurons": total number of neurons in the model.
-                           "feature_sparsity": proportion of features which are *not* used by the model
-                                (ie. all weights are exactly zero for those features).
-                           "active_features": number of features used by the model.
-                           "group_sparsity": proportion of neurons which are *not* used by the model
-                                (ie. all weights are exactly zero for those neurons).
-                            "sparsity": proportion of weights are which zero.
-                            "num_backtracks": number of backtracking steps required in the last iteration.
-                            "sp_success": whether or not the line-search succeeded.
-                            "step_size": the step-size after the last iteration.
-    :param max_patterns: (optional) the maximum number of max_patterns to use in the convex formulation.
-        The arguments 'max_patterns', 'model', and 'warm_start' are mutually exclusive; exactly one must be specified.
-    :param formulation: (optional) the problem formulation to solve. Defaults to two-layer MLP with Gated ReLU activations.
-        Valid options are: 'grelu_mlp': two-layer MLP with Gated ReLU activations.
-                           'relu_mlp': two-layer MLP with ReLU activations.
-                           'grelu_lasso_net': two-layer LassoNet with Gated ReLU activations.
-                           'relu_lasso_net': two-layer LassoNet with ReLU activations.
-    :param model: (optional) a torch.nn.Module instance corresponding to the neural network to be optimized.
-        Only two architectures are permitted: (Linear, ReLU, Linear) or (GatedReluLayer, Linear).
-    :param warm_start: (optional) a convex neural network from which to warm-start the optimization procedure.
-        Mutual exclusive with 'model' and 'max_patterns'.
-    :param reg_type: (optional) the type of regularization to use. Default is 'group_l1'.
-        Valid options are: 'l2': classic squared 2-norm or "weight-decay" penalty.
-                           'group_l1': a group L1 or "Group LASSO" penalty where weights are group by neuron.
-                           'feature_gl1': a group L1 or "Group LASSO" penalty where weights are grouped by feature.
-                           'lasso_net_constraint': **only** for LassoNet models.
-    :param reg_strength: (optional) the strength of the regularization term (ie. lambda).
-    :param M: (optional) scaling for LassoNet constraints. Defaults to 1.0. Only used when
-        'formulation' is one of 'grelu_lasso_net', 'relu_lasso_net'.
-    :param max_primal_iters: (optional) the maximum number of iterations to run the primal optimization method.
-    :param max_dual_iters: (optional) the maximum number of iterations to run a dual optimization method.
-        Only used when 'formulation' is one of 'relu_mlp' or 'relu_lasso_net'.
-    :param max_subprob_iters: (optional) the maximum number of iterations to run when solving any sub-problem.
-        Only used when 'formulation' is one of 'relu_mlp' or 'relu_lasso_net'.
-    :param grad_tol: (optional) the tolerance for the first-order convergence criterion.
-    :param constraint_tol: (optional) the tolerance for violation of the constraints.
-        Only used when 'formulation' is one of 'relu_mlp' or 'relu_lasso_net'.
-    :param initialization: (optional) the initialization strategy to use. Valid options are
-        'zero' -- initialize at zero, 'least_squares' -- initialize at least-squares or
-        ridge-regression solution, 'random' --- initialize at a point drawn from the standard
-        normal distribution.
-    :param unitize_data_cols: (optional) whether or not to unitize the columns of the data matrix
-        before optimization. This improves the conditioning of the problem and is useful for
-        optimization, but changes the scale of the regularization parameter.
-    :param backend: (optional) the linear-algebra back-end to use. Valid options are 'torch' or 'numpy'.
-    :param device: (optional) the device to run linear-algebra computations on. Valid options are
-        'cpu', 'cuda', or a specific cuda device. This parameter is ignored when using the 'numpy' back-end.
-    :param dtype: (optional) the data type to use during optimization. Valid options are 'float32' or 'float64'.
-        'float32' can be much faster, but increases numerical error.
-    :param return_convex_form: (optional) whether or not to return the convex formulation of the model.
-        By default, a non-convex neural network is returned.
-    :param verbose: (optional) whether or not to print verbosely during optimization.
-    :param logger: (optional) a logging instance to use.
-    :param log_file: (optional) a file path where log informations should be stored.
-    :param seed: (optional) the random seed to use.
+
+    Args:
+        X_train: the (n,d) matrix of training examples.
+        y_train: the (n,1) vector of training targets.
+        X_test: (optional) the (t,d) matrix of test examples.
+        y_test: (optional) the (t,1) vector of test targets.
+        train_metrics: (optional) a list of training-set metrics to record.
+            Objective and gradient norm are always recorded.
+            Valid options are:
+
+            - "objective": the optimization objective with constraint penalty terms. For ReLU networks, this is
+              the augmented Lagrangian.
+            - "base_objective": the training objective **without** constraint penalty terms. This is usually
+              squared error + regularization.
+            - "grad_norm": 2-norm of the minimum-norm subgradient of the optimization objective **with**
+              penalty terms *or* 2- norm of the gradient mapping if the problem is constrained.
+            - "accuracy": accuracy.
+            - "squared_error": average squared error.
+            - "constraint_gaps": 2-norm of constraint violations.
+            - "lagrangian_grad": 2-norm of the (primal) subgradient of the Lagrangian function.
+
+        test_metrics: (optional) a list of test-set metrics to record.
+            Defaults to no test-set metrics. See 'train_metrics' for valid options.
+        additional_metrics: (optional) a list of "additional" metrics to record. Defaults to no additional metrics.
+            Valid options are:
+
+            - "time_stamp": time between iterations.
+            - "total_neurons": total number of neurons in the model.
+            - "feature_sparsity": proportion of features which are *not* used by the model
+              (ie. all weights are exactly zero for those features).
+            - "active_features": number of features used by the model.
+            - "group_sparsity": proportion of neurons which are *not* used by the model
+              (ie. all weights are exactly zero for those neurons).
+            - "sparsity": proportion of weights are which zero.
+            - "num_backtracks": number of backtracking steps required in the last iteration.
+            - "sp_success": whether or not the line-search succeeded.
+            - "step_size": the step-size after the last iteration.
+
+        max_patterns: (optional) the maximum number of max_patterns to use in the convex formulation.
+            The arguments 'max_patterns', 'model', and 'warm_start' are mutually exclusive; exactly one must be specified.
+        formulation: (optional) the problem formulation to solve. Defaults to two-layer MLP with Gated ReLU activations.
+            Valid options are:
+
+            - 'grelu_mlp': two-layer MLP with Gated ReLU activations.
+            - 'relu_mlp': two-layer MLP with ReLU activations.
+            - 'grelu_lasso_net': two-layer LassoNet with Gated ReLU activations.
+            - 'relu_lasso_net': two-layer LassoNet with ReLU activations.
+
+        model: (optional) a torch.nn.Module instance corresponding to the neural network to be optimized.
+            Only two architectures are permitted: (Linear, ReLU, Linear) or (GatedReluLayer, Linear).
+        warm_start: (optional) a convex neural network from which to warm-start the optimization procedure.
+            Mutual exclusive with 'model' and 'max_patterns'.
+        reg_type: (optional) the type of regularization to use. Default is 'group_l1'.
+            Valid options are:
+
+            - 'l2': classic squared 2-norm or "weight-decay" penalty.
+            - 'group_l1': a group L1 or "Group LASSO" penalty where weights are group by neuron.
+            - 'feature_gl1': a group L1 or "Group LASSO" penalty where weights are grouped by feature.
+            - 'lasso_net_constraint': **only** for LassoNet models.
+
+        reg_strength: (optional) the strength of the regularization term (ie. lambda).
+        M: (optional) scaling for LassoNet constraints. Defaults to 1.0. Only used when
+            'formulation' is one of 'grelu_lasso_net', 'relu_lasso_net'.
+        max_primal_iters: (optional) the maximum number of iterations to run the primal optimization method.
+        max_dual_iters: (optional) the maximum number of iterations to run a dual optimization method.
+            Only used when 'formulation' is one of 'relu_mlp' or 'relu_lasso_net'.
+        max_subprob_iters: (optional) the maximum number of iterations to run when solving any sub-problem.
+            Only used when 'formulation' is one of 'relu_mlp' or 'relu_lasso_net'.
+        grad_tol: (optional) the tolerance for the first-order convergence criterion.
+        constraint_tol: (optional) the tolerance for violation of the constraints.
+            Only used when 'formulation' is one of 'relu_mlp' or 'relu_lasso_net'.
+        initialization: (optional) the initialization strategy to use.
+            Valid options are:
+
+            - 'zero': initialize at zero.
+            - 'least_squares': initialize at least-squares/ridge-regression solution.
+            - 'random': initialize at a point drawn from the standard normal distribution.
+
+        unitize_data_cols: (optional) whether or not to unitize the columns of the data matrix
+            before optimization. This improves the conditioning of the problem and is useful for
+            optimization, but changes the scale of the regularization parameter.
+        backend: (optional) the linear-algebra back-end to use. Valid options are 'torch' or 'numpy'.
+        device: (optional) the device to run linear-algebra computations on.
+            This parameter is ignored when using the 'numpy' back-end.
+            Valid options are:
+
+            - 'cpu': run on default CPU device.
+            - 'cuda': run on the default cuda device.
+            - 'cuda:i': run on the i'th cuda device.
+
+        dtype: (optional) the data type to use during optimization.
+            Valid options are:
+
+            - 'float32': use single-precision floating point arithmetic.
+            - 'float64': use double-precision floating point arithmetic.
+
+            'float32' can be much faster, but increases numerical error.
+        return_convex_form: (optional) whether or not to return the convex formulation of the model.
+            By default, a non-convex neural network is returned.
+        verbose: (optional) whether or not to print verbosely during optimization.
+        logger: (optional) a logging instance to use.
+        log_file: (optional) a file path where log informations should be stored.
+        seed: (optional) the random seed to use.
+
+    Returns:
+        (model, metrics) - Optimized model and train/test metrics collected during optimization.
+
+        If 'return_convex_form' is True, then a instance of ConvexMLP is returned.
+        Else, a non-convex network is returned.
     """
 
     # Check for Conflicts #

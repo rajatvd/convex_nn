@@ -1,12 +1,19 @@
 Welcome to cvx_nn's documentation!
 ==================================
 
-.. module:: cvx_nn 
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+
+Public Functions
+----------------
+
+.. automodule:: cvx_nn.wrappers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :noindex:
 
 
 Indices and tables
