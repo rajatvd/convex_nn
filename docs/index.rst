@@ -1,13 +1,13 @@
-Welcome to cvx_nn's documentation!
-==================================
+cvx_nn: Efficient Global Optimization for Shallow Neural Networks 
+=================================================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
 
-Public Functions
-----------------
+Optimization
+------------
 
 .. automodule:: cvx_nn.wrappers
    :members:
