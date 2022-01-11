@@ -9,7 +9,8 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.models import ConvexMLP, sign_patterns, operators
+from cvx_nn.models import ConvexMLP, sign_patterns
+from cvx_nn.models.convex import operators
 from cvx_nn import datasets
 
 
@@ -76,7 +77,9 @@ class TestConvexMLP(unittest.TestCase):
             # try an assortment of random vectors
             for i in range(self.tries):
                 v = lab.tensor(
-                    self.rng.standard_normal((self.c, self.d * self.P), dtype=self.dtype)
+                    self.rng.standard_normal(
+                        (self.c, self.d * self.P), dtype=self.dtype
+                    )
                 )
 
                 self.assertTrue(
@@ -87,7 +90,9 @@ class TestConvexMLP(unittest.TestCase):
                 # the operator should support matrices with shape (d, P) as well.
                 w = v.reshape(self.c, self.P, self.d)
                 self.assertTrue(
-                    lab.allclose(expanded_X @ v.T, data_op.matvec(w).reshape(-1, self.c)),
+                    lab.allclose(
+                        expanded_X @ v.T, data_op.matvec(w).reshape(-1, self.c)
+                    ),
                     f"The forward data operator with kernel {kernel_name} did not match direct computation for the vector with shape (d,P)!",
                 )
 
@@ -97,59 +102,6 @@ class TestConvexMLP(unittest.TestCase):
                 self.assertTrue(
                     lab.allclose(expanded_X.T @ w, data_op.rmatvec(w)),
                     f"The transpose data operator with kernel {kernel_name} did not match direct computation for the vector with shape (d*P,)!",
-                )
-
-    def test_hessian_operator(self):
-        """Test implementation of Hessian-vector operators."""
-        for kernel_name in operators.KERNELS:
-            nn = self.networks[kernel_name]
-
-            # full matrix product
-            network_H = nn.hessian(self.X, self.y, flatten=True)
-            implicit_H = nn.hessian_operator(self.X, self.y)
-
-            # try an assortment of random vectors
-            for i in range(self.tries):
-                v = lab.tensor(
-                    self.rng.standard_normal(self.d * self.P, dtype=self.dtype)
-                )
-                self.assertTrue(
-                    lab.allclose(network_H @ v, implicit_H.matvec(v)),
-                    f"The full-matrix matrix-vector product with kernel {kernel_name} did not match direct computation for the vector with shape (d*P,)!",
-                )
-
-                # the operator should support matrices with shape (d, P) as well.
-                w = v.reshape(self.P, self.d)
-                self.assertTrue(
-                    lab.allclose(network_H @ v, implicit_H.matvec(v).reshape(-1)),
-                    f"The full-matrix matrix-vector product with kernel {kernel_name} did not match direct computation for the vector with shape (d,P)!",
-                )
-
-            # block-diagonal approximation
-            network_bd_H = nn.hessian(self.X, self.y, block_diagonal=True)
-            implicit_bd_H = nn.hessian_operator(self.X, self.y, block_diagonal=True)
-
-            # try an assortment of random vectors
-            for i in range(self.tries):
-                v = lab.tensor(
-                    self.rng.standard_normal(self.d * self.P, dtype=self.dtype)
-                )
-                w = v.reshape((self.P, self.d))
-                # compute block-diagonal product by looping over blocks
-                results = []
-                for i, block in enumerate(network_bd_H):
-                    results.append(block @ w[i])
-
-                brute_force = lab.stack(results).reshape(-1)
-
-                self.assertTrue(
-                    lab.allclose(brute_force, implicit_bd_H.matvec(v)),
-                    f"The block-diagonal matrix-vector product with kernel {kernel_name} did not match direct computation with vectors of shape (d*P,)!",
-                )
-                # check (d, P) matrices.
-                self.assertTrue(
-                    lab.allclose(brute_force, implicit_bd_H.matvec(w).reshape(-1)),
-                    f"The block-diagonal matrix-vector product with kernel {kernel_name} did not match direct computation with vectors of shape (d, P)!",
                 )
 
 

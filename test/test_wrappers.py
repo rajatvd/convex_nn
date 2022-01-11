@@ -48,10 +48,10 @@ class TestWrapper(unittest.TestCase):
         """Test using solver with default options."""
 
         model, metrics = optimize(
-            self.X, self.y, solve_relaxation=True, max_arrangements=100
+            self.X, self.y, formulation="grelu_mlp", max_patterns=100
         )
         model, metrics = optimize(
-            self.X, self.y, solve_relaxation=False, max_arrangements=100
+            self.X, self.y, formulation="grelu_mlp", max_patterns=100
         )
 
     def test_solving_l2_problem(self):
@@ -60,8 +60,8 @@ class TestWrapper(unittest.TestCase):
         model, metrics = optimize(
             self.X,
             self.y,
-            solve_relaxation=True,
-            max_arrangements=100,
+            formulation="grelu_mlp",
+            max_patterns=100,
             verbose=False,
             reg_type="l2",
         )
@@ -72,8 +72,8 @@ class TestWrapper(unittest.TestCase):
         model, metrics = optimize(
             self.X,
             self.y,
-            solve_relaxation=True,
-            max_arrangements=100,
+            formulation="grelu_mlp",
+            max_patterns=100,
             verbose=False,
             backend=lab.backend,
         )
@@ -81,8 +81,8 @@ class TestWrapper(unittest.TestCase):
         model, metrics = optimize(
             self.X,
             self.y,
-            solve_relaxation=False,
-            max_arrangements=100,
+            formulation="relu_mlp",
+            max_patterns=100,
             verbose=False,
             backend=lab.backend,
         )
@@ -93,8 +93,8 @@ class TestWrapper(unittest.TestCase):
         model, metrics = optimize(
             self.X,
             self.y,
-            solve_relaxation=True,
-            max_arrangements=100,
+            formulation="grelu_mlp",
+            max_patterns=100,
             verbose=False,
             backend=lab.backend,
             dtype="float32",
@@ -103,8 +103,8 @@ class TestWrapper(unittest.TestCase):
         model, metrics = optimize(
             self.X,
             self.y,
-            solve_relaxation=True,
-            max_arrangements=100,
+            formulation="grelu_mlp",
+            max_patterns=100,
             verbose=False,
             backend=lab.backend,
             dtype="float64",
@@ -116,13 +116,13 @@ class TestWrapper(unittest.TestCase):
         model, metrics = optimize(
             self.X,
             self.y,
-            solve_relaxation=False,
+            formulation="relu_mlp",
             max_primal_iters=500,
             max_dual_iters=10,
             grad_tol=1e-6,
             constraint_tol=1e-4,
             initialization="zero",
-            max_arrangements=100,
+            max_patterns=100,
             verbose=False,
             backend=lab.backend,
             dtype="float64",
@@ -138,7 +138,7 @@ class TestWrapper(unittest.TestCase):
         model, metrics = optimize(
             self.X,
             self.y,
-            solve_relaxation=False,
+            formulation="relu_mlp",
             model=torch_model,
             verbose=False,
             backend=lab.backend,
@@ -153,7 +153,7 @@ class TestWrapper(unittest.TestCase):
         model, metrics = optimize(
             self.X,
             self.y,
-            solve_relaxation=True,
+            formulation="grelu_mlp",
             model=torch_model,
             verbose=False,
             backend=lab.backend,
@@ -170,8 +170,8 @@ class TestWrapper(unittest.TestCase):
         model, _ = optimize(
             X_unitized,
             self.y,
-            solve_relaxation=True,
-            max_arrangements=100,
+            formulation="grelu_mlp",
+            max_patterns=100,
             verbose=False,
             unitize_data_cols=False,
             return_convex_form=True,

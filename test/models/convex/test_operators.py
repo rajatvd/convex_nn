@@ -13,7 +13,8 @@ import lab
 
 import cvx_nn.loss_functions as loss_fns
 from cvx_nn import datasets
-from cvx_nn.models import operators, sign_patterns
+from cvx_nn.models import sign_patterns
+from cvx_nn.models.convex import operators
 
 
 @parameterized_class(lab.TEST_GRID)

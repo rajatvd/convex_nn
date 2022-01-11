@@ -10,7 +10,7 @@ from scipy.optimize import check_grad  # type: ignore
 
 import lab
 
-from cvx_nn.models import ConvexLassoNet, sign_patterns, operators
+from cvx_nn.models import ConvexLassoNet, sign_patterns
 from cvx_nn import datasets
 
 

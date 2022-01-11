@@ -8,7 +8,8 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.models import sign_patterns, operators
+from cvx_nn.models import sign_patterns
+from cvx_nn.models.convex import operators
 from cvx_nn import datasets
 from cvx_nn.utils.linear import preconditioners
 

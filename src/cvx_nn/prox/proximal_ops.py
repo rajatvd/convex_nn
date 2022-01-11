@@ -75,7 +75,6 @@ class GroupL1(Regularizer):
         """
         self.lam = lam
         self.group_by_feature = group_by_feature
-        print(self.group_by_feature)
 
     def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
         """

@@ -2,7 +2,7 @@
 Create and optimize convex neural networks.
 """
 import logging
-from typing import Optional, Literal, cast, List
+from typing import Optional, cast, List
 import pickle as pkl
 import os
 from copy import deepcopy

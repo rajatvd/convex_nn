@@ -10,7 +10,8 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.models import sign_patterns, operators, AL_LassoNet
+from cvx_nn.models import sign_patterns, AL_LassoNet
+from cvx_nn.models.convex import operators
 from cvx_nn import datasets
 
 
