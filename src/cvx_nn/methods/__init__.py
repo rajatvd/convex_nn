@@ -52,9 +52,6 @@ from .line_search import (
     KeepOld,
     ForwardTrack,
     Lassplore,
-    get_update_fn,
-    get_ls_condition,
-    get_backtrack_fn,
 )
 
 from .external_solver import LinearSolver
@@ -68,7 +65,6 @@ from .cvxpy_solvers import (
 )
 
 from .termination_criteria import (
-    get_criterion,
     GradientNorm,
     StepLength,
     ConstrainedOptimality,
@@ -80,7 +76,8 @@ __all__ = [
     "IterativeOptimizationProcedure",
     "TorchLoop",
     "DoubleLoopProcedure",
-    "ObservedSignPatterns" "ls",
+    "ObservedSignPatterns",
+    "ls",
     "gradient_step",
     "gd_ls",
     "proximal_gradient_step",
@@ -115,10 +112,6 @@ __all__ = [
     "KeepOld",
     "ForwardTrack",
     "Lassplore",
-    "get_update_fn",
-    "get_ls_condition",
-    "get_backtrack_fn",
-    "get_criterion",
     "GradientNorm",
     "StepLength",
     "ConstrainedOptimality",

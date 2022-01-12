@@ -269,6 +269,7 @@ def _construct_convex_model(
     X_train,
     y_train,
     max_patterns,
+    U,
     reg_type,
     reg_strength,
     rng,
@@ -281,13 +282,16 @@ def _construct_convex_model(
     n, d = X_train.shape
     c = y_train.shape[1]
 
-    if model is not None:
+    if model is not None:  # extract gates vectors from supplied model.
         first_layer = cast(torch.nn.Linear, next(model.children()))
-        max_patterns = first_layer.out_features
-
-    D, U = sign_patterns.get_sign_patterns(
-        X_train, {"name": "sampler", "seed": seed, "n_samples": max_patterns}
-    )
+        U = first_layer.weight
+        D, U = sign_patterns.get_sign_patterns(X_train, None, U=U)
+    elif U is not None:  # generate sign patterns for pre-supplied gates.
+        D, U = sign_patterns.get_sign_patterns(X_train, None, U=U)
+    else:
+        D, U = sign_patterns.get_sign_patterns(
+            X_train, {"name": "sampler", "seed": seed, "n_samples": max_patterns}
+        )
 
     regularizer = None
     if reg_type == L2:
@@ -341,6 +345,8 @@ def _construct_convex_model(
 # ==== Optimize Neural Network =====
 # ==================================
 
+# TODO: only torch ReLU networks to be supplied instead of ReLU and gated ReLU?
+
 
 def optimize(
     # data
@@ -356,6 +362,7 @@ def optimize(
     max_patterns: Optional[int] = None,
     formulation: str = GReLU_MLP,
     model: Optional[torch.nn.Module] = None,
+    U: Optional[lab.Tensor] = None,
     warm_start: Optional[ConvexMLP] = None,
     reg_type: str = GL1,
     reg_strength: float = 0.001,
@@ -419,7 +426,8 @@ def optimize(
             - "step_size": the step-size after the last iteration.
 
         max_patterns: (optional) the maximum number of max_patterns to use in the convex formulation.
-            The arguments 'max_patterns', 'model', and 'warm_start' are mutually exclusive; exactly one must be specified.
+            The arguments 'max_patterns', 'model', 'U', and 'warm_start' are mutually exclusive;
+            exactly one must be specified.
         formulation: (optional) the problem formulation to solve. Defaults to two-layer MLP with Gated ReLU activations.
             Valid options are:
 
@@ -430,8 +438,12 @@ def optimize(
 
         model: (optional) a torch.nn.Module instance corresponding to the neural network to be optimized.
             Only two architectures are permitted: (Linear, ReLU, Linear) or (GatedReluLayer, Linear).
+            If supplied, the first-layer of the network will be used to generate gate vectors
+            for the convex formulation.
+        U: (optional) a d x m tensor of gate vectors to use in the convex formulation.
+            Mutually exclusive with 'model', 'warm_start' and 'max_patterns'.
         warm_start: (optional) a convex neural network from which to warm-start the optimization procedure.
-            Mutual exclusive with 'model' and 'max_patterns'.
+            Mutual exclusive with 'model', 'max_patterns', and 'U'.
         reg_type: (optional) the type of regularization to use. Default is 'group_l1'.
             Valid options are:
 
@@ -500,11 +512,11 @@ def optimize(
 
     if model is not None and max_patterns is not None:
         raise ValueError(
-            "Cannot infer the number of patterns to use when both `model` and `max_patterns` are provided."
+            "Cannot infer the number of patterns to use more than one of `model` `max_patterns` are provided."
         )
-    elif model is None and max_patterns is None and warm_start is None:
+    elif model is None and max_patterns is None and warm_start is None and U is None:
         raise ValueError(
-            "Need one of `model`, `max_patterns` or `warm_start` to infer the number of patterns to use in the convex formulation."
+            "Need one of `model`, `U`, `max_patterns` or `warm_start` to infer the number of patterns to use in the convex formulation."
         )
 
     # check model architecture for compatibility.
@@ -548,6 +560,7 @@ def optimize(
         X_train,
         y_train,
         max_patterns,
+        U,
         reg_type,
         reg_strength,
         rng,
@@ -557,6 +570,7 @@ def optimize(
         initialization,
         M,
     )
+
     if warm_start is not None:
         logger.info("Warm-starting from existing model...")
         starting_weights = _untransform_weights(warm_start.weights, column_norms)
@@ -646,6 +660,7 @@ def optimize_path(
     max_patterns: Optional[int] = None,
     formulation: str = GReLU_MLP,
     model: Optional[torch.nn.Module] = None,
+    U: Optional[lab.Tensor] = None,
     warm_start: Optional[ConvexMLP] = None,
     reg_type: str = GL1,
     M: float = 1.0,
@@ -793,7 +808,8 @@ def optimize_path(
         additional_metrics,
         max_patterns,
         formulation,
-        model=None,
+        model=model,
+        U=U,
         warm_start=None,
         reg_type=reg_type,
         reg_strength=lam,
@@ -838,6 +854,7 @@ def optimize_path(
             max_patterns,
             formulation,
             model=None,
+            U=None,
             warm_start=convex_model,
             reg_type=reg_type,
             reg_strength=lam,

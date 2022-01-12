@@ -1,7 +1,7 @@
 """
 Generate sing patterns (aka hyperplane arrangements) for convex formulations of neural networks.
 """
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 
 import numpy as np
 from numpy.random import Generator
@@ -16,32 +16,102 @@ DEFAULT_CONFIG = {"method": "sampler", "n_samples": 1000, "conv_patterns": False
 
 
 def get_sign_patterns(
-    X: lab.Tensor, pattern_config: Dict[str, Any]
+    X: lab.Tensor,
+    pattern_config: Optional[Dict[str, Any]] = None,
+    U: Optional[lab.Tensor] = None,
 ) -> Tuple[lab.Tensor, lab.Tensor]:
-    """
-    :param X: a data matrix with shape (n,d).
-    :param model_config: a dictionary object specifying the sign-pattern
-        generator and its arguments. If 'None' is passed, the config will
-        default to 'DEFAULT_CONFIG'.
+    """Generate sign patterns for a convex neural network.
+
+    Args:
+        X: a data matrix with shape (n,d).
+        pattern_config: (optional) a dictionary object specifying the sign-pattern
+            generator and its arguments. If 'None' is passed, the config will
+            default to 'DEFAULT_CONFIG'.
+        U: (optional) a d x m matrix of pre-generated gate vectors.
+
+    Returns:
+        (D, U) - Tuple of sign patterns and gate vectors.
     """
 
-    if pattern_config is None:
-        pattern_config = DEFAULT_CONFIG
+    if U is None:
+        if pattern_config is None:
+            pattern_config = DEFAULT_CONFIG
 
-    name = pattern_config["name"]
-    # create sign patterns.
-    if name == "sampler":
-        rng = np.random.default_rng(seed=pattern_config.get("seed", 650))
-        D, U = approximate_sign_patterns(
-            rng,
-            X,
-            pattern_config["n_samples"],
-            pattern_config.get("conv_patterns", False),
-        )
-    else:
-        raise ValueError(f"Sign pattern generator {name} not recognized!")
+        name = pattern_config["name"]
+        # create sign patterns.
+        if name == "sampler":
+            rng = np.random.default_rng(seed=pattern_config.get("seed", 650))
+            U = sample_gate_vectors(
+                rng,
+                X.shape[1],
+                pattern_config["n_samples"],
+                pattern_config["conv_patterns"],
+            )
+        else:
+            raise ValueError(f"Sign pattern generator {name} not recognized!")
+
+    D, U = compute_sign_patterns(X, U)
 
     return D, U
+
+
+def sample_gate_vectors(
+    rng: Generator, d: int, n_samples: int, convolutional_patterns=False
+):
+    """Generate gate vectors by random sampling.
+
+    Args:
+        rng: a random number generator.
+        d: the dimensionality of the gate vectors.
+        n_samples: the number of samples to use when computing the approximation.
+            More samples should find more sign patterns.
+        convolutional_patterns: whether or not to sample the gates as convolutional
+            filters.
+
+    Returns:
+        U -  a d x m matrix of gate vectors, where m <= n is guaranteed.
+    """
+    U = rng.standard_normal((d, n_samples))
+
+    if convolutional_patterns:
+        if d == 784:
+            conv_masks = generate_conv_masks(rng, n_samples, 28, 1)
+        elif d == 3072:
+            conv_masks = generate_conv_masks(rng, n_samples, 32, 3)
+        else:
+            assert (
+                False
+            ), "Convolutional patterns only implemented for MNIST or CIFAR datasets"
+
+        conv_masks = lab.to_np(conv_masks)
+        U = U * conv_masks
+
+    return U
+
+
+def compute_sign_patterns(
+    X: lab.Tensor, U: lab.Tensor
+) -> Tuple[lab.Tensor, lab.Tensor]:
+    """Compute the set of unique sign patterns of 'XU'.
+    :param X: data/feature matrix. Examples are expected to be rows.
+    :param U: the "gate vectors" used to generate sign patterns. Gates are columns.
+    :returns: a matrix of unique sign patterns, where each sign pattern is a column of the matrix.
+    """
+    np_X = lab.to_np(X)
+    n, d = np_X.shape
+
+    XU = np.maximum(np.matmul(np_X, U), 0)
+    XU[XU > 0] = 1
+
+    D, indices = np.unique(XU, axis=1, return_index=True)
+    U = U[:, indices]
+
+    # filter out the zero column.
+    non_zero_cols = np.logical_not(np.all(D == np.zeros((n, 1)), axis=0))
+    D = D[:, non_zero_cols]
+    U = U[:, non_zero_cols]
+
+    return lab.tensor(D, dtype=lab.get_dtype()), lab.tensor(U, dtype=lab.get_dtype())
 
 
 def generate_conv_masks(
@@ -90,59 +160,3 @@ def generate_conv_masks(
         lab.arange(num_samples), lab.transpose(lab.tensor(all_patches).long(), 0, 1)
     ] = 1.0
     return mask.t()
-
-
-def approximate_sign_patterns(
-    rng: Generator, X: lab.Tensor, n_samples: int = None, convolutional_patterns=False
-) -> Tuple[lab.Tensor, lab.Tensor]:
-    """Compute an approximation of the set of possible sign patterns of 'Xu, u in R'.
-    :param rng: random number generator.
-    :param X: data/feature matrix. Examples are expected to be rows.
-    :param n_samples: (optional) the number of samples to use when computing the approximation.
-        More samples should find more sign patterns. Defaults to number of features.
-    :returns: (sign_patterns, normal_vectors) --- matrix of unique sign patterns, where each sign pattern is a column of the matrix, and matrix of vectors creating these sign patterns.
-    """
-    np_X = lab.to_np(X)
-    n, d = np_X.shape
-
-    if n_samples is None:
-        n_samples = d
-
-    U = rng.standard_normal((d, n_samples))
-
-    if convolutional_patterns:
-        if d == 784:
-            conv_masks = generate_conv_masks(rng, n_samples, 28, 1)
-        elif d == 3072:
-            conv_masks = generate_conv_masks(rng, n_samples, 32, 3)
-        else:
-            assert (
-                False
-            ), "Convolutional patterns only implemented for MNIST or CIFAR datasets"
-
-        conv_masks = lab.to_np(conv_masks)
-        U = U * conv_masks
-
-    XU = np.maximum(np.matmul(np_X, U), 0)
-    XU[XU > 0] = 1
-
-    D, indices = np.unique(XU, axis=1, return_index=True)
-    U = U[:, indices]
-
-    # filter out the zero column.
-    non_zero_cols = np.logical_not(np.all(D == np.zeros((n, 1)), axis=0))
-    D = D[:, non_zero_cols]
-    U = U[:, non_zero_cols]
-
-    return lab.tensor(D, dtype=lab.get_dtype()), lab.tensor(U, dtype=lab.get_dtype())
-
-
-def compute_sign_patterns(X: np.ndarray):
-    """Compute the exact set of sign patterns of 'Xu, u in R'.
-    :param X: data/feature matrix. Examples are expected to be rows.
-    :returns: matrix of unique sign patterns. Each sign pattern is a column of the matrix.
-    """
-
-    raise NotImplementedError(
-        "Computing exact hyperplane arrangements using the Edelsbrunner et al. (1986) algorithm has not been implemented yet."
-    )

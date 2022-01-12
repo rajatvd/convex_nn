@@ -1,7 +1,7 @@
 """
 Termination criteria for iterative optimization methods.
 """
-from typing import Dict, Any, Optional
+from typing import Optional
 
 import lab
 
@@ -119,27 +119,3 @@ class ConstrainedOptimality(TerminationCriterion):
             return lab.sum(grad ** 2) <= self.grad_tol
 
         return False
-
-
-# index
-
-
-def get_criterion(config: Dict[str, Any]) -> TerminationCriterion:
-    """Load a termination criterion by name using the passed configuration parameters.
-    :param config: configuration object specifying the termination criterion.
-    :returns: an instance of TerminationCriterion which can be used to determine if an optimizer as converged.
-    """
-    name = config.get("name", None)
-
-    if name is None:
-        raise ValueError("Termination criterion must have name!")
-    elif name == "grad_norm":
-        return GradientNorm(config.get("tol", TOL))
-    elif name == "step_length":
-        return StepLength(config.get("tol", TOL))
-    elif name == "constrained_opt":
-        return ConstrainedOptimality(
-            config.get("grad_tol", TOL), config.get("constraint_tol", TOL)
-        )
-    else:
-        raise ValueError(f"Termination criterion {name} not recognized!")
