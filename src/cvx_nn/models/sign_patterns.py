@@ -44,8 +44,8 @@ def get_sign_patterns(
             U = sample_gate_vectors(
                 rng,
                 X.shape[1],
-                pattern_config["n_samples"],
-                pattern_config["conv_patterns"],
+                pattern_config.get("n_samples", 100),
+                pattern_config.get("conv_patterns", False),
             )
         else:
             raise ValueError(f"Sign pattern generator {name} not recognized!")

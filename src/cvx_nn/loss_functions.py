@@ -93,9 +93,7 @@ def l1_squared_penalty(w: lab.Tensor, lam: Union[lab.Tensor, float]) -> float:
     :returns: penalty value
     """
 
-    axis = 0
-
-    return (lam / 2) * lab.sum(lab.sum(lab.abs(w), axis=axis) ** 2)
+    return (lam / 2) * lab.sum(lab.sum(lab.abs(w), axis=0) ** 2)
 
 
 # "activation" functions
