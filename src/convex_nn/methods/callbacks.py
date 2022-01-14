@@ -1,14 +1,13 @@
 """
 Callback functions to be executed after each iteration of optimization.
 """
-from typing import Tuple, Dict, Optional
+from typing import Tuple, Dict, Optional, Callable
 
 import numpy as np
 
 import lab
 
 from convex_nn.models import Model
-from convex_nn.methods.optimizers import Optimizer
 
 
 class ObservedSignPatterns:
@@ -63,3 +62,21 @@ class ObservedSignPatterns:
             )
 
         return model
+
+
+class ConeDecomposition:
+
+    """Convert a gated ReLU model into a ReLU model by solving the cone decomposition problem."""
+
+    def __init__(self, solver: Callable):
+        """
+        :param solver: solver to use when computing the cone decomposition.
+        """
+
+        self.solver = solver
+
+    def __call__(self, model: Model, X: lab.Tensor, y: lab.Tensor) -> Model:
+
+        decomposed_model, _ = self.solver(model, X, y)
+
+        return decomposed_model

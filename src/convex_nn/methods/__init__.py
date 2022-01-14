@@ -14,7 +14,7 @@ from .optimization_procedures import (
     EPOCH_LOG_FREQ,
 )
 
-from .callbacks import ObservedSignPatterns
+from .callbacks import ObservedSignPatterns, ConeDecomposition
 
 from .core import (
     ls,
@@ -78,6 +78,7 @@ __all__ = [
     "TorchLoop",
     "DoubleLoopProcedure",
     "ObservedSignPatterns",
+    "ConeDecomposition",
     "ls",
     "gradient_step",
     "gd_ls",
