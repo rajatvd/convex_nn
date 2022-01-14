@@ -13,6 +13,9 @@ from .training_programs import (
 
 from .cone_decomposition import (
     MinL2Decomposition,
+    MinL1Decomposition,
+    FeasibleDecomposition,
+    MinRelaxedL2Decomposition,
 )
 
 
@@ -23,4 +26,7 @@ __all__ = [
     "OrthantConstrainedMLPSolver",
     "OrthantConstrainedLassoNetSolver",
     "MinL2Decomposition",
+    "MinL1Decomposition",
+    "FeasibleDecomposition",
+    "MinRelaxedL2Decomposition",
 ]

@@ -12,7 +12,12 @@ import lab
 from convex_nn.models import ConvexMLP, AL_MLP, sign_patterns
 from convex_nn.utils.data import gen_regression_data
 
-from convex_nn.methods.cvxpy import MinL2Decomposition
+from convex_nn.methods.cvxpy import (
+    MinL2Decomposition,
+    MinL1Decomposition,
+    FeasibleDecomposition,
+    MinRelaxedL2Decomposition,
+)
 
 
 @parameterized_class(lab.TEST_GRID)
@@ -39,12 +44,97 @@ class TestDecompositionPrograms(unittest.TestCase):
         self.model = ConvexMLP(self.d, self.D, self.U, kernel="einsum", c=self.c)
 
     def test_l2_decomposition(self):
-        """Test network predictions."""
         self.model.weights = lab.tensor(
             self.rng.standard_normal((self.c, self.P, self.d), dtype=self.dtype)
         )
 
         decomposition_program = MinL2Decomposition("ecos")
+
+        relu_model, exit_status = decomposition_program(self.model, self.X, self.y)
+        relu_model = cast(AL_MLP, relu_model)
+
+        # check for feasibility
+        e_gap, i_gap = relu_model.constraint_gaps(self.X)
+
+        self.assertTrue(
+            exit_status["success"],
+            "Cone decomposition did not succeed!",
+        )
+
+        self.assertTrue(
+            lab.allclose(lab.sum(lab.abs(i_gap)), lab.tensor(0.0)),
+            "Result of decomposition does not satisfy cone constraints!",
+        )
+
+        self.assertTrue(
+            lab.allclose(relu_model.get_reduced_weights(), self.model.weights),
+            "Result of decomposition is not equivalent to original model!",
+        )
+
+    def test_relaxed_l2_decomposition(self):
+        self.model.weights = lab.tensor(
+            self.rng.standard_normal((self.c, self.P, self.d), dtype=self.dtype)
+        )
+
+        decomposition_program = MinRelaxedL2Decomposition("ecos")
+
+        relu_model, exit_status = decomposition_program(self.model, self.X, self.y)
+        relu_model = cast(AL_MLP, relu_model)
+
+        # check for feasibility
+        e_gap, i_gap = relu_model.constraint_gaps(self.X)
+
+        self.assertTrue(
+            exit_status["success"],
+            "Cone decomposition did not succeed!",
+        )
+
+        self.assertTrue(
+            lab.allclose(lab.sum(lab.abs(i_gap)), lab.tensor(0.0)),
+            "Result of decomposition does not satisfy cone constraints!",
+        )
+
+        self.assertTrue(
+            lab.allclose(relu_model.get_reduced_weights(), self.model.weights),
+            "Result of decomposition is not equivalent to original model!",
+        )
+
+    def test_l1_decomposition(self):
+        self.model.weights = lab.tensor(
+            self.rng.standard_normal((self.c, self.P, self.d), dtype=self.dtype)
+        )
+
+        decomposition_program = MinL1Decomposition("ecos")
+
+        relu_model, exit_status = decomposition_program(self.model, self.X, self.y)
+        relu_model = cast(AL_MLP, relu_model)
+
+        # check for feasibility
+        e_gap, i_gap = relu_model.constraint_gaps(self.X)
+
+        self.assertTrue(
+            exit_status["success"],
+            "Cone decomposition did not succeed!",
+        )
+
+        self.assertTrue(
+            lab.allclose(
+                lab.sum(lab.abs(i_gap)), lab.tensor(0.0), rtol=1e-6, atol=1e-6
+            ),
+            "Result of decomposition does not satisfy cone constraints!",
+        )
+
+        self.assertTrue(
+            lab.allclose(relu_model.get_reduced_weights(), self.model.weights),
+            "Result of decomposition is not equivalent to original model!",
+        )
+
+    def test_feasible_decomposition(self):
+        self.model.weights = lab.tensor(
+            self.rng.standard_normal((self.c, self.P, self.d), dtype=self.dtype)
+        )
+
+        decomposition_program = FeasibleDecomposition("ecos")
 
         relu_model, exit_status = decomposition_program(self.model, self.X, self.y)
         relu_model = cast(AL_MLP, relu_model)

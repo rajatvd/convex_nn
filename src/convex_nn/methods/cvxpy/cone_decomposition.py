@@ -21,10 +21,16 @@ from convex_nn.models import (
 from .cvxpy_solver import CVXPYSolver
 
 
-class MinL2Decomposition(CVXPYSolver):
-    """Convert a convex gatedReLU model into a convex ReLU model by decomposing
-    the weights onto the constraint cones :math:`K_i` and :math:`-K_i`.
+class DecompositionProgram(CVXPYSolver):
+    """Base class for CVXPY programs that convert a convex gatedReLU model
+    into a convex ReLU model by decomposing the weights onto the constraint
+    cones :math:`K_i` and :math:`-K_i`.
     """
+
+    def get_objective(self, V, U) -> cp.Minimize:
+        raise NotImplementedError(
+            "All decomposition programs must implement an objective."
+        )
 
     def __call__(
         self, model: Model, X: np.ndarray, y: np.ndarray
@@ -52,7 +58,7 @@ class MinL2Decomposition(CVXPYSolver):
         U = W + V
 
         # minimize two-norm of decompositions
-        objective = cp.Minimize(cp.sum(cp.pnorm(U, p=2, axis=1) + cp.pnorm(V, p=2, axis=1)))
+        objective = self.get_objective(V, U)
 
         # constraints
         A = 2 * D_np - np.ones_like(D_np)
@@ -91,3 +97,39 @@ class MinL2Decomposition(CVXPYSolver):
         }
 
         return relu_model, exit_status
+
+
+class MinL2Decomposition(DecompositionProgram):
+    """
+    Decompose by minimize the sum of L2 norms.
+    """
+
+    def get_objective(self, V, U) -> cp.Minimize:
+        return cp.Minimize(cp.sum(cp.pnorm(U, p=2, axis=1) + cp.pnorm(V, p=2, axis=1)))
+
+
+class MinRelaxedL2Decomposition(DecompositionProgram):
+    """
+    Decompose by minimize the sum of L2 norms.
+    """
+
+    def get_objective(self, V, U) -> cp.Minimize:
+        return cp.Minimize(cp.sum(cp.pnorm(V, p=2) ** 2))
+
+
+class MinL1Decomposition(DecompositionProgram):
+    """
+    Decompose by minimize the sum of L2 norms.
+    """
+
+    def get_objective(self, V, U) -> cp.Minimize:
+        return cp.Minimize(cp.sum(cp.pnorm(U, p=1, axis=1) + cp.pnorm(V, p=1, axis=1)))
+
+
+class FeasibleDecomposition(DecompositionProgram):
+    """
+    Decompose by minimize the sum of L2 norms.
+    """
+
+    def get_objective(self, V, U) -> cp.Minimize:
+        return cp.Minimize(1)

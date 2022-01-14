@@ -63,6 +63,9 @@ from .cvxpy import (
     RelaxedLassoNetSolver,
     OrthantConstrainedLassoNetSolver,
     MinL2Decomposition,
+    MinL1Decomposition,
+    FeasibleDecomposition,
+    MinRelaxedL2Decomposition,
 )
 
 from .termination_criteria import (
@@ -105,6 +108,9 @@ __all__ = [
     "RelaxedLassoNetSolver",
     "OrthantConstrainedLassoNetSolver",
     "MinL2Decomposition",
+    "MinL1Decomposition",
+    "FeasibleDecomposition",
+    "MinRelaxedL2Decomposition",
     "Backtracker",
     "MultiplicativeBacktracker",
     "LSCondition",
