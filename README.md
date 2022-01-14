@@ -26,7 +26,7 @@ Run the `setup.sh` file with
 This will:
 
 1. Create a virtual environment in `.venv` and install the project dependencies. 
-2. Install `cvx_nn` in development mode.
+2. Install `convex_nn` in development mode.
 
 After running `setup.sh`, you need to activate the virtualenv using 
 

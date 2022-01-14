@@ -1,4 +1,4 @@
-cvx_nn: Efficient Global Optimization for Shallow Neural Networks 
+convex_nn: Efficient Global Optimization for Shallow Neural Networks 
 =================================================================
 
 .. toctree::
@@ -9,7 +9,7 @@ cvx_nn: Efficient Global Optimization for Shallow Neural Networks
 Optimization
 ------------
 
-.. automodule:: cvx_nn.wrappers
+.. automodule:: convex_nn.wrappers
    :members:
    :undoc-members:
    :show-inheritance:

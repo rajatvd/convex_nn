@@ -10,8 +10,8 @@ from scipy.optimize import check_grad  # type: ignore
 
 import lab
 
-from cvx_nn.models import ConvexLassoNet, sign_patterns
-from cvx_nn.utils.data import gen_regression_data
+from convex_nn.models import ConvexLassoNet, sign_patterns
+from convex_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)

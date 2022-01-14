@@ -10,8 +10,8 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.models import ReLULassoNet
-from cvx_nn.utils.data import gen_regression_data
+from convex_nn.models import ReLULassoNet
+from convex_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)

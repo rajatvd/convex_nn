@@ -7,7 +7,7 @@ import unittest
 from parameterized import parameterized_class  # type: ignore
 import lab
 
-from cvx_nn.prox import HierProx
+from convex_nn.prox import HierProx
 
 
 @parameterized_class(lab.TEST_GRID)

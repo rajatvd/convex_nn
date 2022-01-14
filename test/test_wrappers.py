@@ -10,9 +10,9 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.utils.data import gen_regression_data, unitize_columns
-from cvx_nn.models import sign_patterns, GatedReLULayer
-from cvx_nn.wrappers import optimize, _transform_weights
+from convex_nn.utils.data import gen_regression_data, unitize_columns
+from convex_nn.models import sign_patterns, GatedReLULayer
+from convex_nn.wrappers import optimize, _transform_weights
 
 
 @parameterized_class(lab.TEST_GRID)

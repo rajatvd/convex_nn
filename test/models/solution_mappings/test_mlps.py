@@ -10,14 +10,14 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.models import (
+from convex_nn.models import (
     ConvexMLP,
     sign_patterns,
     AL_MLP,
     GatedReLULayer,
 )
-import cvx_nn.models.solution_mappings.mlps as sm
-from cvx_nn.utils.data import gen_regression_data
+import convex_nn.models.solution_mappings.mlps as sm
+from convex_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)

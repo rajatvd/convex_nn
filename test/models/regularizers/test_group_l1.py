@@ -10,10 +10,10 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.models import ConvexMLP, sign_patterns
-from cvx_nn.models.convex import operators
-from cvx_nn.models.regularizers.group_l1 import GroupL1Regularizer
-from cvx_nn.utils.data import gen_regression_data
+from convex_nn.models import ConvexMLP, sign_patterns
+from convex_nn.models.convex import operators
+from convex_nn.models.regularizers.group_l1 import GroupL1Regularizer
+from convex_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)

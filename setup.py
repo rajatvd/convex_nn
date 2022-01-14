@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages  # type: ignore
 
 setup(
-    name="cvx_nn",
+    name="convex_nn",
     version="0.0.1",
     author="Aaron Mishkin",
     author_email="amishkin@cs.stanford.edu",
@@ -12,7 +12,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "src"},
-    package_data={"cvx_nn": ["py.typed"]},
+    package_data={"convex_nn": ["py.typed"]},
     packages=find_packages(where="src"),
     python_requires=">=3.6",
     install_requires=[

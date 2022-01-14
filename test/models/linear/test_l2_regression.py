@@ -10,9 +10,9 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.models import L2Regression
-from cvx_nn.utils.linear import direct_solvers
-from cvx_nn.utils.data import gen_regression_data
+from convex_nn.models import L2Regression
+from convex_nn.utils.linear import direct_solvers
+from convex_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)

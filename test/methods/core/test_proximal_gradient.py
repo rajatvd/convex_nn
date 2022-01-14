@@ -9,13 +9,13 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn.methods.line_search import backtrack, conditions
-from cvx_nn.models import L2Regression
+from convex_nn.methods.line_search import backtrack, conditions
+from convex_nn.models import L2Regression
 
-from cvx_nn.methods.core import proximal_gradient as pgd
-from cvx_nn.methods.core import gradient_descent as gd
-from cvx_nn.prox import Identity, L1
-from cvx_nn.utils.data import gen_regression_data
+from convex_nn.methods.core import proximal_gradient as pgd
+from convex_nn.methods.core import gradient_descent as gd
+from convex_nn.prox import Identity, L1
+from convex_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)

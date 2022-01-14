@@ -11,10 +11,10 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-import cvx_nn.loss_functions as loss_fns
-from cvx_nn.utils.data import gen_regression_data
-from cvx_nn.models import sign_patterns
-from cvx_nn.models.convex import operators
+import convex_nn.loss_functions as loss_fns
+from convex_nn.utils.data import gen_regression_data
+from convex_nn.models import sign_patterns
+from convex_nn.models.convex import operators
 
 
 @parameterized_class(lab.TEST_GRID)

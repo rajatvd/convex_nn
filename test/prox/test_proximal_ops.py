@@ -8,7 +8,7 @@ import numpy as np
 from parameterized import parameterized_class  # type: ignore
 import lab
 
-from cvx_nn.prox import (
+from convex_nn.prox import (
     L1,
     GroupL1,
     Orthant,

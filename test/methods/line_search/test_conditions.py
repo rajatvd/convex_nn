@@ -8,7 +8,7 @@ import numpy as np
 from parameterized import parameterized_class  # type: ignore
 
 import lab
-from cvx_nn.methods.line_search import conditions
+from convex_nn.methods.line_search import conditions
 
 
 @parameterized_class(lab.TEST_GRID)
