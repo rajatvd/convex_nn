@@ -242,6 +242,7 @@ def compute_metric(
         feature_weights = lab.sum(
             lab.abs(reduced_weights), axis=tuple(range(len(reduced_weights.shape) - 1))
         )
+        feature_weights = feature_weights + lab.sum(lab.abs(model.U), axis=-1)
         metric = lab.to_scalar(
             lab.sum(feature_weights == 0.0) / reduced_weights.shape[-1]
         )
@@ -250,6 +251,7 @@ def compute_metric(
         feature_weights = lab.sum(
             lab.abs(reduced_weights), axis=tuple(range(len(reduced_weights.shape) - 1))
         )
+        feature_weights = feature_weights + lab.sum(lab.abs(model.U), axis=-1)
         metric = lab.to_scalar(lab.sum(feature_weights != 0.0))
     elif metric_name == "group_sparsity":
         metric = lab.to_scalar(
