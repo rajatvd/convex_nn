@@ -52,7 +52,7 @@ class MinL2Decomposition(CVXPYSolver):
         U = W + V
 
         # minimize two-norm of decompositions
-        objective = cp.Minimize(cp.sum(cp.norm2(U, axis=1) + cp.norm2(V, axis=1)))
+        objective = cp.Minimize(cp.sum(cp.pnorm(U, p=2, axis=1) + cp.pnorm(V, p=2, axis=1)))
 
         # constraints
         A = 2 * D_np - np.ones_like(D_np)
