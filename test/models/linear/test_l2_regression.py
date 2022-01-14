@@ -12,7 +12,7 @@ import lab
 
 from cvx_nn.models import L2Regression
 from cvx_nn.utils.linear import direct_solvers
-from cvx_nn import datasets
+from cvx_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)
@@ -28,9 +28,10 @@ class TestL2Regression(unittest.TestCase):
         lab.set_backend(self.backend)
         lab.set_dtype(self.dtype)
         # generate dataset
-        (self.X, self.y), _, self.wopt = datasets.generate_synthetic_regression(
-            self.rng, self.n, 0, self.d
-        )
+        train_set, _, self.wopt = gen_regression_data(self.rng, self.n, 0, self.d)
+        self.X, self.y = lab.all_to_tensor(train_set)
+        self.wopt = lab.tensor(self.wopt)
+        self.y = lab.squeeze(self.y)
 
         # initialize model
         self.lr = L2Regression(self.d)

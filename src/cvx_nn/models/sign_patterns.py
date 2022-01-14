@@ -86,7 +86,7 @@ def sample_gate_vectors(
         conv_masks = lab.to_np(conv_masks)
         U = U * conv_masks
 
-    return U
+    return lab.tensor(U, dtype=lab.get_dtype())
 
 
 def compute_sign_patterns(
@@ -97,21 +97,22 @@ def compute_sign_patterns(
     :param U: the "gate vectors" used to generate sign patterns. Gates are columns.
     :returns: a matrix of unique sign patterns, where each sign pattern is a column of the matrix.
     """
-    np_X = lab.to_np(X)
-    n, d = np_X.shape
+    n, d = X.shape
 
-    XU = np.maximum(np.matmul(np_X, U), 0)
+    XU = lab.smax(lab.matmul(X, U), 0)
     XU[XU > 0] = 1
+    np_XU = lab.to_np(XU)
 
-    D, indices = np.unique(XU, axis=1, return_index=True)
+    np_D, indices = np.unique(np_XU, axis=1, return_index=True)
+    D = lab.tensor(np_D, dtype=lab.get_dtype())
     U = U[:, indices]
 
     # filter out the zero column.
-    non_zero_cols = np.logical_not(np.all(D == np.zeros((n, 1)), axis=0))
+    non_zero_cols = lab.logical_not(lab.all(D == lab.zeros((n, 1)), axis=0))
     D = D[:, non_zero_cols]
     U = U[:, non_zero_cols]
 
-    return lab.tensor(D, dtype=lab.get_dtype()), lab.tensor(U, dtype=lab.get_dtype())
+    return D, U
 
 
 def generate_conv_masks(

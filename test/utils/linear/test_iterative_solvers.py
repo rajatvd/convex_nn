@@ -9,8 +9,8 @@ import lab
 
 from cvx_nn.models import ConvexMLP, sign_patterns
 from cvx_nn.models.convex import operators
-from cvx_nn import datasets
 from cvx_nn.utils.linear import iterative_solvers, direct_solvers, preconditioners
+from cvx_nn.utils.data import gen_regression_data
 
 
 class TestLSTSQSolvers(unittest.TestCase):
@@ -25,13 +25,12 @@ class TestLSTSQSolvers(unittest.TestCase):
 
     def setUp(self):
         lab.set_backend(lab.NUMPY)
-        (self.X, self.y), _, _ = datasets.generate_synthetic_regression(
-            self.rng, self.n, 0, self.d
-        )
+        train_set, _, _ = gen_regression_data(self.rng, self.n, 0, self.d)
+        self.X, self.y = lab.all_to_tensor(train_set)
+        self.y = lab.squeeze(self.y)
 
-        self.D, self.U = sign_patterns.approximate_sign_patterns(
-            self.rng, self.X, n_samples=1000
-        )
+        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 1000)
+        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
         self.network = ConvexMLP(self.d, self.D, self.U)
         self.P = self.D.shape[1]
 

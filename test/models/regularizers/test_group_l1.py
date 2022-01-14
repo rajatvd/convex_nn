@@ -13,7 +13,7 @@ import lab
 from cvx_nn.models import ConvexMLP, sign_patterns
 from cvx_nn.models.convex import operators
 from cvx_nn.models.regularizers.group_l1 import GroupL1Regularizer
-from cvx_nn import datasets
+from cvx_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)
@@ -32,13 +32,14 @@ class TestGroupL1Regularizer(unittest.TestCase):
         lab.set_dtype(self.dtype)
 
         # generate dataset
-        (self.X, self.y), _, self.wopt = datasets.generate_synthetic_regression(
-            self.rng, self.n, 0, self.d, c=self.c, vector_output=True
+        train_set, _, self.wopt = gen_regression_data(
+            self.rng, self.n, 0, self.d, c=self.c
         )
+        self.X, self.y = lab.all_to_tensor(train_set)
+        self.wopt = lab.tensor(self.wopt)
         # initialize model
-        self.D, self.U = sign_patterns.approximate_sign_patterns(
-            self.rng, self.X, n_samples=100
-        )
+        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 100)
+        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
         self.p = self.D.shape[1]
 
         self.regularizer = GroupL1Regularizer(lam=self.lam)

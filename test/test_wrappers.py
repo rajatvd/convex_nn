@@ -10,7 +10,7 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from cvx_nn import datasets
+from cvx_nn.utils.data import gen_regression_data, unitize_columns
 from cvx_nn.models import sign_patterns, GatedReLULayer
 from cvx_nn.wrappers import optimize, _transform_weights
 
@@ -36,13 +36,12 @@ class TestWrapper(unittest.TestCase):
         lab.set_dtype(self.dtype)
 
         # generate random dataset
-        ((self.X, self.y,), _, self.wopt,) = datasets.generate_synthetic_regression(
-            778, self.n, 0, self.d, sparse_opt=False, unitize_data_cols=False
-        )
+        train_set, _, self.wopt = gen_regression_data(778, self.n, 0, self.d)
+        self.X, self.y = lab.all_to_tensor(train_set, dtype=lab.get_dtype())
+        self.wopt = lab.tensor(self.wopt)
 
-        self.D, self.U = sign_patterns.approximate_sign_patterns(
-            self.rng, self.X, n_samples=10
-        )
+        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 100)
+        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
 
     def test_default_options(self):
         """Test using solver with default options."""
@@ -163,8 +162,8 @@ class TestWrapper(unittest.TestCase):
     def test_data_transformation(self):
         """Test undoing unitization of the training data."""
 
-        (X_unitized, _), _, column_norms = datasets.unitize_features(
-            (self.X, self.y), return_column_norms=True
+        (X_unitized, _), _, column_norms = unitize_columns(
+            (self.X, self.y)
         )
 
         model, _ = optimize(

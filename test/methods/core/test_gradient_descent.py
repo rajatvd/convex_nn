@@ -11,9 +11,9 @@ import lab
 
 from cvx_nn.methods.core import gradient_descent as gd
 from cvx_nn.methods.line_search import backtrack, conditions
-from cvx_nn import datasets
 from cvx_nn.utils import solve_ne
 from cvx_nn.models import L2Regression
+from cvx_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)
@@ -35,14 +35,16 @@ class TestGradientDescent(unittest.TestCase):
         lab.set_dtype(self.dtype)
 
         # generate random dataset
-        (self.X, self.y), _, self.wopt = datasets.generate_synthetic_regression(
+        train_set, _, self.wopt = gen_regression_data(
             self.rng,
             self.n,
             0,
             self.d,
-            sparse_opt=False,
             sigma=0.1,
         )
+        self.X, self.y = lab.all_to_tensor(train_set)
+        self.wopt = lab.tensor(self.wopt)
+        self.y = lab.squeeze(self.y)
 
         # compute approximation to maximum eigenvalue of the Hessian
         self.L = lab.sum(self.X ** 2) / len(self.y)

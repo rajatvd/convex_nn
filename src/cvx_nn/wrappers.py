@@ -23,9 +23,10 @@ from cvx_nn.models import (
     LassoNetConstraint,
     is_compatible,
     get_nc_formulation,
+    GatedReLULayer,
 )
 
-from cvx_nn.datasets import unitize_features
+from cvx_nn.utils.data import unitize_columns
 from cvx_nn.initializers import get_initializer
 from cvx_nn.methods import (
     OptimizationProcedure,
@@ -236,27 +237,30 @@ def _untransform_weights(model_weights, column_norms):
 
 def _process_data(X_train, y_train, X_test, y_test, unitize_data_cols):
 
-    train_set = (np.array(X_train.tolist()), np.array(y_train.tolist()))
+    # add extra target dimension if necessary
+    if len(y_train.shape) == 1:
+        y_train = lab.expand_dims(y_train, axis=1)
+        y_test = lab.expand_dims(y_test, axis=1)
+
+    train_set = (
+        lab.tensor(X_train.tolist(), dtype=lab.get_dtype()),
+        lab.tensor(y_train.tolist(), dtype=lab.get_dtype()),
+    )
+
     test_set = (
-        (np.array(X_test.tolist()), np.array(y_test.tolist()))
+        (
+            lab.tensor(X_test.tolist(), dtype=lab.get_dtype()),
+            lab.tensor(y_test.tolist(), dtype=lab.get_dtype()),
+        )
         if X_test is not None
         else train_set
     )
 
     column_norms = None
     if unitize_data_cols:
-        train_set, test_set, column_norms = unitize_features(train_set, test_set, True)
-        column_norms = lab.tensor(column_norms, dtype=lab.get_dtype())
+        train_set, test_set, column_norms = unitize_columns(train_set, test_set)
 
-    X_train, y_train = lab.all_to_tensor(train_set, dtype=lab.get_dtype())
-    X_test, y_test = lab.all_to_tensor(test_set, dtype=lab.get_dtype())
-
-    # add extra target dimension if necessary
-    if len(y_train.shape) == 1:
-        y_train = lab.expand_dims(y_train, axis=1)
-        y_test = lab.expand_dims(y_test, axis=1)
-
-    return X_train, y_train, (X_test, y_test), column_norms
+    return train_set[0], train_set[1], (X_test, y_test), column_norms
 
 
 # ============================
@@ -284,7 +288,10 @@ def _construct_convex_model(
 
     if model is not None:  # extract gates vectors from supplied model.
         first_layer = cast(torch.nn.Linear, next(model.children()))
-        U = first_layer.weight
+        if isinstance(first_layer, GatedReLULayer):
+            U = lab.tensor(first_layer.U.tolist(), dtype=lab.get_dtype())
+        else:
+            U = lab.tensor(first_layer.weight.detach().tolist(), dtype=lab.get_dtype())
         D, U = sign_patterns.get_sign_patterns(X_train, None, U=U)
     elif U is not None:  # generate sign patterns for pre-supplied gates.
         D, U = sign_patterns.get_sign_patterns(X_train, None, U=U)

@@ -11,7 +11,7 @@ from parameterized import parameterized_class  # type: ignore
 import lab
 
 from cvx_nn.models import LogisticRegression
-from cvx_nn import datasets
+from cvx_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)
@@ -27,9 +27,10 @@ class TestLogisticRegression(unittest.TestCase):
         lab.set_backend(self.backend)
         lab.set_dtype(self.dtype)
         # generate dataset
-        (self.X, self.y), _, self.wopt = datasets.generate_synthetic_regression(
-            self.rng, self.n, 0, self.d
-        )
+        train_set, _, self.wopt = gen_regression_data(self.rng, self.n, 0, self.d)
+        self.X, self.y = lab.all_to_tensor(train_set)
+        self.wopt = lab.tensor(self.wopt)
+        self.y = lab.squeeze(self.y)
         self.y = lab.sign(self.y)
 
         # initialize model

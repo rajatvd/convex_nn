@@ -17,7 +17,7 @@ from cvx_nn.models import (
     GatedReLULayer,
 )
 import cvx_nn.models.solution_mappings.lasso_net as sm
-from cvx_nn import datasets
+from cvx_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)
@@ -33,13 +33,13 @@ class TestLNSolutionMappings(unittest.TestCase):
         lab.set_backend(self.backend)
         lab.set_dtype(self.dtype)
 
-        (self.X, self.y), _, _ = datasets.generate_synthetic_regression(
-            self.rng, self.n, 0, self.d, c=self.c, vector_output=True
+        train_set, _, _ = gen_regression_data(
+            self.rng, self.n, 0, self.d, c=self.c
         )
+        self.X, self.y = lab.all_to_tensor(train_set)
 
-        self.D, self.U = sign_patterns.approximate_sign_patterns(
-            self.rng, self.X, n_samples=10
-        )
+        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 10)
+        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
         self.P = self.D.shape[1]
 
         self.networks = {}

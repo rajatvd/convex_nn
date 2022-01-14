@@ -11,7 +11,7 @@ from parameterized import parameterized_class  # type: ignore
 import lab
 
 from cvx_nn.models import sign_patterns, ReLUMLP
-from cvx_nn import datasets
+from cvx_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)
@@ -29,14 +29,11 @@ class TestReLUMLP(unittest.TestCase):
         lab.set_backend(self.backend)
         lab.set_dtype(self.dtype)
         # generate dataset
-        (self.X, self.y), _, self.wopt = datasets.generate_synthetic_regression(
-            self.rng,
-            self.n,
-            0,
-            self.d,
-            c=self.c,
-            vector_output=True,
+        train_set, _, self.wopt = gen_regression_data(
+            self.rng, self.n, 0, self.d, c=self.c
         )
+        self.X, self.y = lab.all_to_tensor(train_set)
+        self.wopt = lab.tensor(self.wopt)
 
         # initialize model
         self.relu_mlp = ReLUMLP(self.d, self.p, c=self.c)
@@ -69,3 +66,7 @@ class TestReLUMLP(unittest.TestCase):
                 ),
                 "Gradient does not match finite differences approximation.",
             )
+
+
+if __name__ == "__main__":
+    unittest.main()

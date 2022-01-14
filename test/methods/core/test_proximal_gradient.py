@@ -10,12 +10,12 @@ from parameterized import parameterized_class  # type: ignore
 import lab
 
 from cvx_nn.methods.line_search import backtrack, conditions
-from cvx_nn import datasets
 from cvx_nn.models import L2Regression
 
 from cvx_nn.methods.core import proximal_gradient as pgd
 from cvx_nn.methods.core import gradient_descent as gd
 from cvx_nn.prox import Identity, L1
+from cvx_nn.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)
@@ -38,9 +38,10 @@ class TestProximalGradientDescent(unittest.TestCase):
         lab.set_backend(self.backend)
         lab.set_dtype(self.dtype)
         # generate random dataset
-        ((self.X, self.y,), _, self.wopt,) = datasets.generate_synthetic_regression(
-            778, self.n, 0, self.d, sparse_opt=False
-        )
+        (train_set, _, self.wopt) = gen_regression_data(778, self.n, 0, self.d)
+        self.X, self.y = lab.all_to_tensor(train_set)
+        self.y = lab.squeeze(self.y)
+        self.wopt = lab.tensor(self.wopt)
 
         # compute upper-bound on maximum eigenvalue of the Hessian
         self.L = lab.sum(self.X ** 2)
