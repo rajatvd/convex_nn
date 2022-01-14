@@ -114,7 +114,7 @@ class MinRelaxedL2Decomposition(DecompositionProgram):
     """
 
     def get_objective(self, V, U) -> cp.Minimize:
-        return cp.Minimize(cp.sum(cp.pnorm(V, p=2) ** 2))
+        return cp.Minimize(cp.sum(V ** 2))
 
 
 class MinL1Decomposition(DecompositionProgram):
