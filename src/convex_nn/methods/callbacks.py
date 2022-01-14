@@ -37,9 +37,7 @@ class ObservedSignPatterns:
             self.observed_patterns[pattern] = True
             return True
 
-    def __call__(
-        self, model: Model, X: lab.Tensor, y: lab.Tensor
-    ) -> Model:
+    def __call__(self, model: Model, X: lab.Tensor, y: lab.Tensor) -> Model:
 
         # compute new sign patterns
         patterns, weights = model.sign_patterns(X, y)

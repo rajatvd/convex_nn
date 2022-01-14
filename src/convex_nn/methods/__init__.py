@@ -56,7 +56,7 @@ from .line_search import (
 
 from .external_solver import LinearSolver
 
-from .cvxpy_solvers import (
+from .cvxpy import (
     CVXPYSolver,
     RelaxedMLPSolver,
     OrthantConstrainedMLPSolver,

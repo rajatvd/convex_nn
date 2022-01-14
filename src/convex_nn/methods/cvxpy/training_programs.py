@@ -1,5 +1,5 @@
 """
-Interfaces for CVXPY (https://www.cvxpy.org/index.html) solvers.
+CVXPY solvers for convex neural network training problems.
 """
 
 from typing import Dict, Any, Tuple
@@ -17,40 +17,8 @@ from convex_nn.models import (
     ConvexLassoNet,
     AL_LassoNet,
 )
-from convex_nn.methods.external_solver import ExternalSolver
 
-
-class CVXPYSolver(ExternalSolver):
-    """
-    Interface for solvers based on the CVXPY DSL.
-    """
-
-    def __init__(self, solver: str = "ecos"):
-        """
-        :param solver: the solver to use with CVXPY.
-        """
-
-        # save the desired solver
-        if solver == "ecos":
-            self.solver = cp.ECOS_BB
-        elif solver == "cvxopt":
-            self.solver = cp.CVXOPT
-        elif solver == "scs":
-            self.solver = cp.SCS
-        # note: these are commercial solvers requiring a licence.
-        elif solver == "gurobi":
-            self.solver = cp.GUROBI
-        elif solver == "mosek":
-            self.solver = cp.MOSEK
-        else:
-            raise ValueError(f"CVXPY solver {solver} not recognized!")
-
-    def __call__(
-        self, model: Model, X: np.ndarray, y: np.ndarray
-    ) -> Tuple[Model, Dict[str, Any]]:
-        """Call the CVXPY solver to fit the model."""
-
-        raise NotImplementedError("A CVXPY-based solver must implement '__call__'.")
+from .cvxpy_solver import CVXPYSolver
 
 
 class RelaxedMLPSolver(CVXPYSolver):
