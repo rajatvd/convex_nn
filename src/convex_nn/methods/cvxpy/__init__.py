@@ -16,6 +16,7 @@ from .cone_decomposition import (
     MinL1Decomposition,
     FeasibleDecomposition,
     MinRelaxedL2Decomposition,
+    SOCPDecomposition,
 )
 
 
@@ -29,4 +30,5 @@ __all__ = [
     "MinL1Decomposition",
     "FeasibleDecomposition",
     "MinRelaxedL2Decomposition",
+    "SOCPDecomposition",
 ]

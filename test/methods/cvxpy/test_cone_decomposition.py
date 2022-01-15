@@ -17,6 +17,7 @@ from convex_nn.methods.cvxpy import (
     MinL1Decomposition,
     FeasibleDecomposition,
     MinRelaxedL2Decomposition,
+    SOCPDecomposition,
 )
 
 
@@ -135,6 +136,34 @@ class TestDecompositionPrograms(unittest.TestCase):
         )
 
         decomposition_program = FeasibleDecomposition("ecos")
+
+        relu_model, exit_status = decomposition_program(self.model, self.X, self.y)
+        relu_model = cast(AL_MLP, relu_model)
+
+        # check for feasibility
+        e_gap, i_gap = relu_model.constraint_gaps(self.X)
+
+        self.assertTrue(
+            exit_status["success"],
+            "Cone decomposition did not succeed!",
+        )
+
+        self.assertTrue(
+            lab.allclose(lab.sum(lab.abs(i_gap)), lab.tensor(0.0)),
+            "Result of decomposition does not satisfy cone constraints!",
+        )
+
+        self.assertTrue(
+            lab.allclose(relu_model.get_reduced_weights(), self.model.weights),
+            "Result of decomposition is not equivalent to original model!",
+        )
+
+    def test_socp_decomposition(self):
+        self.model.weights = lab.tensor(
+            self.rng.standard_normal((self.c, self.P, self.d), dtype=self.dtype)
+        )
+
+        decomposition_program = SOCPDecomposition("ecos")
 
         relu_model, exit_status = decomposition_program(self.model, self.X, self.y)
         relu_model = cast(AL_MLP, relu_model)

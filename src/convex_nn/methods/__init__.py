@@ -66,6 +66,7 @@ from .cvxpy import (
     MinL1Decomposition,
     FeasibleDecomposition,
     MinRelaxedL2Decomposition,
+    SOCPDecomposition,
 )
 
 from .termination_criteria import (
@@ -111,6 +112,7 @@ __all__ = [
     "MinL1Decomposition",
     "FeasibleDecomposition",
     "MinRelaxedL2Decomposition",
+    "SOCPDecomposition",
     "Backtracker",
     "MultiplicativeBacktracker",
     "LSCondition",
