@@ -16,10 +16,12 @@ class CVXPYSolver(ExternalSolver):
     Interface for solvers based on the CVXPY DSL.
     """
 
-    def __init__(self, solver: str = "ecos"):
+    def __init__(self, solver: str = "ecos", **kwargs):
         """
         :param solver: the solver to use with CVXPY.
         """
+
+        self.solver_kwargs = kwargs
 
         # save the desired solver
         if solver == "ecos":
@@ -28,7 +30,7 @@ class CVXPYSolver(ExternalSolver):
             self.solver = cp.CVXOPT
         elif solver == "scs":
             self.solver = cp.SCS
-        # note: these are commercial solvers requiring a licence.
+        # note: the following are commercial solvers requiring a licence.
         elif solver == "gurobi":
             self.solver = cp.GUROBI
         elif solver == "mosek":

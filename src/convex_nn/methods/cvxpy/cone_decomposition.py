@@ -75,7 +75,7 @@ class DecompositionProgram(CVXPYSolver):
 
         verbose = root.level <= INFO
         # solve the optimization problem
-        problem.solve(solver=self.solver, verbose=verbose)
+        problem.solve(solver=self.solver, verbose=verbose, *self.solver_kwargs)
 
         # extract solution
         decomp_weights = lab.stack(
@@ -192,7 +192,7 @@ class SOCPDecomposition(CVXPYSolver):
 
         verbose = root.level <= INFO
         # solve the optimization problem
-        problem.solve(solver=self.solver, verbose=verbose)
+        problem.solve(solver=self.solver, verbose=verbose, *self.solver_kwargs)
 
         # extract solution
         decomp_weights = lab.stack(
