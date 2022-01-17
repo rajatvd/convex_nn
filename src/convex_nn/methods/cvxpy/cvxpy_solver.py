@@ -16,7 +16,7 @@ class CVXPYSolver(ExternalSolver):
     Interface for solvers based on the CVXPY DSL.
     """
 
-    def __init__(self, solver: str = "ecos", **kwargs):
+    def __init__(self, solver: str = "ecos", kwargs={}):
         """
         :param solver: the solver to use with CVXPY.
         """
