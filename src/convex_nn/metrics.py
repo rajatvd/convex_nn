@@ -262,6 +262,8 @@ def compute_metric(
         metric = lab.to_scalar(lab.sum(lab.sum(model.weights, axis=-1) != 0.0))
     elif metric_name == "sparsity":
         metric = lab.to_scalar(lab.sum(model.weights == 0) / lab.size(model.weights))
+    elif metric_name == "group_norms":
+        metric = lab.to_scalar(lab.sum(lab.sqrt(lab.sum(model.weights ** 2, axis=-1))))
     elif metric_name == "constraint_gaps":
         try:
             e_gap, i_gap = model.constraint_gaps(X)
