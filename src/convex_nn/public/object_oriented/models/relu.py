@@ -1,20 +1,21 @@
 """
-Non-convex and convex formulations of two-layer Gated ReLU networks.
+Non-convex and convex formulations of two-layer ReLU networks.
 
 Overview:
-    Gated ReLU networks are similar to ReLU networks, bus substitute the standard ReLU activation function for the activation pattern given by a "gate vector". For example, non-convex Gated ReLU model has the prediction function,
+    This module provides implementations of non-convex and convex formulations for two-layer ReLU networks.
+    The non-convex model has the prediction function,
     .. math::
 
-        h(X) = \\sum_{i=1}^p \\text{diag}(X g_i > 0) X W_{1i}^{\\top} \\cdot W_{2i}^{\\top},
+        h(X) = \\sum_{i=1}^p (X W_{1i}^{\\top})_+ \\cdot W_{2i}^{\\top},
 
-    where :math:`g_i` is a fixed gate vector, :math:`W_{1} \\in \\mathbb{R}^{p \\times d}` are the parameters of the first layer, and :math:`W_{2} \\in \\mathbb{R}^{c \\times p}` are the parameters of the second layer.
+    where :math:`W_{1} \\in \\mathbb{R}^{p \\times d}` are the parameters of the first layer, and :math:`W_{2} \\in \\mathbb{R}^{c \\times p}` are the parameters of the second layer.
 
-    Loosely, the convex reformulation of the non-convex Gated ReLU network is obtain by merging the linear parameters :math:`W_{1}` and :math:`w_2`. It has the prediction function,
+    The convex reformulation of the non-convex Gated ReLU network is obtain by enumerating the activation patterns :math:`D_i = \\text{diag}(1(X g_i > 0)), where :math:`g_i` is a fixed "gate" vector. Using a (possibly subsampled) set of activations :math:`\\tilde \\mathcal{D}`, the prediction function for the convex reformulation can be written as
     .. math::
 
-        g(X) = \\sum_{i=1}^m \\text{diag}(X g_i > 0) X U_{i},
+        g(X) = \\sum_{D_i \\in \\mathcal{D}}^m D_i X (v_{i} - w_{i}),
 
-    where :math:`U \\in \\mathbb{R}^{m \\times d}` are the model parameters. A one-vs-all strategy is used for the convex reformulation when the output dimension satisfies :math:`c > 1`.
+    where :math:`v_i, w_i \\in \\mathbb{R}^{m \\times d}` are the model parameters. A one-vs-all strategy is used for the convex reformulation when the output dimension satisfies :math:`c > 1`.
 """
 
 from typing import List
@@ -24,14 +25,14 @@ import lab
 from convex_nn.private.models.convex.kernels.einsum_kernel import data_mvp
 
 
-class ConvexGatedReLU:
-    """Convex reformulation of a Gated ReLU Network with two-layers.
+class ConvexReLU:
+    """Convex reformulation of a ReLU Network with two-layers.
 
     This model has the prediction function
 
     .. math::
 
-        g(X) = \\sum_{i=1}^m \\text{diag}(X g_i > 0) X U_{1i}.
+        g(X) = \\sum_{D_i \\in \\mathcal{D}}^m D_i X (v_{i} - w_{i}),
 
     A one-vs-all strategy is used to extend the model to multi-dimensional targets.
 
@@ -39,8 +40,8 @@ class ConvexGatedReLU:
         c: the output dimension.
         d: the input dimension.
         p: the number of neurons.
-        G: the gate vectors for the Gated ReLU activation stored as a (d x p) matrix.
-        parameters: the parameters of the model stored as a list of one (c x p x d) matrix.
+        G: the gate vectors used to generate the activation patterns :math:`D_i`, stored as a (d x p) matrix.
+        parameters: the parameters of the model stored as a list of two (c x p x d) matrices.
     """
 
     def __init__(
@@ -60,7 +61,10 @@ class ConvexGatedReLU:
         self.c = c
 
         # one linear model per gate vector
-        self.parameters = [lab.zeros((c, self.p, self.d))]
+        self.parameters = [
+            lab.zeros((c, self.p, self.d)),
+            lab.zeros((c, self.p, self.d)),
+        ]
 
     def get_parameters(self):
         """Get the model parameters."""
@@ -74,7 +78,9 @@ class ConvexGatedReLU:
         Args:
             parameters: the new model parameters.
         """
-        assert parameters.shape == (self.c, self.p, self.d)
+        assert len(parameters) == 2
+        assert parameters[0].shape == (self.c, self.p, self.d)
+        assert parameters[1].shape == (self.c, self.p, self.d)
 
         self.parameters = [parameters]
 
@@ -90,40 +96,41 @@ class ConvexGatedReLU:
         local_D = lab.smax(X @ self.G, 0)
         local_D[local_D > 0] = 1
 
-        return data_mvp(self.parameters[0], X, local_D)
+        return data_mvp(self.parameters[0] - self.parameters[1], X, local_D)
 
 
 class NonConvexGatedReLU:
-    """Convex reformulation of a Gated ReLU Network with two-layers.
+    """Convex reformulation of a ReLU Network with two-layers.
 
     This model has the prediction function
 
     .. math::
 
-        h(X) = \\sum_{i=1}^m \\text{diag}(X g_i > 0) X W_{1i} \\cdot W_{2i},
+        h(X) = \\sum_{i=1}^p (X W_{1i}^{\\top})_+ \\cdot W_{2i}^{\\top},
 
     Attributes:
         c: the output dimension.
         d: the input dimension.
         p: the number of neurons.
-        G: the gate vectors for the Gated ReLU activation stored as a (d x p) matrix.
         parameters: the parameters of the model stored as a list of matrices with shapes: [(p x d), (c x p)]
     """
 
     def __init__(
         self,
-        G: lab.Tensor,
+        d: int,
+        p: int,
         c: int = 1,
     ) -> None:
         """Construct a new convex Gated ReLU model.
 
         Args:
-            G: (d x p) matrix of get vectors, where p is the number neurons.
+            d: the input dimension.
+            p: the number of neurons or "hidden units" in the network.
             c: the output dimension.
         """
 
-        self.G = G
-        self.d, self.p = G.shape
+        self.d = d
+        self.p = p
         self.c = c
 
         # one linear model per gate vector
@@ -161,7 +168,5 @@ class NonConvexGatedReLU:
         Returns:
             h(X) --- the model predictions for X.
         """
-        local_D = lab.smax(X @ self.G, 0)
-        local_D[local_D > 0] = 1
 
-        return lab.multiply(local_D, X @ self.parameters[0].T) @ self.parameters[1].T
+        return lab.smax(X @ self.parameters[0].T, 0) @ self.parameters[1].T
