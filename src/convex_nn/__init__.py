@@ -1,21 +1,17 @@
 """
 `convex_nn`: a Python packing for learning with convex neural networks.
+
+There are two public modules:
+    1. `convex_nn.f`  - a simple functional interface for training models.
+    2. `convex_nn.oo` - an objective oriented interface that provides additional flexibility in model specification and training.
+
+Internal model representations and optimization procedures are located in `convex_nn.private`.
 """
 
-# Expose easy-to-use wrappers for optimizing convex models.
-from convex_nn.wrappers import optimize, optimize_path
-from convex_nn.wrappers import (
-    GReLU_MLP,
-    GReLU_LN,
-    ReLU_MLP,
-    ReLU_LN,
-    REGULARIZERS,
-    INITIALIZATIONS,
-    PRECISIONS,
-    FORMULATIONS,
-)
+from convex_nn.public import functional as f
+from convex_nn.public import object_oriented as oo
 
 __all__ = [
-    "optimize",
-    "optimize_path",
+    "f",
+    "oo",
 ]
