@@ -13,10 +13,6 @@ from convex_nn.private.methods.core import ls
 from convex_nn.private.methods.line_search import Backtracker, LSCondition
 from convex_nn.private.prox import ProximalOperator
 
-# constants
-
-PROX_PATH: str = "prox_path"
-
 # step operators
 
 
@@ -77,7 +73,6 @@ def proximal_gradient_ls(
     ls_cond: LSCondition,
     backtrack: Backtracker,
     prox: ProximalOperator,
-    ls_type: str = PROX_PATH,
 ) -> Tuple[lab.Tensor, float, float, Dict[str, Any]]:
     """Take one step of proximal gradient descent using a line-search to pick the step-size.
     :param w: the parameters to be updated.
@@ -90,10 +85,6 @@ def proximal_gradient_ls(
     :param ls_cond: the line-search condition to check.
     :param backtrack: a rule for calculating the next step-size to try.
     :param prox: the proximal operator. It must take a step-size parameter.
-    :param ls_type: one of {"prox_path", "grad_path", "post_prox"}. PROX_PATH searches the path formed by
-        proximal-gradient steps for a step-size, while GRAD_PATH searches the path formed by gradient
-        steps, which can be much cheaper depending on the proximal operator. POST_PROX back-tracks from the
-        proximal update, which is fast but ruins sparsity.
     :returns: (w_next, f1, step_size, exit_state): the updated parameters, objective value, new step-size, and exit state.
     """
 
@@ -128,7 +119,6 @@ def fista_ls(
     prox: ProximalOperator,
     v: lab.Tensor,
     t: float,
-    ls_type: str = PROX_PATH,
     mu: float = 0.0,
 ) -> Tuple[lab.Tensor, lab.Tensor, float, float, float, Dict[str, Any]]:
     """Take one step of proximal gradient descent using a line-search to pick the step-size.
@@ -144,9 +134,6 @@ def fista_ls(
     :param prox: the proximal operator. It must take a step-size parameter.
     :param v: the extrapolation sequence.
     :param t: the extrapolation parameter.
-    :param ls_type: one of PROX_PATH or GRAD_PATH. PROX_PATH searches the path formed by
-        proximal-gradient steps for a step-size, while GRAD_PATH searches the path formed by gradient
-        steps, which can be much cheaper depending on the proximal operator.
     :param mu: (optional) a lower-bound on the strong-convexity parameter of the objective.
         The method defaults to the parameter sequence for non-strongly convex functions when
         mu is not supplied.
@@ -165,7 +152,6 @@ def fista_ls(
         ls_cond,
         backtrack,
         prox,
-        ls_type=ls_type,
     )
     # release memory
     t_plus = t

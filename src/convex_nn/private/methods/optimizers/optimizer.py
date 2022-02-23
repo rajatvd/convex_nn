@@ -105,7 +105,6 @@ class LSOptimizer(Optimizer):
         ls_cond: LSCondition,
         backtrack_fn: Backtracker,
         update_step_size: StepSizeUpdater,
-        ls_type: Optional[str] = None,
     ):
         """
         :param step_fn: a function to call to execute one step of the iterative
@@ -114,13 +113,11 @@ class LSOptimizer(Optimizer):
         :param ls_cond: the line-search condition to check.
         :param backtrack: a rule for calculating the next step-size to try.
         :param update_step_size: a rule for updating the step-size after each line-search.
-        :param ls_type: (optional) the type of line-search.
         """
         super().__init__(step_fn, init_step_size, update_step_size)
 
         self.ls_cond = ls_cond
         self.backtrack_fn = backtrack_fn
-        self.ls_type = ls_type
 
     def reset(self):
         """
@@ -173,7 +170,6 @@ class LSOptimizer(Optimizer):
             self.ls_cond,
             self.backtrack_fn,
             prox=None,
-            ls_type=self.ls_type,
         )
 
         # update step-size

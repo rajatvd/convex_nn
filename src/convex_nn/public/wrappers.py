@@ -132,7 +132,6 @@ def _default_relaxation_solver(
         QuadraticBound(),
         MultiplicativeBacktracker(beta=0.8),
         Lassplore(alpha=1.25, threshold=5.0),
-        ls_type="fista",
         prox=prox,
         restart_rule="gradient_mapping",
     )
@@ -172,7 +171,6 @@ def _default_constrained_solver(
         QuadraticBound(),
         MultiplicativeBacktracker(beta=0.8),
         Lassplore(alpha=1.25, threshold=5.0),
-        ls_type="fista",
         prox=prox,
         restart_rule="gradient_mapping",
     )

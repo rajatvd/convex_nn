@@ -41,7 +41,6 @@ class PGDLS(ProximalLSOptimizer):
         ls_cond: LSCondition,
         backtrack_fn: Backtracker,
         update_step_size: StepSizeUpdater,
-        ls_type,
         prox: ProximalOperator,
     ):
         """
@@ -49,7 +48,6 @@ class PGDLS(ProximalLSOptimizer):
         :param ls_cond: the line-search condition to check.
         :param backtrack: a rule for calculating the next step-size to try.
         :param update_step_size: a rule for updating the step-size after each line-search.
-        :param ls_type: (optional) the type of line-search.
         :param prox: a proximal operator. See 'proximal_ops'.
         """
         super().__init__(
@@ -58,6 +56,5 @@ class PGDLS(ProximalLSOptimizer):
             ls_cond,
             backtrack_fn,
             update_step_size,
-            ls_type,
             prox,
         )

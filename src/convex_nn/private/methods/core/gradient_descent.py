@@ -38,7 +38,6 @@ def gd_ls(
     ls_cond: LSCondition,
     backtrack: Backtracker,
     prox: Optional[ProximalOperator] = None,
-    ls_type: Optional[str] = None,
 ) -> Tuple[lab.Tensor, float, float, Dict[str, Any]]:
     """Take one step of gradient descent using a line-search to pick the step-size.
     :param w: the parameters to be updated.
@@ -51,7 +50,6 @@ def gd_ls(
     :param ls_cond: the line-search condition to check.
     :param backtrack: a rule for calculating the next step-size to try.
     :param prox: NOT USED. Included to unify line-search signatures.
-    :param ls_type: NOT USED.
     :returns: (w_next, f1, step_size, exit_state): the updated parameters, objective value, new step-size, and exit state.
     """
 

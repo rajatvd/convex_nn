@@ -29,7 +29,6 @@ class FISTA(ProximalLSOptimizer):
         ls_cond: LSCondition,
         backtrack_fn: Backtracker,
         update_step_size: StepSizeUpdater,
-        ls_type: str,
         prox: ProximalOperator,
         mu: float = 0.0,
         restart_rule: Optional[str] = GM,
@@ -41,7 +40,6 @@ class FISTA(ProximalLSOptimizer):
         :param ls_cond: the line-search condition to check.
         :param backtrack: a rule for calculating the next step-size to try.
         :param update_step_size: a rule for updating the step-size after each line-search.
-        :param ls_type: the type of line-search.
         :param prox: a proximal operator. See 'proximal_ops'.
         :param mu: (optional) a lower-bound on the strong-convexity parameter of the objective.
             The method defaults to the parameter sequence for non-strongly convex functions when
@@ -54,7 +52,6 @@ class FISTA(ProximalLSOptimizer):
             ls_cond,
             backtrack_fn,
             update_step_size,
-            ls_type,
             prox,
         )
 
@@ -150,7 +147,6 @@ class FISTA(ProximalLSOptimizer):
             self.prox,
             self.v,
             self.t,
-            ls_type=self.ls_type,  # TODO: remove old parameter.
             mu=self.mu,
         )
 

@@ -11,6 +11,11 @@ from convex_nn.private.models import ConvexMLP, AL_MLP
 import convex_nn.private.models.solution_mappings as sm
 import convex_nn.private.loss_functions as loss_fns
 
+# TODO: handle non-convex metrics better.
+# TODO: by default, all test metrics should be computed on the non-convex model.
+# Similarly, active features and active neurons should be computed on the non-convex models.
+# Training metrics can be left on the convex model, as the predictions are the same.
+
 
 def as_list(x: Any) -> List[Any]:
     """Wrap argument into a list if it is not iterable.
@@ -208,7 +213,9 @@ def compute_metric(
             X, y, batch_size=batch_size, ignore_lagrange_penalty=True
         )
         metric = lab.to_scalar(objective)
-    elif metric_name == "squared_error":
+    elif (
+        metric_name == "squared_error"
+    ):  # TODO: should not use half when computing this
         metric = lab.to_scalar(
             loss_fns.squared_error(model(X, batch_size=batch_size), y) / y.shape[0]
         )

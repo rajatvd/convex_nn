@@ -8,7 +8,11 @@ import lab
 from convex_nn.private.models.model import Model
 from convex_nn.private.methods.optimizers.optimizer import Optimizer, LSOptimizer
 from convex_nn.private.prox import ProximalOperator
-from convex_nn.private.methods.line_search import StepSizeUpdater, LSCondition, Backtracker
+from convex_nn.private.methods.line_search import (
+    StepSizeUpdater,
+    LSCondition,
+    Backtracker,
+)
 
 
 class ProximalOptimizer(Optimizer):
@@ -92,7 +96,6 @@ class ProximalLSOptimizer(LSOptimizer):
         ls_cond: LSCondition,
         backtrack_fn: Backtracker,
         update_step_size: StepSizeUpdater,
-        ls_type,
         prox: ProximalOperator,
     ):
         """
@@ -102,11 +105,10 @@ class ProximalLSOptimizer(LSOptimizer):
         :param ls_cond: the line-search condition to check.
         :param backtrack: a rule for calculating the next step-size to try.
         :param update_step_size: a rule for updating the step-size after each line-search.
-        :param ls_type: (optional) the type of line-search.
         :param prox: a proximal operator. See 'proximal_ops'.
         """
         super().__init__(
-            step_fn, init_step_size, ls_cond, backtrack_fn, update_step_size, ls_type
+            step_fn, init_step_size, ls_cond, backtrack_fn, update_step_size
         )
         self.prox = prox
 
@@ -156,7 +158,6 @@ class ProximalLSOptimizer(LSOptimizer):
             self.ls_cond,
             self.backtrack_fn,
             prox=self.prox,
-            ls_type=self.ls_type,
         )
 
         # update step-size

@@ -1,16 +1,16 @@
 """
-Non-convex and convex formulations of two-layer Gated ReLU networks.
+Non-convex and convex formulations of two-layer neural networks.
 
 Overview:
     This module provides implementations of non-convex and convex formulations for two-layer ReLU and Gated ReLU networks.
     The difference between ReLU and Gated ReLU networks is the activation function; Gated ReLU networks use fixed "gate" vectors when computing the activation pattern while standard ReLU networks use the model parameters when computation the activation.
-    Concretely, the prediction function for a two ReLU network is 
+    Concretely, the prediction function for a two ReLU network is
     .. math::
 
         h(X) = \\sum_{i=1}^p (X W_{1i}^{\\top})_+ \\cdot W_{2i}^{\\top},
 
     where :math:`W_{1} \\in \\mathbb{R}^{p \\times d}` are the parameters of the first layer, and :math:`W_{2} \\in \\mathbb{R}^{c \\times p}` are the parameters of the second layer.
-    In contrast, Gated ReLU networks predict as 
+    In contrast, Gated ReLU networks predict as
     .. math::
 
         h(X) = \\sum_{i=1}^p \\text{diag}(X g_i > 0) X W_{1i}^{\\top} \\cdot W_{2i}^{\\top},
@@ -40,7 +40,19 @@ import numpy as np
 
 
 class Model:
-    """Base class for convex and non-convex models."""
+    """Base class for convex and non-convex models.
+
+    Attributes:
+        c: the output dimension.
+        d: the input dimension.
+        p: the number of neurons.
+        parameters: a list of NumPy arrays comprising the model parameters.
+    """
+
+    d: int
+    p: int
+    c: int
+    parameters: List[np.ndarray]
 
 
 class ConvexGatedReLU(Model):
@@ -203,6 +215,7 @@ class ConvexReLU(Model):
         p: the number of neurons.
         G: the gate vectors used to generate the activation patterns :math:`D_i`, stored as a (d x p) matrix.
         parameters: the parameters of the model stored as a list of two (c x p x d) matrices.
+        dual_parameters: a list of dual parameters associated with the model.
     """
 
     def __init__(
@@ -231,6 +244,16 @@ class ConvexReLU(Model):
         """Get the model parameters."""
         return self.parameters
 
+    def get_dual_parameters(self) -> List[np.ndarray]:
+        """Get the dual parameters associated with the model, if there are any.
+
+        The dual parameters are only set when the model has been fit using a dual method, such as the augmented Lagrangian method.
+
+        Returns:
+            [:math:`\\gamma`, :math:`\\xi`] if the dual parameters have been set, otherwise the empty list.
+        """
+        return self.dual_parameters
+
     def set_parameters(self, parameters: np.ndarray):
         """Set the model parameters.
 
@@ -244,6 +267,20 @@ class ConvexReLU(Model):
         assert parameters[1].shape == (self.c, self.p, self.d)
 
         self.parameters = [parameters]
+
+    def set_dual_parameters(self, dual_parameters: List[np.ndarray]):
+        """Set the dual parameters associated with the model.
+
+        This method safety checks the dimensional of the dual parameters.
+
+        Args:
+            dual_parameters: the new dual parameters.
+        """
+        assert len(dual_parameters) == 2
+        assert dual_parameters[0].shape == (self.c, self.p, self.d)
+        assert dual_parameters[1].shape == (self.c, self.p, self.d)
+
+        self.dual_parameters = dual_parameters
 
     def __call__(self, X: np.ndarray) -> np.ndarray:
         """Compute the model predictions for a given dataset.
@@ -296,6 +333,7 @@ class NonConvexReLU(Model):
 
         # one linear model per gate vector
         self.parameters = [np.zeros((self.p, self.d)), np.zeros((self.c, self.p))]
+        self.dual_parameters: List[np.ndarray] = []
 
     def get_parameters(self) -> List[np.ndarray]:
         """Get the model parameters.
