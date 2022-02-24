@@ -8,8 +8,8 @@ There are two public modules:
 Internal model representations and optimization procedures are located in `convex_nn.private`.
 """
 
-from convex_nn.public import functional as f
-from convex_nn.public import object_oriented as oo
+# from convex_nn.public import functional as f
+# from convex_nn.public import object_oriented as oo
 
 __all__ = [
     "f",

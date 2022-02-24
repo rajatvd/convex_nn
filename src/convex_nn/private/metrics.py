@@ -11,11 +11,6 @@ from convex_nn.private.models import ConvexMLP, AL_MLP
 import convex_nn.private.models.solution_mappings as sm
 import convex_nn.private.loss_functions as loss_fns
 
-# TODO: handle non-convex metrics better.
-# TODO: by default, all test metrics should be computed on the non-convex model.
-# Similarly, active features and active neurons should be computed on the non-convex models.
-# Training metrics can be left on the convex model, as the predictions are the same.
-
 
 def as_list(x: Any) -> List[Any]:
     """Wrap argument into a list if it is not iterable.

@@ -39,57 +39,106 @@ def is_relu_compatible(torch_model: torch.nn.Module) -> bool:
 def grelu_solution_mapping(convex_model, remove_sparse: bool = False):
     weights = convex_model.weights
     assert len(weights.shape) == 3
-    if weights.shape[0] > 1:
-        raise ValueError(
-            "Mapping a convex formulation to a neural network is only supported for scalar output models."
-        )
 
-    weights = lab.squeeze(weights)
-    weight_norms = (lab.sum(weights ** 2, axis=1, keepdims=True)) ** (1 / 4)
+    weight_norms = (lab.sum(weights ** 2, axis=-1, keepdims=True)) ** (1 / 4)
     normalized_weights = lab.safe_divide(weights, weight_norms)
 
-    indices = lab.arange(weights.shape[0])
-    if remove_sparse:
-        indices = lab.sum(weights, axis=1) != 0
+    first_layer = None
+    second_layer = []
+    for c in range(weights.shape[0]):
+        pre_zeros = [
+            lab.zeros_like(weight_norms[0]) for i in range(c)
+        ]  # positive neurons
+        post_zeros = [
+            lab.zeros_like(weight_norms[0]) for i in range(weights.shape[0] - c - 1)
+        ]
 
-    return (
-        normalized_weights[indices],
-        weight_norms[indices].T,
-        convex_model.U[:, indices],
-    )
+        if first_layer is None:
+            pre_weights = []
+        else:
+            pre_weights = [first_layer]
+
+        first_layer = lab.concatenate(
+            pre_weights
+            + [
+                normalized_weights[c],
+            ],
+            axis=0,
+        )
+
+        w2 = lab.concatenate(
+            pre_zeros
+            + [
+                weight_norms[c],
+            ]
+            + post_zeros,
+            axis=0,
+        ).T
+        second_layer.append(w2)
+    second_layer = lab.concatenate(second_layer, axis=0)
+    U = lab.concatenate([convex_model.U for c in range(weights.shape[0])], axis=1)
+
+    if remove_sparse:
+        sparse_indices = lab.sum(first_layer, axis=-1) != 0
+
+        first_layer = first_layer[sparse_indices]
+        second_layer = second_layer[:, sparse_indices]
+
+        U = U[:, sparse_indices]
+
+    return (first_layer, second_layer, U)
 
 
 def relu_solution_mapping(convex_model, remove_sparse: bool = False):
     weights = convex_model.weights
     assert len(weights.shape) == 4
 
-    if weights.shape[1] > 1:
-        raise ValueError(
-            "Mapping a convex formulation to a neural network is only supported for scalar output models."
-        )
-    weights = lab.squeeze(weights)
     weight_norms = (lab.sum(weights ** 2, axis=-1, keepdims=True)) ** (1 / 4)
     normalized_weights = lab.safe_divide(weights, weight_norms)
 
-    positive_indices = negative_indices = lab.arange(weights.shape[1])
-    if remove_sparse:
-        positive_indices = lab.sum(weights[0], axis=1) != 0
-        negative_indices = lab.sum(weights[1], axis=1) != 0
+    num_classes = weights.shape[1]
+    first_layer = None
+    second_layer = []
+    for c in range(num_classes):
+        pre_zeros = [
+            lab.zeros_like(weight_norms[0, c]) for i in range(2 * c)
+        ]  # positive neurons
+        post_zeros = [
+            lab.zeros_like(weight_norms[0, c]) for i in range(2 * (num_classes - c - 1))
+        ]
 
-    first_layer = lab.concatenate(
-        [
-            normalized_weights[0][positive_indices],
-            normalized_weights[1][negative_indices],
-        ],
-        axis=0,
-    )
-    second_layer = lab.concatenate(
-        [
-            weight_norms[0][positive_indices],
-            -weight_norms[1][negative_indices],
-        ],
-        axis=0,
-    ).T
+        if first_layer is None:
+            pre_weights = []
+        else:
+            pre_weights = [first_layer]
+
+        first_layer = lab.concatenate(
+            pre_weights
+            + [
+                normalized_weights[0][c],
+                normalized_weights[1][c],
+            ],
+            axis=0,
+        )
+
+        w2 = lab.concatenate(
+            pre_zeros
+            + [
+                weight_norms[0][c],
+                -weight_norms[1][c],
+            ]
+            + post_zeros,
+            axis=0,
+        ).T
+        second_layer.append(w2)
+
+    second_layer = lab.concatenate(second_layer, axis=0)
+
+    if remove_sparse:
+        sparse_indices = lab.sum(first_layer, axis=1) != 0
+
+        first_layer = first_layer[sparse_indices]
+        second_layer = second_layer[:, sparse_indices]
 
     return first_layer, second_layer
 
@@ -186,8 +235,8 @@ def convex_mlp_to_manual_mlp(
         manual_model.p = U.shape[1]
     else:
         first_layer, second_layer = relu_solution_mapping(convex_model, remove_sparse)
-        manual_model.weights = manual_model._join_weights(first_layer, second_layer)
         manual_model.p = first_layer.shape[0]
+        manual_model.weights = manual_model._join_weights(first_layer, second_layer)
 
     return manual_model
 
@@ -197,37 +246,24 @@ def construct_nc_manual(
     grelu: bool = False,
     remove_sparse: bool = False,
 ):
-    per_class_models = []
-    full_weights = convex_model.weights
 
-    for c in range(convex_model.c):
-        if grelu:
-            convex_model.weights = full_weights[c : c + 1]
-            manual_model = GatedReLUMLP(
-                convex_model.d,
-                convex_model.U,
-                c=1,
-            )
-        else:
-            convex_model.weights = full_weights[:, c : c + 1]
-            manual_model = ReLUMLP(convex_model.d, convex_model.p, c=1)
-
-        nc_model = convex_mlp_to_manual_mlp(
-            convex_model, manual_model, grelu, remove_sparse
+    if grelu:
+        manual_model = GatedReLUMLP(
+            convex_model.d,
+            convex_model.U,
+            c=convex_model.c,
         )
-        per_class_models.append(nc_model)
+    else:
+        manual_model = ReLUMLP(convex_model.d, convex_model.p, c=convex_model.c)
 
-    convex_model.weights = full_weights
+    nc_model = convex_mlp_to_manual_mlp(
+        convex_model, manual_model, grelu, remove_sparse
+    )
 
     l2_regularizer = None
     if convex_model.regularizer is not None:
         l2_regularizer = L2Regularizer(convex_model.regularizer.lam)
 
-    if convex_model.c == 1:
-        nc_model = per_class_models[0]
-        nc_model.regularizer = l2_regularizer
-    else:
-        nc_model = OneVsAllModel(
-            convex_model.d, per_class_models, convex_model.c, l2_regularizer
-        )
+    nc_model.regularizer = l2_regularizer
+
     return nc_model

@@ -2,8 +2,9 @@
 Interface between public objects in `convex_nn.public` module and private objects in `convex_nn.private`.
 """
 
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Dict, Any
 
+import numpy as np
 import lab
 
 # Public Facing Objects
@@ -200,16 +201,86 @@ def build_metrics_tuple(
     Returns:
         (train_metrics, test_metrics, additional_metrics) --- tuple of list of strings specifying which metrics should be collected.
     """
+    train_metrics = []
+    test_metrics = []
+    additional_metrics = []
 
     for key, value in metrics.metrics_to_collect.items():
-        if key == "":
-            pass
-        elif key == "":
-            pass
-        elif key == "":
-            pass
-        elif key == "":
-            pass
+        if key == "objective":
+            train_metrics.append("objective")
+        elif key == "grad_norm":
+            train_metrics.append("grad_norm")
+        elif key == "time":
+            continue
+        elif key == "model_loss":
+            train_metrics.append("base_objective")
+        elif key == "lagrangian_grad":
+            train_metrics.append("lagrangian_grad")
+        # use convex model for training (same as non-convex)
+        elif key == "train_accuracy":
+            train_metrics.append("accuracy")
+        # use convex model for training (same as non-convex)
+        elif key == "train_mse":
+            train_metrics.append("squared_error")
+        # use non-convex model for testing
+        elif key == "test_accuracy":
+            test_metrics.append("nc_accuracy")
+        # use non-convex model for testing
+        elif key == "test_mse":
+            test_metrics.append("nc_squared_error")
+        elif key == "total_neurons":
+            additional_metrics.append("total_neurons")
+        elif key == "neuron_sparsity":
+            additional_metrics.append("neuron_sparsity")
+        elif key == "total_features":
+            additional_metrics.append("total_features")
+        elif key == "feature_sparsity":
+            additional_metrics.append("feature_sparsity")
+        elif key == "total_weights":
+            additional_metrics.append("total_weights")
+        elif key == "weight_sparsity":
+            additional_metrics.append("weight_sparsity")
+
+    return train_metrics, test_metrics, additional_metrics
+
+
+def update_ext_metrics(metrics: Metrics, internal_metrics: Dict[str, Any]) -> Metrics:
+    for key, value in internal_metrics.values():
+        if key == "train_objective":
+            metrics.objective = np.array(value)
+        elif key == "train_grad_norm":
+            metrics.grad_norm = np.array(value)
+        elif key == "time":
+            metrics.time = np.cumsum(np.array(value))
+        elif key == "train_base_objective":
+            metrics.model_loss = value
+        elif key == "train_lagrangian_grad":
+            metrics.lagrangian_grad = value
+        elif key == "train_accuracy":
+            metrics.train_accuracy = value
+        # use convex model for training (same as non-convex)
+        elif key == "train_squared_error":
+            metrics.train_mse = value
+        # use non-convex model for testing
+        elif key == "test_accuracy":
+            metrics.test_accuracy = value
+        # use non-convex model for testing
+        elif key == "test_squared_error":
+            metrics.test_mse = value
+        elif key == "total_neurons":
+            metrics.total_neurons = value
+        elif key == "neuron_sparsity":
+            metrics.neuron_sparsity = value
+        elif key == "total_features":
+            metrics.total_features = value
+        elif key == "feature_sparsity":
+            metrics.feature_sparsity = value
+        elif key == "total_weights":
+            metrics.total_weights = value
+        elif key == "weight_sparsity":
+            metrics.weight_sparsity = value
+
+    return metrics
 
 
 def update_ext_model(model: Model, internal_model: InternalModel) -> Model:

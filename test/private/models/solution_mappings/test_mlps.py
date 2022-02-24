@@ -26,7 +26,7 @@ class TestSolutionMappings(unittest.TestCase):
 
     d: int = 2
     n: int = 4
-    c: int = 1
+    c: int = 5
     rng: np.random.Generator = np.random.default_rng(779)
 
     def setUp(self):
@@ -162,9 +162,8 @@ class TestSolutionMappings(unittest.TestCase):
     def test_mapping_relu_models_to_nonconvex(self):
 
         # set weights to be an interior point of the constraint set.
-        self.relu_convex_mlp.weights = lab.stack(
-            [lab.expand_dims(self.U.T, axis=0), 0.1 * lab.expand_dims(self.U.T, axis=0)]
-        )
+        weights = lab.stack([c * self.U.T for c in range(self.c)], axis=0)
+        self.relu_convex_mlp.weights = lab.stack([weights, 0.1 * weights])
 
         torch_model = sm.construct_nc_torch(
             self.relu_convex_mlp, grelu=False, remove_sparse=False
