@@ -13,12 +13,14 @@ from convex_nn.public.optimizers import Optimizer
 from convex_nn.public.regularizers import Regularizer
 from convex_nn.public.metrics import Metrics
 from convex_nn.private.utils.data.transforms import unitize_columns
+from convex_nn.private.models.solution_mappings import get_nc_formulation
 
 from ._interface import (
     build_model,
     build_optimizer,
     update_ext_model,
     update_ext_metrics,
+    build_ext_nc_model,
 )
 
 
@@ -69,16 +71,21 @@ def optimize_model(
     internal_model.weights = _transform_weights(internal_model.weights, column_norms)
 
     # update public-facing model
-    model = update_ext_model(model, internal_model)
+    update_ext_model(model, internal_model)
 
     # TODO: update modify get_nc_formulation to return public models.
     # TODO should probably move the get_nc_formulation into public?
 
     if return_convex:
-        return model
+        return update_ext_model(model, internal_model)
 
-    # convert into non-convex model
-    return get_nc_formulation(convex_model, remove_sparse=True)
+    # convert into internal non-convex model
+    nc_internal_model = get_nc_formulation(
+        internal_model, implementation="manual", remove_sparse=True
+    )
+
+    # create non-convex model
+    return build_ext_nc_model(nc_internal_model)
 
 
 # TODO: implement `optimize_path`.

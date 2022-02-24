@@ -14,7 +14,9 @@ from convex_nn.public.regularizers import Regularizer, NeuronGL1, FeatureGL1, L2
 from convex_nn.public.models import (
     Model,
     ConvexGatedReLU,
+    NonConvexGatedReLU,
     ConvexReLU,
+    NonConvexReLU,
 )
 from convex_nn.public.metrics import Metrics
 
@@ -39,6 +41,8 @@ from convex_nn.private.models import (
     sign_patterns,
     ConvexMLP,
     AL_MLP,
+    ReLUMLP,
+    GatedReLUMLP,
     GroupL1Regularizer,
     L2Regularizer,
 )
@@ -293,5 +297,28 @@ def update_ext_model(model: Model, internal_model: InternalModel) -> Model:
             lab.to_np(internal_model.weights[0]),
             lab.to_np(internal_model.weights[1]),
         ]
+
+    return model
+
+
+def build_ext_nc_model(internal_nc_model: InternalModel) -> Model:
+    model: Model
+
+    if isinstance(internal_nc_model, GatedReLUMLP):
+        U = lab.to_np(internal_nc_model.U)
+        model = NonConvexGatedReLU(U, internal_nc_model.c)
+        w1, w2 = internal_nc_model._split_weights(internal_nc_model.weights)
+
+        model.set_parameters([lab.to_np(w1), lab.to_np(w2)])
+
+    elif isinstance(internal_nc_model, ReLUMLP):
+        model = NonConvexReLU(
+            internal_nc_model.d, internal_nc_model.p, internal_nc_model.c
+        )
+        w1, w2 = internal_nc_model._split_weights(internal_nc_model.weights)
+
+        model.set_parameters([lab.to_np(w1), lab.to_np(w2)])
+    else:
+        raise ValueError(f"Non-convex model {internal_nc_model} not recognized.")
 
     return model
