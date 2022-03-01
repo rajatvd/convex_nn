@@ -134,6 +134,24 @@ def optimize_model(
     dtype: str = "float32",
     seed: int = 778,
 ) -> Tuple[Model, Metrics]:
+    """Train a neural network by convex reformulation.
+
+    Args:
+        model: a convex reformulation of a neural network model.
+        solver: the optimizer to use when solving the reformulation.
+        metrics: a object specifying which metrics to collect during optimization.
+        X_train: an :math:`n \\times d` matrix of training examples.
+        y_train: an :math:`n \\times c` or vector matrix of training targets.
+        X_test: an :math:`m \\times d` matrix of test examples.
+        y_test: an :math:`n \\times c` or vector matrix of test targets.
+        regularizer: an optional regularizer for the convex reformulation.
+        return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
+        verbose: whether or not the solver should print verbosely during optimization.
+        log_file: a path to an optional log file.
+
+    Returns:
+        (Model, Metrics): the optimized model and metrics collected during optimization.
+    """
 
     # set backend settings.
     lab.set_backend(backend)
@@ -188,6 +206,5 @@ def optimize_model(
     return build_ext_nc_model(nc_internal_model), metrics
 
 
-# TODO: implement `optimize_path`.
 def optimize_path():
     pass
