@@ -93,11 +93,11 @@ class ConvexGatedReLU(Model):
         # one linear model per gate vector
         self.parameters = [np.zeros((c, self.p, self.d))]
 
-    def get_parameters(self):
+    def get_parameters(self) -> List[np.ndarray]:
         """Get the model parameters."""
         return self.parameters
 
-    def set_parameters(self, parameters: np.ndarray):
+    def set_parameters(self, parameters: List[np.ndarray]):
         """Set the model parameters.
 
         This method safety checks the dimensionality of the new parameters.
@@ -105,9 +105,9 @@ class ConvexGatedReLU(Model):
         Args:
             parameters: the new model parameters.
         """
-        assert parameters.shape == (self.c, self.p, self.d)
+        assert parameters[0].shape == (self.c, self.p, self.d)
 
-        self.parameters = [parameters]
+        self.parameters = parameters
 
     def __call__(self, X: np.ndarray) -> np.ndarray:
         """Compute the model predictions for a given dataset.
@@ -240,7 +240,7 @@ class ConvexReLU(Model):
             np.zeros((c, self.p, self.d)),
         ]
 
-    def get_parameters(self):
+    def get_parameters(self) -> List[np.ndarray]:
         """Get the model parameters."""
         return self.parameters
 
@@ -254,7 +254,7 @@ class ConvexReLU(Model):
         """
         return self.dual_parameters
 
-    def set_parameters(self, parameters: np.ndarray):
+    def set_parameters(self, parameters: List[np.ndarray]):
         """Set the model parameters.
 
         This method safety checks the dimensionality of the new parameters.
@@ -266,7 +266,7 @@ class ConvexReLU(Model):
         assert parameters[0].shape == (self.c, self.p, self.d)
         assert parameters[1].shape == (self.c, self.p, self.d)
 
-        self.parameters = [parameters]
+        self.parameters = parameters
 
     def set_dual_parameters(self, dual_parameters: List[np.ndarray]):
         """Set the dual parameters associated with the model.

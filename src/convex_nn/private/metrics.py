@@ -290,7 +290,7 @@ def compute_metric(
             metric = -1
         else:
             grelu = not isinstance(model, AL_MLP)
-            nc_model = sm.construct_nc_manual(model, grelu, remove_sparse=False)
+            nc_model = sm.construct_nc_manual(model, grelu, remove_sparse=True)
             compute_metric(
                 metric_name.split("nc_")[1],
                 metric_dict,
