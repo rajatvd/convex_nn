@@ -38,7 +38,7 @@ class RFISTA(Optimizer):
 
     This optimizers solves the Gated ReLU training problem by directly solving the convex reformulation,
 
-    ..math:: F(u) = L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X u_{i}), y\\right) + \\lambda R(u),
+    .. math:: F(u) = L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X u_{i}), y\\right) + \\lambda R(u),
 
     where :math:`L` is a convex loss function, :math:`R` is a regularizer, and :math:`\\lambda` is the regularization strength.
 
@@ -126,7 +126,7 @@ class ConeDecomposition(Optimizer):
 
     ConeDecomposition first solves the Gated ReLU problem using R-FISTA,
 
-    ..math:: \\min_{u} L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X u_{i}), y\\right) + \\lambda R(u),
+    .. math:: \\min_{u} L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X u_{i}), y\\right) + \\lambda R(u),
 
     and then decomposes the solution onto the Minkowski differences :math:`K_i - K_i` to approximate the ReLU training problem.
     The resulting solution is guaranteed to preserve the value of the loss :math:`L`, but can substantially blow-up the model norm.
