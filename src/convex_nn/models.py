@@ -5,30 +5,26 @@ Overview:
     This module provides implementations of non-convex and convex formulations for two-layer ReLU and Gated ReLU networks.
     The difference between ReLU and Gated ReLU networks is the activation function; Gated ReLU networks use fixed "gate" vectors when computing the activation pattern while standard ReLU networks use the model parameters when computation the activation.
     Concretely, the prediction function for a two ReLU network is
-    .. math::
-
-        h(X) = \\sum_{i=1}^p (X W_{1i}^{\\top})_+ \\cdot W_{2i}^{\\top},
+    
+    .. math:: h(X) = \\sum_{i=1}^p (X W_{1i}^{\\top})_+ \\cdot W_{2i}^{\\top},
 
     where :math:`W_{1} \\in \\mathbb{R}^{p \\times d}` are the parameters of the first layer, and :math:`W_{2} \\in \\mathbb{R}^{c \\times p}` are the parameters of the second layer.
     In contrast, Gated ReLU networks predict as
-    .. math::
 
-        h(X) = \\sum_{i=1}^p \\text{diag}(X g_i > 0) X W_{1i}^{\\top} \\cdot W_{2i}^{\\top},
+    .. math:: h(X) = \\sum_{i=1}^p \\text{diag}(X g_i > 0) X W_{1i}^{\\top} \\cdot W_{2i}^{\\top},
 
     where the :math:`g_i` vectors are fixed (ie. not learned) gates.
 
-    The convex reformulations of the ReLU and Gated ReLU models are obtained by enumerating the possible activation patterns :math:`D_i = \\text{diag}(1(X g_i > 0)). 
+    The convex reformulations of the ReLU and Gated ReLU models are obtained by enumerating the possible activation patterns :math:`D_i = \\text{diag}(1(X g_i > 0))`.
     For a Gated ReLU model, the activations are exactly specified by the set of gate vectors, while for ReLU models the space of activation is much larger.
-    Using a (possibly subsampled) set of activations :math:`\\tilde \\mathcal{D}`, the prediction function for the convex reformulation of a two-layer ReLU network can be written as
-    .. math::
+    Using a (possibly subsampled) set of activations :math:`\\mathcal{D}`, the prediction function for the convex reformulation of a two-layer ReLU network can be written as
 
-        g(X) = \\sum_{D_i \\in \\mathcal{D}}^m D_i X (v_{i} - w_{i}),
+    .. math:: g(X) = \\sum_{D_i \\in \\mathcal{D}}^m D_i X (v_{i} - w_{i}),
 
-    where :math:`v_i, w_i \\in \\mathbb{R}^{m \\times d}` are the model parameters. 
+    where :math:`v_i, w_i \\in \\mathbb{R}^{m \\times d}` are the model parameters.
     For Gated ReLU models, the convex reformulation is
-    .. math::
 
-        g(X) = \\sum_{i=1}^m \\text{diag}(X g_i > 0) X U_{i},
+    .. math:: g(X) = \\sum_{i=1}^m \\text{diag}(X g_i > 0) X U_{i},
 
     where :math:`U \\in \\mathbb{R}^{m \\times d}` are the model parameters and :math:`g_i` are the gate vectors from the non-convex model.
     For both convex reformulations, a one-vs-all strategy is used for the convex reformulation when the output dimension satisfies :math:`c > 1`.
@@ -129,9 +125,7 @@ class NonConvexGatedReLU(Model):
 
     This model has the prediction function
 
-    .. math::
-
-        h(X) = \\sum_{i=1}^m \\text{diag}(X g_i > 0) X W_{1i} \\cdot W_{2i},
+    .. math:: h(X) = \\sum_{i=1}^m \\text{diag}(X g_i > 0) X W_{1i} \\cdot W_{2i},
 
     Attributes:
         c: the output dimension.
@@ -203,9 +197,7 @@ class ConvexReLU(Model):
 
     This model has the prediction function
 
-    .. math::
-
-        g(X) = \\sum_{D_i \\in \\mathcal{D}}^m D_i X (v_{i} - w_{i}),
+    .. math:: g(X) = \\sum_{D_i \\in \\mathcal{D}}^m D_i X (v_{i} - w_{i}),
 
     A one-vs-all strategy is used to extend the model to multi-dimensional targets.
 
@@ -302,9 +294,7 @@ class NonConvexReLU(Model):
 
     This model has the prediction function
 
-    .. math::
-
-        h(X) = \\sum_{i=1}^p (X W_{1i}^{\\top})_+ \\cdot W_{2i}^{\\top},
+    .. math:: h(X) = \\sum_{i=1}^p (X W_{1i}^{\\top})_+ \\cdot W_{2i}^{\\top},
 
     Attributes:
         c: the output dimension.

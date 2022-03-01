@@ -3,15 +3,13 @@
 Overview:
     This module provides functions for generating activation patterns for ReLU or threshold activation patterns which are used when forming (subsampled) convex reformulations of ReLU and threshold-activation neural networks.
     An activation pattern is a vector of the form,
-    .. math::
 
-        d_i = 1(X w \\geq 0),
+    .. math:: d_i = 1(X w \\geq 0),
 
     where :math:`1(z \\geq 0)` is an element-wise indicator function whose i'th element is one when :math:`z_i \\geq 0` and zero-otherwise and :math:`w \\in \\mathbb{R}^d` is a "gate vector".
     Forming the convex reformulation of a neural network with ReLU activations requires enumerating the activation patterns a single ReLU or threshold neuron can take on,
-    .. math::
 
-        \\mathcal{D} = \\left\\{  d = 1(X w \\geq 0) : w \\in \\mathbb{R}^d \\right\\}.
+    .. math:: \\mathcal{D} = \\left\\{  d = 1(X w \\geq 0) : w \\in \\mathbb{R}^d \\right\\}.
 
     In practice, :math`\\mathcal{D}` can approximated sampling vectors :math:`w \\sim P` according to some distribution :math:`P` and then computing the corresponding pattern :math:`d_i`.
 """
@@ -39,7 +37,7 @@ def sample_gate_vectors(
             filters.
 
     Returns:
-        G -  a :math:`d x n_samples` matrix of gate vectors.
+        G -  a :math:`d \\times \\text{n_samples}` matrix of gate vectors.
     """
     G = rng.standard_normal((d, n_samples))
 
@@ -73,8 +71,11 @@ def compute_activation_patterns(
         filter_zero: whether or not to filter the zero activation pattern and corresponding gates.
             Defaults to `True`.
     Returns:
-        (D, G): D - a :math:`n \\times b` matrix of (possibly unique) sign patterns, where each sign pattern is a column of the matrix and :math:`b \\leq m`.
-                G - a :math:`d \\times b` matrix of gates vectors generating D.
+        (D, G), where
+
+        - D is a :math:`n \\times b` matrix of (possibly unique) sign patterns where each sign pattern is a column of the matrix and :math:`b \\leq m`.
+
+        - G is a :math:`d \\times b` matrix of gates vectors generating D.
     """
     n, d = X.shape
 

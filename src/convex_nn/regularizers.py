@@ -1,8 +1,5 @@
 """
 Regularizers for training neural networks by convex reformulation.
-
-Notes:
-    We only support the squared loss for the time being.
 """
 
 
@@ -19,9 +16,8 @@ class NeuronGL1(Regularizer):
 
     This regularizer produces neuron sparsity in the final model, meaning that some neurons will be completely inactive after training.
     The regularizer has for the form,
-    .. math::
 
-        R(U) = \\lambda \\sum_{i = 1}^p \\|U_i\\|_2,
+    .. math:: R(U) = \\lambda \\sum_{i = 1}^p \\|U_i\\|_2,
 
     where :math:`\\lambda` is the regularization strength.
 
@@ -35,9 +31,8 @@ class FeatureGL1(Regularizer):
 
     This regularizer produces feature sparsity in the final model, meaning that some features will not be used after training.
     The regularizer has for the form,
-    .. math::
 
-        R(U) = \\lambda \\sum_{i = 1}^d \\|U_{\\cdot, i}\\|_2,
+    .. math:: R(U) = \\lambda \\sum_{i = 1}^d \\|U_{\\cdot, i}\\|_2,
 
     where :math:`\\lambda` is the regularization strength.
 
@@ -50,9 +45,8 @@ class L2(Regularizer):
     """The standard squared-L2 norm regularizer, sometimes called weight-decay.
 
     The regularizer has for the form,
-    .. math::
 
-        R(U) = \\lambda \\sum_{i = 1}^p \\|U_{i}\\|^2_2,
+    .. math:: R(U) = \\lambda \\sum_{i = 1}^p \\|U_{i}\\|^2_2,
 
     where :math:`\\lambda` is the regularization strength.
 

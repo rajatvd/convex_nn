@@ -4,7 +4,7 @@ Optimization methods for training neural networks by convex reformulation.
 Notes:
     We only support the squared loss at the moment.
 
-TODO:
+Todo:
     - Implement the cone decomposition optimizer for training ReLU model by (1) training a Gated ReLU model and (2) decomposing that model onto the conic difference.
 """
 
@@ -37,9 +37,8 @@ class RFISTA(Optimizer):
     """Accelerated proximal-gradient solver with line-search and restarts.
 
     This optimizers solves the Gated ReLU training problem by directly solving the convex reformulation,
-    ..math::
 
-        F(u) = L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X u_{i}), y\\right) + \\lambda R(u),
+    ..math:: F(u) = L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X u_{i}), y\\right) + \\lambda R(u),
 
     where :math:`L` is a convex loss function, :math:`R` is a regularizer, and :math:`\\lambda` is the regularization strength.
 
@@ -71,20 +70,16 @@ class AL(Optimizer):
     """Augmented Lagrangian (AL) method using R-FISTA as a sub-solver.
 
     This optimizer solves the convex re-formulation for ReLU networks by forming the "augmented Lagrangian",
-    .. math::
 
-
-        \\mathcal{L}(v, w, \\gamma, \\xi) = F(v,w) + \\delta \\sum_{D_i} \\left[\\|(\\frac{\\gamma_i}{\\delta} - (2D_i - I)X v_i)_+\\|_2^2 + \\|(\\frac{\\xi_i}{\\delta} - (2D_i - I)X v_i)_+\\|_2^2 \\right],
+    .. math:: \\mathcal{L}(v, w, \\gamma, \\xi) = F(v,w) + \\delta \\sum_{D_i} \\left[\\|(\\frac{\\gamma_i}{\\delta} - (2D_i - I)X v_i)_+\\|_2^2 + \\|(\\frac{\\xi_i}{\\delta} - (2D_i - I)X v_i)_+\\|_2^2 \\right],
 
     where :math:`\\delta > 0` is the penalty strength, :math:`(\\gamma, \\xi)` are the dual parameters, and
-    .. math::
 
+    .. math:: F(v,w) = L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X (v_{i} - w_{i}), y\\right) + \\lambda R(v, w),
 
-        F(v,w) = L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X (v_{i} - w_{i}), y\\right) + \\lambda R(v, w),
-
-     is the regularized training loss.
-     The AL method alternates between the "primal" problem of minimizing :math:`\\mathcal{L}(v, w, \\gamma, \\xi)` in terms of :math:`v, w` and the dual problem of updating :math:`\\gamma, \\xi`.
-     Only the dual parameters are guaranteed to converge, but :math:`v, w` often converge in practice.
+    is the regularized training loss.
+    The AL method alternates between the "primal" problem of minimizing :math:`\\mathcal{L}(v, w, \\gamma, \\xi)` in terms of :math:`v, w` and the dual problem of updating :math:`\\gamma, \\xi`.
+    Only the dual parameters are guaranteed to converge, but :math:`v, w` often converge in practice.
 
     Attributes:
         model: the model to be optimized. Note that it will be checked for compatibility with the optimizer.
@@ -130,9 +125,8 @@ class ConeDecomposition(Optimizer):
     """Two-step method for approximately optimizing ReLU models.
 
     ConeDecomposition first solves the Gated ReLU problem using R-FISTA,
-    ..math::
 
-        \\min_{u} L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X u_{i}), y\\right) + \\lambda R(u),
+    ..math:: \\min_{u} L\\left(\\sum_{D_i \\in \\mathcal{D}}^m D_i X u_{i}), y\\right) + \\lambda R(u),
 
     and then decomposes the solution onto the Minkowski differences :math:`K_i - K_i` to approximate the ReLU training problem.
     The resulting solution is guaranteed to preserve the value of the loss :math:`L`, but can substantially blow-up the model norm.
