@@ -1,5 +1,5 @@
 """
-Interface between `convex_nn.public` module and optimization procedures in `convex_nn.private`.
+Optimize neural networks using convex reformulations.
 """
 from typing import Optional, Tuple, Literal
 import math

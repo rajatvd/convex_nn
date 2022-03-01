@@ -1,19 +1,20 @@
 convex_nn: Efficient Global Optimization for Shallow Neural Networks 
-=================================================================
+====================================================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   
+   optimize
+   models
+   regularizers
+   solvers
+   metrics
+   loss_functions
+   activations
+   
 
 
-Optimization
-------------
-
-.. automodule:: convex_nn.wrappers
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :noindex:
 
 
 Indices and tables
