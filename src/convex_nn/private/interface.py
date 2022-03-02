@@ -278,7 +278,7 @@ def update_ext_metrics(metrics: Metrics, internal_metrics: Dict[str, Any]) -> Me
             metrics.test_mse = value
         elif key == "total_neurons":
             metrics.total_neurons = value
-        elif key == "neuron_sparsity":
+        elif key == "group_sparsity":
             metrics.neuron_sparsity = value
         elif key == "total_features":
             metrics.total_features = value
