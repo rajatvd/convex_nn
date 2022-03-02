@@ -19,8 +19,8 @@ sys.path.insert(0, os.path.abspath("../src"))
 # -- Project information -----------------------------------------------------
 
 project = "convex_nn"
-copyright = "2021, Aaron Mishkin"
-author = "Aaron Mishkin"
+copyright = "2022, Aaron Mishkin"
+author = "A. Mishkin"
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    # "sphinx_gallery.gen_gallery",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

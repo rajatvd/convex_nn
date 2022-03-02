@@ -1,25 +1,18 @@
-convex_nn: Efficient Global Optimization for Shallow Neural Networks 
-====================================================================
+convex_nn 
+=========
+
+``convex_nn`` is a Python library for fast, global optimization of shallow neural networks.
+
+.. code:: bash
+
+   pip install convex_nn
+
+The project is open-source and the code is available on `Github <https://github.com/pilancilab/convex_nn>`_.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started:
    
-   optimize
-   models
-   regularizers
-   solvers
-   metrics
-   loss_functions
-   activations
-   
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   quick_start 
+   examples
+   documentation
