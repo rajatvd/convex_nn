@@ -98,13 +98,7 @@ def optimize(
         raise ValueError(f"Convex formulation {formulation} not recognized!")
 
     regularizer = NeuronGL1(lam)
-    metrics = Metrics(
-        metric_freq=1,
-        model_loss=True,
-        train_accuracy=True,
-        test_accuracy=True,
-        neuron_sparsity=True,
-    )
+    metrics = Metrics()
 
     return optimize_model(
         model,
