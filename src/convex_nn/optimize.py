@@ -9,8 +9,6 @@ from copy import deepcopy
 
 import numpy as np
 
-import lab
-
 from convex_nn.models import Model, ConvexGatedReLU, ConvexReLU
 from convex_nn.solvers import Optimizer, RFISTA, AL
 from convex_nn.regularizers import Regularizer, NeuronGL1
@@ -29,11 +27,13 @@ from convex_nn.private.interface import (
     get_logger,
     transform_weights,
     process_data,
+    set_device,
 )
 
 # Types
 
 Formulation = Literal["gated_relu", "relu"]
+Device = Literal["cpu", "cuda"]
 
 
 def optimize(
@@ -47,9 +47,7 @@ def optimize(
     return_convex: bool = False,
     verbose: bool = False,
     log_file: str = None,
-    backend: str = "numpy",
-    device: str = "cpu",
-    dtype: str = "float32",
+    device: Device = "cpu",
     seed: int = 778,
 ) -> Tuple[Model, Metrics]:
     """Convenience function for training neural networks by convex reformulation.
@@ -71,6 +69,9 @@ def optimize(
         return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
         verbose: whether or not the solver should print verbosely during optimization.
         log_file: a path to an optional log file.
+        device: the device on which to run. Must be one of `cpu` (run on CPU) or
+            `cuda` (run on cuda-enabled GPUs if available).
+        seed: an integer seed for reproducibility.
 
     Returns:
         (Model, Metrics): the optimized model and metrics collected during optimization.
@@ -117,9 +118,7 @@ def optimize(
         return_convex,
         verbose,
         log_file,
-        backend,
         device,
-        dtype,
         seed,
     )
 
@@ -136,9 +135,7 @@ def optimize_model(
     return_convex: bool = False,
     verbose: bool = False,
     log_file: str = None,
-    backend: str = "numpy",
-    device: str = "cpu",
-    dtype: str = "float32",
+    device: Device = "cpu",
     seed: int = 778,
 ) -> Tuple[Model, Metrics]:
     """Train a neural network by convex reformulation.
@@ -155,16 +152,16 @@ def optimize_model(
         return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
         verbose: whether or not the solver should print verbosely during optimization.
         log_file: a path to an optional log file.
+        device: the device on which to run. Must be one of `cpu` (run on CPU) or
+            `cuda` (run on cuda-enabled GPUs if available).
+        seed: an integer seed for reproducibility.
 
     Returns:
         (Model, Metrics): the optimized model and metrics collected during optimization.
     """
 
     # set backend settings.
-    lab.set_backend(backend)
-    lab.set_device(device)
-    lab.set_dtype(dtype)
-    lab.set_seeds(seed)
+    set_device(device, seed)
 
     # Note: this unitizes columns of data matrix.
     (X_train, y_train), (X_test, y_test), column_norms = process_data(
@@ -224,9 +221,7 @@ def optimize_path(
     return_convex: bool = False,
     verbose: bool = False,
     log_file: str = None,
-    backend: str = "numpy",
-    device: str = "cpu",
-    dtype: str = "float32",
+    device: Device = "cpu",
     seed: int = 778,
 ) -> Tuple[List[Union[Model, str]], List[Metrics]]:
     """Train a neural network by convex reformulation.
@@ -246,13 +241,13 @@ def optimize_path(
         return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
         verbose: whether or not the solver should print verbosely during optimization.
         log_file: a path to an optional log file.
+        device: the device on which to run. Must be one of `cpu` (run on CPU) or
+            `cuda` (run on cuda-enabled GPUs if available).
+        seed: an integer seed for reproducibility.
     """
 
     # set backend settings.
-    lab.set_backend(backend)
-    lab.set_device(device)
-    lab.set_dtype(dtype)
-    lab.set_seeds(seed)
+    set_device(device, seed)
 
     # Note: this unitizes columns of data matrix.
     (X_train, y_train), (X_test, y_test), column_norms = process_data(

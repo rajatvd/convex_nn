@@ -1,5 +1,9 @@
 """
 Interface between public objects in `convex_nn.public` module and private objects in `convex_nn.private`.
+
+TODO: 
+    - split this into its own module.
+
 """
 
 from typing import Optional, Tuple, List, Dict, Any
@@ -171,7 +175,7 @@ def build_model(model: Model, regularizer: Regularizer, X: lab.Tensor) -> Intern
     d, c = model.d, model.c
     internal_reg = build_regularizer(regularizer)
 
-    G = lab.tensor(model.G)
+    G = lab.tensor(model.G, dtype=lab.get_dtype())
     D, G = lab.all_to_tensor(compute_activation_patterns(lab.to_np(X), lab.to_np(G)))
 
     if isinstance(model, ConvexReLU):
@@ -185,11 +189,14 @@ def build_model(model: Model, regularizer: Regularizer, X: lab.Tensor) -> Intern
             c=c,
         )
         internal_model.weights = lab.stack(
-            [lab.tensor(model.parameters[0]), lab.tensor(model.parameters[1])]
+            [
+                lab.tensor(model.parameters[0], dtype=lab.get_dtype()),
+                lab.tensor(model.parameters[1], dtype=lab.get_dtype()),
+            ]
         )
     elif isinstance(model, ConvexGatedReLU):
         internal_model = ConvexMLP(d, D, G, "einsum", regularizer=internal_reg, c=c)
-        internal_model.weights = lab.tensor(model.parameters[0])
+        internal_model.weights = lab.tensor(model.parameters[0], dtype=lab.get_dtype())
     else:
         raise ValueError(f"Model object {model} not supported.")
 
@@ -388,3 +395,15 @@ def get_logger(
     logging.root.setLevel(level)
     logger.setLevel(level)
     return logger
+
+
+def set_device(device: str = "cpu", seed: int = 778):
+    if device == "cpu":
+        lab.set_backend("numpy")
+        lab.set_device(device)
+    elif device == "cuda":
+        lab.set_backend("torch")
+        lab.set_device(device)
+
+    lab.set_dtype("float32")
+    lab.set_seeds(seed)
