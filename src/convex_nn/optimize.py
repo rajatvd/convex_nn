@@ -17,16 +17,16 @@ from convex_nn.activations import sample_gate_vectors
 from convex_nn.private.models.solution_mappings import get_nc_formulation
 
 from convex_nn.private.interface import (
-    build_model,
-    build_regularizer,
+    build_internal_model,
+    build_internal_regularizer,
     build_optimizer,
     build_metrics_tuple,
-    update_ext_model,
-    update_ext_metrics,
-    build_ext_nc_model,
-    get_logger,
-    transform_weights,
+    update_public_model,
+    update_public_metrics,
+    build_public_model,
+    normalized_into_input_space,
     process_data,
+    get_logger,
     set_device,
 )
 
@@ -165,7 +165,7 @@ def optimize_model(
         y_test,
     )
 
-    internal_model = build_model(model, regularizer, X_train)
+    internal_model = build_internal_model(model, regularizer, X_train)
     opt_procedure = build_optimizer(solver, regularizer, metrics)
     metrics_tuple = build_metrics_tuple(metrics)
 
@@ -182,15 +182,17 @@ def optimize_model(
         metrics_tuple,
     )
 
-    metrics = update_ext_metrics(metrics, internal_metrics)
+    metrics = update_public_metrics(metrics, internal_metrics)
 
     # convert internal metrics
 
     # transform model back to original data space.
-    internal_model.weights = transform_weights(internal_model.weights, column_norms)
+    internal_model.weights = normalized_into_input_space(
+        internal_model.weights, column_norms
+    )
 
     if return_convex:
-        return update_ext_model(model, internal_model), Metrics
+        return update_public_model(model, internal_model), Metrics
 
     # convert into internal non-convex model
     nc_internal_model = get_nc_formulation(
@@ -198,7 +200,7 @@ def optimize_model(
     )
 
     # create non-convex model
-    return build_ext_nc_model(nc_internal_model), metrics
+    return build_public_model(nc_internal_model), metrics
 
 
 def optimize_path(
@@ -251,7 +253,7 @@ def optimize_path(
         y_test,
     )
 
-    internal_model = build_model(model, path[0], X_train)
+    internal_model = build_internal_model(model, path[0], X_train)
 
     logger = get_logger("convex_nn", verbose, False, log_file)
 
@@ -262,7 +264,7 @@ def optimize_path(
 
     for regularizer in path:
         # update internal regularizer
-        internal_model.regularizer = build_regularizer(regularizer)
+        internal_model.regularizer = build_internal_regularizer(regularizer)
         opt_procedure = build_optimizer(solver, regularizer, metrics)
 
         metrics_tuple = build_metrics_tuple(metrics)
@@ -277,24 +279,27 @@ def optimize_path(
         )
 
         # regularizer to_string to generate path
-        metrics = update_ext_metrics(metrics, internal_metrics)
+        metrics = update_public_metrics(metrics, internal_metrics)
         cur_weights = internal_model.weights
         # transform model back to original data space.
-        internal_model.weights = transform_weights(internal_model.weights, column_norms)
+        internal_model.weights = normalized_into_input_space(
+            internal_model.weights, column_norms
+        )
 
         if return_convex:
-            model_to_save = update_ext_model(model, internal_model)
+            model_to_save = update_public_model(model, internal_model)
         else:
             nc_internal_model = get_nc_formulation(
                 internal_model, implementation="manual", remove_sparse=True
             )
-            model_to_save = build_ext_nc_model(nc_internal_model)
+            model_to_save = build_public_model(nc_internal_model)
 
         if disk_path is not None:
 
-            reg_path = os.makedirs(os.path.join(disk_path, str(regularizer)))
+            reg_path = os.path.join(disk_path, str(regularizer))
+            os.makedirs(reg_path)
             with open(reg_path, "wb") as f:
-                pkl.dump(model_to_save, metrics)
+                pkl.dump((model_to_save, metrics), f)
             model_list.append(reg_path)
 
         else:

@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
     # "sphinx_gallery.gen_gallery",
 ]
 
@@ -43,6 +44,8 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+# whether or not to include TODO items in the documentation.
+todo_include_todos = False
 
 # -- Options for HTML output -------------------------------------------------
 
