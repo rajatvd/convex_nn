@@ -9,7 +9,8 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from convex_nn.private.models import ConvexMLP, AL_MLP, sign_patterns
+from convex_nn import activations
+from convex_nn.private.models import ConvexMLP, AL_MLP
 from convex_nn.private.utils.data import gen_regression_data
 
 from convex_nn.private.methods.cvxpy import (
@@ -35,11 +36,13 @@ class TestDecompositionPrograms(unittest.TestCase):
         lab.set_dtype(self.dtype)
 
         train_set, _, _ = gen_regression_data(self.rng, self.n, 0, self.d, c=self.c)
+        self.U = activations.sample_gate_vectors(self.rng, self.d, 100)
+        self.D, self.U = lab.all_to_tensor(
+            activations.compute_activation_patterns(train_set[0], self.U)
+        )
         self.X, self.y = lab.all_to_tensor(train_set)
         self.y = lab.squeeze(self.y)
 
-        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 10)
-        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
         self.P = self.D.shape[1]
 
         self.model = ConvexMLP(self.d, self.D, self.U, kernel="einsum", c=self.c)
@@ -91,7 +94,9 @@ class TestDecompositionPrograms(unittest.TestCase):
         )
 
         self.assertTrue(
-            lab.allclose(lab.sum(lab.abs(i_gap)), lab.tensor(0.0)),
+            lab.allclose(
+                lab.sum(lab.abs(i_gap)), lab.tensor(0.0), rtol=1e-6, atol=1e-6
+            ),
             "Result of decomposition does not satisfy cone constraints!",
         )
 

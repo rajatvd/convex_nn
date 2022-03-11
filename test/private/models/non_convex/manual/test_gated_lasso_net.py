@@ -10,7 +10,8 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from convex_nn.private.models import sign_patterns, GatedLassoNet
+from convex_nn import activations
+from convex_nn.private.models import GatedLassoNet
 from convex_nn.private.utils.data import gen_regression_data
 
 
@@ -32,11 +33,12 @@ class TestGatedLassoNet(unittest.TestCase):
         train_set, _, self.wopt = gen_regression_data(
             self.rng, self.n, 0, self.d, c=self.c
         )
+        self.U = activations.sample_gate_vectors(self.rng, self.d, self.p)
+        self.D, self.U = lab.all_to_tensor(
+            activations.compute_activation_patterns(train_set[0], self.U)
+        )
         self.X, self.y = lab.all_to_tensor(train_set)
         self.wopt = lab.tensor(self.wopt)
-
-        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, self.p)
-        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
 
         # initialize model
         self.gated_ln = GatedLassoNet(self.d, self.U, c=self.c)

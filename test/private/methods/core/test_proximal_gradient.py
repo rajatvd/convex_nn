@@ -81,7 +81,6 @@ class TestProximalGradientDescent(unittest.TestCase):
                 self.ls_cond,
                 self.backtrack_fn,
                 prox,
-                pgd.PROX_PATH,
             )
 
     def test_proximal_gradient_step(self):
@@ -141,7 +140,6 @@ class TestProximalGradientDescent(unittest.TestCase):
             self.ls_cond,
             self.backtrack_fn,
             L1(lam=5),
-            pgd.PROX_PATH,
         )
 
         self.assertTrue(exit_state["success"], "The line-search failed.")

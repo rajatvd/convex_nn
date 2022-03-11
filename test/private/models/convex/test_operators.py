@@ -11,9 +11,9 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
+from convex_nn import activations
 import convex_nn.private.loss_functions as loss_fns
 from convex_nn.private.utils.data import gen_regression_data
-from convex_nn.private.models import sign_patterns
 from convex_nn.private.models.convex import operators
 
 
@@ -33,11 +33,12 @@ class TestExpandedModelKernels(unittest.TestCase):
         lab.set_dtype(self.dtype)
 
         train_set, _, _ = gen_regression_data(self.rng, self.n, 0, self.d, c=self.c)
+        self.U = activations.sample_gate_vectors(self.rng, self.d, 100)
+        self.D, self.U = lab.all_to_tensor(
+            activations.compute_activation_patterns(train_set[0], self.U)
+        )
         self.X, self.y = lab.all_to_tensor(train_set)
         self.y = lab.squeeze(self.y)
-
-        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 10)
-        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
 
         self.P = self.D.shape[1]
         self.kernels = {}

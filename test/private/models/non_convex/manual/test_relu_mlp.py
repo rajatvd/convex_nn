@@ -10,7 +10,8 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from convex_nn.private.models import sign_patterns, ReLUMLP
+from convex_nn import activations
+from convex_nn.private.models import ReLUMLP
 from convex_nn.private.utils.data import gen_regression_data
 
 

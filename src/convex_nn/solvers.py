@@ -147,7 +147,7 @@ class LeastSquaresSolver(Optimizer):
 
     This optimizer solves the (L2-regularized) Gated ReLU training problem by solving the convex reformulation,
 
-    .. math:: F(u) = \\frac{1}{2}\\|\\sum_{D_i \\in \\mathcal{D}} D_i X u_{i}) - y\\|_2^2 + \\lambda \sum_{D_i \\in \\mathcal{D}} \\|u_i\\|_2^2,
+    .. math:: F(u) = \\frac{1}{2}\\|\\sum_{D_i \\in \\mathcal{D}} D_i X u_{i} - y\\|_2^2 + \\lambda \sum_{D_i \\in \\mathcal{D}} \\|u_i\\|_2^2,
 
     using conjugate-gradient (CG) type methods. Only the squared-error loss-function is supported.
     Implementations of LSMR and LSQR are provided by
@@ -165,6 +165,7 @@ class LeastSquaresSolver(Optimizer):
 
     References:
         [1] D. C.-L. Fong and M. A. Saunders, LSMR: An iterative algorithm for sparse least-squares problems, SIAM J. Sci. Comput. 33:5, 2950-2971, published electronically Oct 27, 2011.
+
         [2] C. C. Paige and M. A. Saunders, LSQR: An algorithm for sparse linear equations and sparse least squares, TOMS 8(1), 43-71 (1982)
     """
 

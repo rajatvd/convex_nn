@@ -10,7 +10,8 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from convex_nn.private.models import ConvexMLP, sign_patterns
+from convex_nn import activations
+from convex_nn.private.models import ConvexMLP
 from convex_nn.private.models.convex import operators
 from convex_nn.private.models.regularizers.group_l1 import GroupL1Regularizer
 from convex_nn.private.utils.data import gen_regression_data
@@ -35,11 +36,13 @@ class TestGroupL1Regularizer(unittest.TestCase):
         train_set, _, self.wopt = gen_regression_data(
             self.rng, self.n, 0, self.d, c=self.c
         )
+        self.U = activations.sample_gate_vectors(self.rng, self.d, 100)
+        self.D, self.U = lab.all_to_tensor(
+            activations.compute_activation_patterns(train_set[0], self.U)
+        )
         self.X, self.y = lab.all_to_tensor(train_set)
         self.wopt = lab.tensor(self.wopt)
         # initialize model
-        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 100)
-        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
         self.p = self.D.shape[1]
 
         self.regularizer = GroupL1Regularizer(lam=self.lam)

@@ -7,9 +7,14 @@ from scipy.sparse.linalg import LinearOperator, aslinearoperator  # type: ignore
 
 import lab
 
-from convex_nn.private.models import ConvexMLP, sign_patterns
+from convex_nn import activations
+from convex_nn.private.models import ConvexMLP
 from convex_nn.private.models.convex import operators
-from convex_nn.private.utils.linear import iterative_solvers, direct_solvers, preconditioners
+from convex_nn.private.utils.linear import (
+    iterative_solvers,
+    direct_solvers,
+    preconditioners,
+)
 from convex_nn.private.utils.data import gen_regression_data
 
 
@@ -26,11 +31,13 @@ class TestLSTSQSolvers(unittest.TestCase):
     def setUp(self):
         lab.set_backend(lab.NUMPY)
         train_set, _, _ = gen_regression_data(self.rng, self.n, 0, self.d)
+        self.U = activations.sample_gate_vectors(self.rng, self.d, 100)
+        self.D, self.U = lab.all_to_tensor(
+            activations.compute_activation_patterns(train_set[0], self.U)
+        )
         self.X, self.y = lab.all_to_tensor(train_set)
         self.y = lab.squeeze(self.y)
 
-        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 1000)
-        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
         self.network = ConvexMLP(self.d, self.D, self.U)
         self.P = self.D.shape[1]
 

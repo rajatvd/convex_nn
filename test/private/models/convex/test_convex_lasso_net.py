@@ -10,7 +10,8 @@ from scipy.optimize import check_grad  # type: ignore
 
 import lab
 
-from convex_nn.private.models import ConvexLassoNet, sign_patterns
+from convex_nn import activations
+from convex_nn.private.models import ConvexLassoNet
 from convex_nn.private.utils.data import gen_regression_data
 
 
@@ -36,10 +37,12 @@ class TestConvexLassoNet(unittest.TestCase):
             self.d,
             c=self.c,
         )
+        self.U = activations.sample_gate_vectors(self.rng, self.d, 100)
+        self.D, self.U = lab.all_to_tensor(
+            activations.compute_activation_patterns(train_set[0], self.U)
+        )
         self.X, self.y = lab.all_to_tensor(train_set)
 
-        self.U = sign_patterns.sample_gate_vectors(self.rng, self.d, 10)
-        self.D, self.U = sign_patterns.compute_sign_patterns(self.X, self.U)
         self.p = self.D.shape[1]
 
         # instantiate models with all available kernels.
