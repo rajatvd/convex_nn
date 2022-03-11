@@ -45,7 +45,7 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # whether or not to include TODO items in the documentation.
-todo_include_todos = False
+todo_include_todos = True
 
 # -- Options for HTML output -------------------------------------------------
 

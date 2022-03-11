@@ -46,7 +46,7 @@ def build_internal_regularizer(
     Returns:
         An internal regularizer object with the same state as the public regularizer.
     """
-    reg: InternalRegularizer
+    reg: InternalRegularizer = None
 
     lam = 0.0
     if regularizer is not None:
@@ -56,7 +56,7 @@ def build_internal_regularizer(
         reg = GroupL1Regularizer(lam, group_by_feature=False)
     elif isinstance(regularizer, FeatureGL1):
         reg = GroupL1Regularizer(lam, group_by_feature=True)
-    elif isinstance(regularizer, L2) or regularizer is None:
+    elif isinstance(regularizer, L2):
         reg = L2Regularizer(lam)
 
     return reg

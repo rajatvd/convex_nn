@@ -35,6 +35,8 @@ class Metrics(object):
         metrics_to_collect: internal dictionary specifying which metrics should be collected.
     """
 
+    test_metrics = False
+
     objective: np.ndarray
     grad_norm: np.ndarray
     time: np.ndarray
@@ -78,7 +80,8 @@ class Metrics(object):
             metric_freq: the frequency at which to log metrics.
             objective: whether or not to log the optimization objective, including any constraint penalty terms.
             time: whether or not to log the cumulative wall-clock time.
-            grad_norm: whether or not to log squared 2-norm of the minimum-norm subgradient of the optimization objective, including penalty terms.
+            grad_norm: whether or not to log squared 2-norm of the minimum-norm subgradient of the optimization
+                objective, including penalty terms.
             model_loss: whether or not to log the regularized loss of the model on the training set.
                 This is the same as `objective` but does not include constraint penalty terms.
             constraint_gaps: whether or not to log the squared 2-norm of constraint violations.
@@ -117,3 +120,10 @@ class Metrics(object):
             "total_weights": total_weights,
             "weight_sparsity": weight_sparsity,
         }
+
+        if test_mse or test_accuracy:
+            self.test_metrics = True
+
+    def has_test_metrics(self) -> bool:
+        """Returns `True` if any test-set metric is enabled, `False` otherwise."""
+        return self.test_metrics

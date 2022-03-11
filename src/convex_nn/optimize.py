@@ -1,5 +1,8 @@
 """
 Optimize neural networks using convex reformulations.
+
+TODO:
+    - extract types into a new `types.py` module.
 """
 from typing import Optional, Tuple, Literal, List, Union
 import math
@@ -55,9 +58,9 @@ def optimize(
     Args:
         formulation: the convex reformulation to solve. Must be one of
 
-            - `gated_relu` - train a network with Gated ReLU activations.
+            - `"gated_relu"` - train a network with Gated ReLU activations.
 
-            - `relu` - train a network with ReLU activations.
+            - `"relu"` - train a network with ReLU activations.
 
         max_neurons: the maximum number of neurons in the convex reformulation.
             The final model will be neuron-sparse when `lam` is moderate and so `max_neurons` should typically be as large as computationally possible.
@@ -153,9 +156,21 @@ def optimize_model(
     Returns:
         (Model, Metrics): the optimized model and metrics collected during optimization.
     """
+    logger = get_logger("convex_nn", verbose, False, log_file)
 
     # set backend settings.
+    if solver.cpu_only() and device != "cpu":
+        logger.warning(
+            f"Solver {solver} only supports CPU. User supplied device {device} has been overridden."
+        )
+        device = "cpu"
+
     set_device(device, seed)
+
+    if metrics.has_test_metrics() and (X_test is None or y_test is None):
+        logger.warning(
+            "Metrics specifies test metrics, but no test set was provided. Test metrics will be collected on the training set. \n"
+        )
 
     # Note: this unitizes columns of data matrix.
     (X_train, y_train), (X_test, y_test), column_norms = process_data(
@@ -168,8 +183,6 @@ def optimize_model(
     internal_model = build_internal_model(model, regularizer, X_train)
     opt_procedure = build_optimizer(solver, regularizer, metrics)
     metrics_tuple = build_metrics_tuple(metrics)
-
-    logger = get_logger("convex_nn", verbose, False, log_file)
 
     initializer = lambda model: model
 
@@ -243,7 +256,21 @@ def optimize_path(
     """
 
     # set backend settings.
+    logger = get_logger("convex_nn", verbose, False, log_file)
+
+    # set backend settings.
+    if solver.cpu_only() and device != "cpu":
+        logger.warning(
+            f"Solver {solver} only supports CPU. User supplied device {device} has been overridden."
+        )
+        device = "cpu"
+
     set_device(device, seed)
+
+    if metrics.has_test_metrics() and (X_test is None or y_test is None):
+        logger.warning(
+            "Metrics specifies test metrics, but no test set was provided. Test metrics will be collected on the training set. \n"
+        )
 
     # Note: this unitizes columns of data matrix.
     (X_train, y_train), (X_test, y_test), column_norms = process_data(
@@ -254,9 +281,6 @@ def optimize_path(
     )
 
     internal_model = build_internal_model(model, path[0], X_train)
-
-    logger = get_logger("convex_nn", verbose, False, log_file)
-
     initializer = lambda model: model
 
     metrics_list: List[Metrics] = []

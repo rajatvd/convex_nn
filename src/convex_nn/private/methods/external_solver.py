@@ -1,5 +1,10 @@
 """
 Interfaces for external optimization routines / solvers.
+
+
+TODO:
+    - Extend LinearSolver to support vector-target problems by simultaneously solving each regression problem.
+
 """
 
 from typing import Dict, Any, Tuple, Optional
@@ -51,6 +56,12 @@ class LinearSolver(ExternalSolver):
         X: np.ndarray,
         y: np.ndarray,
     ) -> Tuple[Model, Dict[str, Any]]:
+
+        y = y.squeeze()
+        if len(y.shape) > 1:
+            raise ValueError(
+                "LinearSolver only supports scalar output problems at the moment."
+            )
 
         lam: float = 0.0
         if model.regularizer is not None:

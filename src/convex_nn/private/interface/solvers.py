@@ -4,7 +4,13 @@ Convert solvers from :module:`convex_nn.solvers` into internal optimizers and op
 
 from typing import Optional
 
-from convex_nn.solvers import Optimizer, RFISTA, AL, ConeDecomposition
+from convex_nn.solvers import (
+    Optimizer,
+    RFISTA,
+    AL,
+    ConeDecomposition,
+    LeastSquaresSolver,
+)
 from convex_nn.regularizers import Regularizer, NeuronGL1, FeatureGL1, L2
 from convex_nn.metrics import Metrics
 
@@ -19,6 +25,7 @@ from convex_nn.private.methods import (
     QuadraticBound,
     MultiplicativeBacktracker,
     Lassplore,
+    LinearSolver,
 )
 from convex_nn.private.methods import Optimizer as InteralOpt
 from convex_nn.private.prox import ProximalOperator, GroupL1, Identity
@@ -43,8 +50,10 @@ def build_prox_operator(regularizer: Optional[Regularizer] = None) -> ProximalOp
         prox = GroupL1(lam)
     elif isinstance(regularizer, FeatureGL1):
         prox = GroupL1(lam, group_by_feature=True)
-    elif isinstance(regularizer, L2) or regularizer is None:
+    elif regularizer is None:
         prox = Identity()
+    else:
+        raise ValueError(f"Optimizer does not support regularizer {regularizer}.")
 
     return prox
 
@@ -130,6 +139,16 @@ def build_optimizer(
             divergence_check=False,
             log_freq=metrics.metric_freq,
         )
+    elif isinstance(optimizer, LeastSquaresSolver):
+        if not (regularizer is None or isinstance(regularizer, L2)):
+            raise ValueError(
+                "LeastSquaresSolver only supports L2-regularization, or no regularizer."
+            )
+        linear_solver = LinearSolver(
+            optimizer.solver, optimizer.max_iters, optimizer.tol, None
+        )
+
+        opt_proc = OptimizationProcedure(linear_solver)
 
     elif isinstance(optimizer, ConeDecomposition):
         raise NotImplementedError(

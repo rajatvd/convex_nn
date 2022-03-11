@@ -1,8 +1,8 @@
 """
 Convert metrics from :module:`convex_nn.metrics` into internal representations.
 """
-
 from typing import Tuple, List, Dict, Any
+from copy import deepcopy
 
 import numpy as np
 
@@ -78,8 +78,10 @@ def update_public_metrics(
         internal_metrics: a public-facing metrics object.
 
     Returns:
-        A public-facing metrics object updated with metrics collected during optimization.
+        A new public-facing metrics object updated with metrics collected during optimization.
     """
+    metrics = deepcopy(metrics)
+
     for key, value in internal_metrics.items():
         if key == "train_objective":
             metrics.objective = np.array(value)
