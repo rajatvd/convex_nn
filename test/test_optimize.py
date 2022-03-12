@@ -215,6 +215,10 @@ class TestOOInterface(unittest.TestCase):
             np.random.default_rng(123), self.d, self.max_neurons
         )
 
+        # regularization paths
+        self.lam_path = np.logspace(-5, -2, 3)
+        self.path = [NeuronGL1(lam) for lam in self.lam_path]
+
     def test_solving_gated_relu(self):
         """Test solving the Gated ReLU problem with neuron-wise GL1 regularization using
         the default solver, R-FISTA.
@@ -249,6 +253,26 @@ class TestOOInterface(unittest.TestCase):
 
         self.assertTrue(
             np.allclose(oo_model.get_parameters()[0], f_model.get_parameters()[0])
+        )
+
+    def test_solving_gated_relu_path(self):
+        """Test solving a regularization path for the Gated ReLU problem."""
+
+        # Instantiate convex model and other options.
+        model = ConvexGatedReLU(self.G, c=self.c)
+        solver = RFISTA(model, tol=1e-6)
+
+        model_path, _ = optimize_path(
+            model,
+            solver,
+            self.path,
+            self.metrics,
+            self.X_train,
+            self.y_train,
+            self.X_test,
+            self.y_test,
+            warm_start=True,
+            save_path="test/test_data/gated",
         )
 
     def test_solving_relu(self):
@@ -288,6 +312,26 @@ class TestOOInterface(unittest.TestCase):
 
         self.assertTrue(
             np.allclose(oo_model.get_parameters()[1], f_model.get_parameters()[1])
+        )
+
+    def test_solving_relu_path(self):
+        """Test solving a regularization path for the ReLU problem."""
+
+        # Instantiate convex model and other options.
+        model = ConvexReLU(self.G, c=self.c)
+        solver = AL(model)
+
+        model_path, _ = optimize_path(
+            model,
+            solver,
+            self.path,
+            self.metrics,
+            self.X_train,
+            self.y_train,
+            self.X_test,
+            self.y_test,
+            warm_start=True,
+            save_path="test/test_data/relu",
         )
 
 

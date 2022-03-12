@@ -10,6 +10,9 @@ class Regularizer:
         """Initialize the squared-error loss function."""
         self.lam = lam
 
+    def __str__(self):
+        return f"regularizer_{self.lam}"
+
 
 class NeuronGL1(Regularizer):
     """A neuron-wise group-L1 regularizer.
@@ -24,6 +27,9 @@ class NeuronGL1(Regularizer):
     Attributes:
         lam: the regularization strength.
     """
+
+    def __str__(self):
+        return f"neuron_gl1_{self.lam}"
 
 
 class FeatureGL1(Regularizer):
@@ -40,6 +46,9 @@ class FeatureGL1(Regularizer):
         lam: the regularization strength.
     """
 
+    def __str__(self):
+        return f"feature_gl1_{self.lam}"
+
 
 class L2(Regularizer):
     """The standard squared-L2 norm regularizer, sometimes called weight-decay.
@@ -53,3 +62,6 @@ class L2(Regularizer):
     Attributes:
         lam: the regularization strength.
     """
+
+    def __str__(self):
+        return f"l2_{self.lam}"

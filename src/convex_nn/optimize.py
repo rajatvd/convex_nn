@@ -232,7 +232,7 @@ def optimize_path(
     X_test: Optional[np.ndarray] = None,
     y_test: Optional[np.ndarray] = None,
     warm_start: bool = True,
-    disk_path: Optional[str] = None,
+    save_path: Optional[str] = None,
     return_convex: bool = False,
     verbose: bool = False,
     log_file: str = None,
@@ -251,8 +251,8 @@ def optimize_path(
         X_test: an :math:`m \\times d` matrix of test examples.
         y_test: an :math:`n \\times c` or vector matrix of test targets.
         warm_start: whether or not to warm-start each optimization problem in the path using the previous solution.
-        disk_path: string specifying a directory where models in the regularization path should be saved.
-            All models will be retained in memory and returned if `disk_path = None`.
+        save_path: string specifying a directory where models in the regularization path should be saved.
+            All models will be retained in memory and returned if `save_path = None`.
         return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
         verbose: whether or not the solver should print verbosely during optimization.
         log_file: a path to an optional log file.
@@ -260,7 +260,6 @@ def optimize_path(
             `cuda` (run on cuda-enabled GPUs if available).
         seed: an integer seed for reproducibility.
     """
-
     # set backend settings.
     logger = get_logger("convex_nn", verbose, False, log_file)
 
@@ -324,10 +323,10 @@ def optimize_path(
             )
             model_to_save = build_public_model(nc_internal_model)
 
-        if disk_path is not None:
+        if save_path is not None:
 
-            reg_path = os.path.join(disk_path, str(regularizer))
-            os.makedirs(reg_path)
+            reg_path = os.path.join(save_path, str(regularizer))
+            os.makedirs(save_path, exist_ok=True)
             with open(reg_path, "wb") as f:
                 pkl.dump((model_to_save, metrics), f)
             model_list.append(reg_path)
