@@ -2,6 +2,10 @@
 Proximal operators. This module provides functions for solving minimization problems of the form
     $argmin_x { d(x,w) + beta * g(x) }$,
 where d is a metric, g is a "simple" function, and beta is a parameter controlling the trade-off between d and g.
+
+TODO: 
+    - Add proximal operator for L2-squared penalty so that we can support this using R-FISTA.
+
 """
 from typing import Optional
 

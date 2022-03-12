@@ -1,5 +1,8 @@
 """
 Optimizers.
+
+TODO:
+    - Add optimal gradient method for L2-regularized and unregularized problems.
 """
 
 # ===== module exports ===== #

@@ -1,5 +1,8 @@
 """
 Pre-defined CVXPY programs.
+
+TODO:
+    - Look into merging some of the CVXPY code to reduce boilerplate.
 """
 
 from .cvxpy_solver import CVXPYSolver

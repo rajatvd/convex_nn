@@ -3,6 +3,7 @@ Optimize neural networks using convex reformulations.
 
 TODO:
     - extract types into a new `types.py` module.
+    - Should we allow regularizer objects to be passed to optimize?
 """
 from typing import Optional, Tuple, Literal, List, Union
 import math
@@ -14,7 +15,7 @@ import numpy as np
 
 from convex_nn.models import Model, ConvexGatedReLU, ConvexReLU
 from convex_nn.solvers import Optimizer, RFISTA, AL
-from convex_nn.regularizers import Regularizer, NeuronGL1
+from convex_nn.regularizers import Regularizer
 from convex_nn.metrics import Metrics
 from convex_nn.activations import sample_gate_vectors
 from convex_nn.private.models.solution_mappings import get_nc_formulation
@@ -42,11 +43,11 @@ Device = Literal["cpu", "cuda"]
 def optimize(
     formulation: Formulation,
     max_neurons: int,
-    lam: float,
     X_train: np.ndarray,
     y_train: np.ndarray,
     X_test: Optional[np.ndarray] = None,
     y_test: Optional[np.ndarray] = None,
+    regularizer: Optional[Regularizer] = None,
     return_convex: bool = False,
     verbose: bool = False,
     log_file: str = None,
@@ -63,12 +64,14 @@ def optimize(
             - `"relu"` - train a network with ReLU activations.
 
         max_neurons: the maximum number of neurons in the convex reformulation.
-            The final model will be neuron-sparse when `lam` is moderate and so `max_neurons` should typically be as large as computationally possible.
-        lam: the regularization strength.
+            The final model will be neuron-sparse when `lam` is moderate and so
+            `max_neurons` should typically be as large as computationally possible.
         X_train: an :math:`n \\times d` matrix of training examples.
         y_train: an :math:`n \\times c` or vector matrix of training targets.
         X_test: an :math:`m \\times d` matrix of test examples.
         y_test: an :math:`n \\times c` or vector matrix of test targets.
+        regularizer: an optional regularizer for the convex reformulation.
+            Defaults to no regularization.
         return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
         verbose: whether or not the solver should print verbosely during optimization.
         log_file: a path to an optional log file.
@@ -83,8 +86,12 @@ def optimize(
     model: Model
     solver: Optimizer
 
-    n, d = X_train.shape
-    c = 1 if len(y_train.shape) == 1 else y_train.shape[1]
+    d = len(X_train[0])
+    # check number of outputs
+    try:
+        c = len(y_train[0])
+    except TypeError:
+        c = 1
 
     # Instantiate convex model and other options.
     if formulation == "gated_relu":
@@ -100,7 +107,6 @@ def optimize(
     else:
         raise ValueError(f"Convex formulation {formulation} not recognized!")
 
-    regularizer = NeuronGL1(lam)
     metrics = Metrics()
 
     return optimize_model(
