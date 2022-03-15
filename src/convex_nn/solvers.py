@@ -8,6 +8,7 @@ Todo:
     - Implement the cone decomposition optimizer for training ReLU model by (1) training a Gated ReLU model and (2) decomposing that model onto the conic difference.
     - Implement CVXPY solvers.
 """
+from typing import List
 
 from .models import (
     Model,
@@ -31,7 +32,7 @@ class Optimizer:
         Args:
             model: the model to be optimized. Note that it will be checked for compatibility with the optimizer.
         """
-        self.model = Model
+        self.model = model
 
     def cpu_only(self) -> bool:
         return False
@@ -125,23 +126,6 @@ class AL(Optimizer):
         self.delta = delta
 
 
-class ConeDecomposition(Optimizer):
-    """Two-step method for approximately optimizing ReLU models.
-
-    ConeDecomposition first solves the Gated ReLU problem using R-FISTA,
-
-    .. math:: \\min_{u} L\\left(\\sum_{D_i \\in \\mathcal{D}} D_i X u_{i}), y\\right) + \\lambda R(u),
-
-    and then decomposes the solution onto the Minkowski differences :math:`K_i - K_i` to approximate the ReLU training problem.
-    The resulting solution is guaranteed to preserve the value of the loss :math:`L`, but can substantially blow-up the model norm.
-    As such, it is only an approximation to the ReLU training problem when :math:`\\lambda > 0`.
-    """
-
-    def __init__(self, model: Model):
-        """Initialize the optimizer."""
-        raise NotImplementedError("ConeDecomposition is not supported yet.")
-
-
 class LeastSquaresSolver(Optimizer):
     """Direct solver for the unregularized or L2-regularized Gated ReLU problem based on LSMR [1] or LSQR [2].
 
@@ -196,15 +180,61 @@ class LeastSquaresSolver(Optimizer):
 
 
 class CVXPYSolver(Optimizer):
-    """Solver based on CVXPY.
+    """Solve convex reformulations using `CVXPY <https://www.cvxpy.org>`_ as a interface to different interior-point solvers.
 
-    Notes:
-        This solver only supports computation on CPU. The user's choice of backend will be overridden if necessary.
+    `CVXPY <https://www.cvxpy.org>`_ provides a framework for denoting and solving convex optimization problems.
+    The framework is compatible with a variety of solvers (mainly interior point methods); see `choosing a solver <https://www.cvxpy.org/tutorial/advanced/index.html#choosing-a-solver>`_ for details.
+    Note that some solvers may require additional libraries and/or licences to be installed.
+
+
+    Attributes:
+        model: the model that should be optimized.
+        solver: the underlying solver to use with CVXPY.
+        solver_kwargs: a dictionary of keyword arguments to be passed directly to the underlying solver.
+
+     Notes:
+         This solver only supports computation on CPU. The user's choice of device will be overridden if necessary.
+    """
+
+    supported_solvers: List[str] = ["ecos", "cvxopt", "scs", "gurobi", "mosek"]
+
+    def __init__(self, model: Model, solver, solver_kwargs={}):
+        """Initialize the CVXPY-based optimizer.
+
+        Args:
+            model: the model that should be optimized.
+            solver: a string identifying the solver to use with CVXPY. We only support 'ecos', 'cvxopt', 'scs', 'gurobi', and 'mosek' at the moment.
+                See `choosing a solver <https://www.cvxpy.org/tutorial/advanced/index.html#choosing-a-solver>`_
+                for details on these methods.
+            solver_kwargs: keyword arguments that will be passed directly to the underlying solver.
+                See `solver options <https://www.cvxpy.org/tutorial/advanced/index.html#setting-solver-options>`_.
+        """
+        super().__init__(model)
+
+        if solver not in self.supported_solvers:
+            raise ValueError(
+                f"CVXPYSolver does not support {solver}; it only supports {self.supported_solvers} for now."
+            )
+
+        self.solver = solver
+        self.solver_kwargs = solver_kwargs
+
+    def cpu_only(self) -> bool:
+        return True
+
+
+class ConeDecomposition(Optimizer):
+    """Two-step method for approximately optimizing ReLU models.
+
+    ConeDecomposition first solves the Gated ReLU problem using R-FISTA,
+
+    .. math:: \\min_{u} L\\left(\\sum_{D_i \\in \\mathcal{D}} D_i X u_{i}), y\\right) + \\lambda R(u),
+
+    and then decomposes the solution onto the Minkowski differences :math:`K_i - K_i` to approximate the ReLU training problem.
+    The resulting solution is guaranteed to preserve the value of the loss :math:`L`, but can substantially blow-up the model norm.
+    As such, it is only an approximation to the ReLU training problem when :math:`\\lambda > 0`.
     """
 
     def __init__(self, model: Model):
         """Initialize the optimizer."""
-        raise NotImplementedError("CVXPY is not supported yet.")
-
-    def cpu_only(self) -> bool:
-        return True
+        raise NotImplementedError("ConeDecomposition is not supported yet.")

@@ -11,6 +11,7 @@ from convex_nn.regularizers import (
     NeuronGL1,
     FeatureGL1,
     L2,
+    L1,
 )
 
 from convex_nn.models import (
@@ -28,6 +29,7 @@ from convex_nn.private.models import (
     GatedReLUMLP,
     GroupL1Regularizer,
     L2Regularizer,
+    L1Regularizer,
 )
 from convex_nn.activations import compute_activation_patterns
 
@@ -46,7 +48,7 @@ def build_internal_regularizer(
     Returns:
         An internal regularizer object with the same state as the public regularizer.
     """
-    reg: InternalRegularizer = None
+    reg: Optional[InternalRegularizer] = None
 
     lam = 0.0
     if regularizer is not None:
@@ -58,6 +60,8 @@ def build_internal_regularizer(
         reg = GroupL1Regularizer(lam, group_by_feature=True)
     elif isinstance(regularizer, L2):
         reg = L2Regularizer(lam)
+    elif isinstance(regularizer, L1):
+        reg = L1Regularizer(lam)
 
     return reg
 

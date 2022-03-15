@@ -5,8 +5,10 @@ where d is a metric, g is a "simple" function, and beta is a parameter controlli
 
 TODO: 
     - Add proximal operator for L2-squared penalty so that we can support this using R-FISTA.
-
+    - Clean-up group-by-feature to be less ugly.
+    - Should we retain the Orthant and GroupL1Orthant operators? They don't have a use at the moment.
 """
+
 from typing import Optional
 
 import lab
@@ -27,11 +29,20 @@ class ProximalOperator:
 
 
 class Identity(ProximalOperator):
+    """The proximal-operator for the zero-function.
+
+    This proximal-operator always returns the input point.
+    """
+
     def __call__(self, w: lab.Tensor, beta: Optional[float] = None) -> lab.Tensor:
-        """The Identity operator which returns w.
-        :param w: parameters to which apply the operator will be applied.
-        :param beta: (NOT USED) the coefficient in the proximal operator. This is usually a step-size.
-        :returns: w, the parameters exactly as they were supplied.
+        """Evaluate the identity operator.
+
+        Args:
+            w: the point at which the evaluate the operator.
+            beta: the step-size for the proximal step. NOT USED.
+
+        Returns:
+            w, the original input point.
         """
 
         return w
@@ -39,27 +50,64 @@ class Identity(ProximalOperator):
 
 class Regularizer(ProximalOperator):
 
-    """Base class for proximal operators based on regularizers."""
+    """Base class for proximal operators based on regularizers.
+
+    Attributes:
+        lam: the regularization strength. This must be non-negative.
+    """
 
     def __init__(self, lam: float):
-        """
-        :param lam: parameter controlling the strength of the regularization.
+        """Initialize the proximal operator.
+
+        Args:
+            lam: a non-negative parameter controlling the regularization strength.
         """
         self.lam = lam
 
 
-class L1(Regularizer):
+class L2(Regularizer):
+    """The proximal operator for the squared l2-norm.
 
-    """The proximal operator for the l1-norm, sometimes known as the
-    soft-thresholding operator. In math, this is
-        $argmin_x {||x - w||_2^2 + beta * lambda ||x||_1}$.
+    The proximal operator returns a solution to the following optimization problem:
+
+    .. math:: \\min_x \\{\\|x - w\\|_2^2 + \\frac{\\beta * \\lambda}{2} \\|x\\|_2^2\\}.
+
+    The solution is the shrinkage operator :math:`x^* = (1 + \\beta)^{-1} w`.
     """
 
     def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
-        """Compute the proximal operator.
-        :param w: parameters to which apply the operator will be applied.
-        :param beta: the coefficient in the proximal operator. This is usually a step-size.
-        :returns: updated parameters.
+        """Evaluate the proximal operator given a point and a step-size.
+
+        Args:
+            w: the point at which the evaluate the operator.
+            beta: the step-size for the proximal step.
+
+        Returns:
+            prox(w), the result of the proximal operator.
+        """
+
+        return w / (1 + beta * self.lam)
+
+
+class L1(Regularizer):
+
+    """The proximal operator for the l1-norm.
+
+    The l1 proximal operator is sometimes known as the soft-thresholding operator and
+    is a solution to the following problem:
+
+    .. math:: \\min_x \\{\\|x - w\\|_2^2 + \\beta * \\lambda \\|x\\|_1\\}.
+    """
+
+    def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
+        """Evaluate the proximal operator given a point and a step-size.
+
+        Args:
+            w: the point at which the evaluate the operator.
+            beta: the step-size for the proximal step.
+
+        Returns:
+            prox(w), the result of the proximal operator.
         """
 
         return lab.sign(w) * lab.smax(lab.abs(w) - beta * self.lam, 0.0)
@@ -67,24 +115,36 @@ class L1(Regularizer):
 
 class GroupL1(Regularizer):
 
-    """Compute the proximal operator for the group l1 regularizer, which has the form
-    $argmin_x {||x - w||_2^2 + beta * sum_{i=1}^n lambda_i ||x_i||_1}$.
+    """The proximal operator for the group-l1 regularizer.
+
+    Given group indices :math:`\\calI`, the group-l1 regularizer is the sum of
+    l2-norms of the groups, :math:`r(w) = \\sum_{i \\in \\calI} \\|w_i\\|_2`.
+    The proximal operator is thus a solution to the following problem,
+
+    .. math:: \\min_x \\{\\|x - w\\|_2^2 + \\beta * \\lambda \\sum_{i=1 \\in \\calI} \\|x_i\\|_2\\}.
+
+    Groups are either defined over the last or second-to-last axis of the point w.
     """
 
     def __init__(self, lam: float, group_by_feature: bool = False):
-        """
+        """Initialize the proximal operator.
+        Args:
         :param lam: parameter controlling the strength of the regularization.
-        :param group_by_feature: whether or not weights should be grouped by feature, rather
-            than neuron.
+        :param group_by_feature: whether or not input-point should be grouped by column, rather
+            than row.
         """
         self.lam = lam
         self.group_by_feature = group_by_feature
 
     def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
-        """
-        :param w: parameters to which apply the operator will be applied.
-        :param beta: the coefficient in the proximal operator. This is usually a step-size.
-        :returns: updated parameters.
+        """Evaluate the proximal operator given a point and a step-size.
+
+        Args:
+            w: the point at which the evaluate the operator.
+            beta: the step-size for the proximal step.
+
+        Returns:
+            prox(w), the result of the proximal operator.
         """
         if self.group_by_feature:
             w = lab.transpose(w, -1, -2)
@@ -100,6 +160,11 @@ class GroupL1(Regularizer):
             w_plus = lab.transpose(w_plus, -1, -2)
 
         return w_plus
+
+
+# ==============
+# REFACTOR BELOW
+# ==============
 
 
 class Orthant(ProximalOperator):

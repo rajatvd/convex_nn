@@ -8,10 +8,10 @@ TODO:
 from .cvxpy_solver import CVXPYSolver
 
 from .training_programs import (
-    RelaxedMLPSolver,
-    RelaxedLassoNetSolver,
-    OrthantConstrainedMLPSolver,
-    OrthantConstrainedLassoNetSolver,
+    CVXPYGatedReLUSolver,
+    CVXPYReLUSolver,
+    CVXPYGatedLassoNetSolver,
+    CVXPYReLULassoNetSolver,
 )
 
 from .cone_decomposition import (
@@ -25,10 +25,10 @@ from .cone_decomposition import (
 
 __all__ = [
     "CVXPYSolver",
-    "RelaxedMLPSolver",
-    "RelaxedLassoNetSolver",
-    "OrthantConstrainedMLPSolver",
-    "OrthantConstrainedLassoNetSolver",
+    "CVXPYGatedReLUSolver",
+    "CVXPYReLUSolver",
+    "CVXPYGatedLassoNetSolver",
+    "CVXPYReLULassoNetSolver",
     "MinL2Decomposition",
     "MinL1Decomposition",
     "FeasibleDecomposition",

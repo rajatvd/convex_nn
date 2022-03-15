@@ -10,9 +10,14 @@ from convex_nn.solvers import (
     AL,
     ConeDecomposition,
     LeastSquaresSolver,
+    CVXPYSolver,
 )
-from convex_nn.regularizers import Regularizer, NeuronGL1, FeatureGL1, L2
+from convex_nn.regularizers import Regularizer, NeuronGL1, FeatureGL1, L2, L1
 from convex_nn.metrics import Metrics
+from .models import (
+    ConvexReLU,
+    ConvexGatedReLU,
+)
 
 from convex_nn.private.methods import (
     OptimizationProcedure,
@@ -26,12 +31,16 @@ from convex_nn.private.methods import (
     MultiplicativeBacktracker,
     Lassplore,
     LinearSolver,
+    CVXPYGatedReLUSolver,
+    CVXPYReLUSolver,
 )
 from convex_nn.private.methods import Optimizer as InteralOpt
-from convex_nn.private.prox import ProximalOperator, GroupL1, Identity
+import convex_nn.private.prox as prox
 
 
-def build_prox_operator(regularizer: Optional[Regularizer] = None) -> ProximalOperator:
+def build_prox_operator(
+    regularizer: Optional[Regularizer] = None,
+) -> prox.ProximalOperator:
     """Convert public facing regularizer into proximal operator.
 
     Args:
@@ -41,21 +50,25 @@ def build_prox_operator(regularizer: Optional[Regularizer] = None) -> ProximalOp
         A proximal operator for the regularizer.
     """
     lam = 0.0
-    prox: ProximalOperator
+    op: prox.ProximalOperator
 
     if regularizer is not None:
         lam = regularizer.lam
 
-    if isinstance(regularizer, NeuronGL1):
-        prox = GroupL1(lam)
+    if isinstance(regularizer, L2):
+        op = prox.L2(lam)
+    elif isinstance(regularizer, L1):
+        op = prox.L1(lam)
+    elif isinstance(regularizer, NeuronGL1):
+        op = prox.GroupL1(lam)
     elif isinstance(regularizer, FeatureGL1):
-        prox = GroupL1(lam, group_by_feature=True)
+        op = prox.GroupL1(lam, group_by_feature=True)
     elif regularizer is None:
-        prox = Identity()
+        op = prox.Identity()
     else:
         raise ValueError(f"Optimizer does not support regularizer {regularizer}.")
 
-    return prox
+    return op
 
 
 def build_fista(
@@ -149,6 +162,19 @@ def build_optimizer(
         )
 
         opt_proc = OptimizationProcedure(linear_solver)
+
+    elif isinstance(optimizer, CVXPYSolver):
+        # check which formulation we need to solve.
+        model = optimizer.model
+
+        if isinstance(model, ConvexReLU):
+            opt = CVXPYReLUSolver(optimizer.solver, optimizer.solver_kwargs)
+        elif isinstance(model, ConvexGatedReLU):
+            opt = CVXPYGatedReLUSolver(optimizer.solver, optimizer.solver_kwargs)
+        else:
+            raise ValueError(f"Model {model} not recognized by CVXPYSolver.")
+
+        opt_proc = OptimizationProcedure(opt)
 
     elif isinstance(optimizer, ConeDecomposition):
         raise NotImplementedError(

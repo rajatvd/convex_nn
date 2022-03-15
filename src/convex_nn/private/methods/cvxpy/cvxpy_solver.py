@@ -13,15 +13,22 @@ from convex_nn.private.models import Model
 
 class CVXPYSolver(ExternalSolver):
     """
-    Interface for solvers based on the CVXPY DSL.
+    Interface for solvers based on the `CVXPY <https://www.cvxpy.org>`_ DSL.
+
+    Attributes:
+        solver: underlying solver to use with CVXPY.
+        solver_kwargs: a dictionary of keyword arguments to be passed directly to the underlying solver.
     """
 
-    def __init__(self, solver: str = "ecos", kwargs={}):
-        """
-        :param solver: the solver to use with CVXPY.
+    def __init__(self, solver: str = "ecos", solver_kwargs={}):
+        """Initialize the CVXPY-based solver.
+
+        Args:
+            solver: a string identifying the solver to use with CVXPY.
+                We only support 'ecos', 'cvxopt', 'scs', 'gurobi', and 'mosek' at the moment.
         """
 
-        self.solver_kwargs = kwargs
+        self.solver_kwargs = solver_kwargs
 
         # save the desired solver
         if solver == "ecos":

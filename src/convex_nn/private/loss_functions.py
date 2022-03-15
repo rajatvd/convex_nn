@@ -1,8 +1,9 @@
-"""
-Loss functions and related utilities.
+"""Loss functions and related utilities.
+
+TODO:
+    - Rewrite docstrings to be Google style and correct math format.
 """
 from typing import Dict, Any, List, Tuple, Union, Optional
-
 
 import lab
 
@@ -60,14 +61,13 @@ def accuracy(preds: lab.Tensor, y: lab.Tensor):
 # penalty functions
 
 
+def l1_penalty(w: lab.Tensor, lam: float) -> float:
+    """"""
+    return lam * lab.sum(lab.abs(w))
+
+
 def l2_penalty(w: lab.Tensor, lam: float) -> float:
-    """Compute the penalty associated with the regularizer.
-    :param w: the parameter at which to compute group l1 penalty. Note that 'w'
-        must have shape (x, P), where 'P' is the number of groups.
-    :param lam: the coefficient(s) controlling the strength of regularization.
-        If 'lam' is a numpy array, it must have shape (P,).
-    :returns: penalty value
-    """
+    """ """
 
     return (lam / 2) * lab.sum(w ** 2)
 

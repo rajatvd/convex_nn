@@ -9,7 +9,7 @@ TODO:
 import unittest
 
 from convex_nn.private.utils.data.synthetic import gen_regression_data
-from convex_nn.regularizers import NeuronGL1, FeatureGL1, L2
+from convex_nn.regularizers import NeuronGL1, FeatureGL1, L2, L1
 from convex_nn.optimize import optimize
 
 
@@ -35,13 +35,31 @@ class TestRegularizers(unittest.TestCase):
         self.lam = 0.0001
 
     def test_l2_squared(self):
-        """"""
+        """Test Gated ReLU with L2 regularization."""
+        cvx_model, metrics = optimize(
+            "gated_relu",
+            self.max_neurons,
+            self.X_train,
+            self.y_train,
+            self.X_test,
+            self.y_test,
+            L2(self.lam),
+        )
 
     def test_l1(self):
-        """"""
+        """Test Gated ReLU with L1 regularization."""
+        cvx_model, metrics = optimize(
+            "gated_relu",
+            self.max_neurons,
+            self.X_train,
+            self.y_train,
+            self.X_test,
+            self.y_test,
+            L1(self.lam),
+        )
 
     def test_neuron_gl1(self):
-        """"""
+        """Test Gated ReLU with neuron-wise Group-L1 regularization."""
         cvx_model, metrics = optimize(
             "gated_relu",
             self.max_neurons,
@@ -53,7 +71,7 @@ class TestRegularizers(unittest.TestCase):
         )
 
     def test_feature_gl1(self):
-        """"""
+        """Test Gated ReLU with feature-wise Group-L1 regularization."""
         cvx_model, metrics = optimize(
             "gated_relu",
             self.max_neurons,
