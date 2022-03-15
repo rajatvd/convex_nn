@@ -12,47 +12,160 @@ Overview:
     .. math:: \\mathcal{D} = \\left\\{  d = 1(X w \\geq 0) : w \\in \\mathbb{R}^d \\right\\}.
 
     In practice, :math`\\mathcal{D}` can approximated sampling vectors :math:`w \\sim P` according to some distribution :math:`P` and then computing the corresponding pattern :math:`d_i`.
+
+TODO:
+    - Where to put ugly conv mask code?
 """
 
-from typing import Tuple
+from typing import Tuple, List, Literal, Optional
+import math
+from itertools import combinations
 
 import numpy as np
 from numpy.random import Generator
 
 
+GateType = Literal[
+    "dense",
+    "feature_sparse",
+    "convolutional",
+]
+
+
 def sample_gate_vectors(
-    rng: Generator,
+    seed: int,
     d: int,
     n_samples: int,
-    convolutional_patterns: bool = False,
-):
+    gate_type: GateType = "dense",
+    order: Optional[int] = None,
+) -> np.ndarray:
     """Generate gate vectors by random sampling.
 
     Args:
-        rng: a random number generator.
+        seed: the random seed to use when generating the gates.
         d: the dimensionality of the gate vectors.
-        n_samples: the number of samples to use when computing the approximation.
-            More samples should find more sign patterns.
-        convolutional_patterns: whether or not to sample the gates as convolutional
-            filters.
+        n_samples: the number of samples to use.
+        gate_type: the type of gates to sample. Must be one of:
+
+            - 'dense': sample dense gate vectors.
+
+            - 'feature_sparse': sample gate vectors which are sparse in specific features.
+
+        order: the order maximum order of feature sparsity to consider. Only used for
+            `gate_type='feature_sparse'`. See :func:`sample_sparse_gates` for more details.
+
+    Notes:
+        It is possible to obtain more than `n_samples` gate vectors when `gate_type='feature_sparse'`
+        if `len(sparsity_indices)` does not divide evenly into n_samples. In this case, we use the ceiling
+        to avoid sampling zero gates for some sparsity patterns.
+    """
+
+    rng = np.random.default_rng(seed)
+
+    if gate_type == "dense":
+        G = sample_dense_gates(rng, d, n_samples)
+    elif gate_type == "feature_sparse":
+        if order is None:
+            raise ValueError(
+                "`Order` must be specified when sampling feature-sparse gate."
+            )
+        sparsity_indices = generate_index_lists(d, order)
+        G = sample_sparse_gates(rng, d, n_samples, sparsity_indices)
+    elif gate_type == "convolutional":
+        G = sample_convolutional_gates(rng, d, n_samples)
+    else:
+        raise ValueError(f"Gate type {gate_type} not recognized.")
+
+    return G
+
+
+def sample_dense_gates(
+    rng: np.random.Generator,
+    d: int,
+    n_samples: int,
+) -> np.ndarray:
+    """Generate dense gate vectors by random sampling.
+
+    Args:
+        rng: a NumPy random number generator.
+        d: the dimensionality of the gate vectors.
+        n_samples: the number of samples to use.
 
     Returns:
         G -  a :math:`d \\times \\text{n_samples}` matrix of gate vectors.
     """
     G = rng.standard_normal((d, n_samples))
 
-    if convolutional_patterns:
-        if d == 784:
-            conv_masks = _generate_conv_masks(rng, n_samples, 28, 1)
-        elif d == 3072:
-            conv_masks = _generate_conv_masks(rng, n_samples, 32, 3)
-        else:
-            assert (
-                False
-            ), "Convolutional patterns only implemented for MNIST or CIFAR datasets"
+    return G
 
-        G = G * conv_masks
 
+def sample_sparse_gates(
+    rng: np.random.Generator,
+    d: int,
+    n_samples: int,
+    sparsity_indices: List[List[int]],
+) -> np.ndarray:
+    """Generate feature-sparse gate vectors by random sampling.
+
+    Args:
+        rng: a NumPy random number generator.
+        d: the dimensionality of the gate vectors.
+        n_samples: the number of samples to use.
+        sparsity_indices: lists of indices (i.e. features) for which sparse gates should be generated.
+            Each index list will get `n_samples / len(sparsity_indices)` gates which are sparse
+            in those indices.
+
+    Notes:
+        It is possible to obtain more than `n_samples` gate vectors if `len(sparsity_indices)` does not
+        divide evenly into n_samples. In this case, we use the ceiling to avoid sampling zero gates for
+        some sparsity patterns.
+
+    Returns:
+        G -  a :math:`d \\times \\text{n_samples}` matrix of gate vectors.
+    """
+    samples_per_list = math.ceil(n_samples / len(sparsity_indices))
+    gates = []
+
+    for indices in sparsity_indices:
+        # create mask
+        mask = np.ones((d, 1))
+        mask[indices, :] = 0
+
+        G = sample_dense_gates(rng, d, samples_per_list)
+
+        # project gates onto subspace
+        gates.append(np.multiply(G, mask))
+
+    return np.concatenate(gates, axis=1)
+
+
+def sample_convolutional_gates(
+    rng: np.random.Generator,
+    d: int,
+    n_samples: int,
+) -> np.ndarray:
+    """Generate convolutional gate vectors by random sampling.
+
+    Args:
+        rng: a NumPy random number generator.
+        d: the dimensionality of the gate vectors.
+        n_samples: the number of samples to use.
+
+    Returns:
+        G -  a :math:`d \\times \\text{n_samples}` matrix of gate vectors.
+    """
+    G = sample_dense_gates(rng, d, n_samples)
+
+    if d == 784:
+        conv_masks = _generate_conv_masks(rng, n_samples, 28, 1)
+    elif d == 3072:
+        conv_masks = _generate_conv_masks(rng, n_samples, 32, 3)
+    else:
+        assert (
+            False
+        ), "Convolutional patterns only implemented for MNIST or CIFAR datasets"
+
+    G = G * conv_masks
     return G
 
 
@@ -93,6 +206,33 @@ def compute_activation_patterns(
         G = G[:, non_zero_cols]
 
     return D, G
+
+
+def generate_index_lists(
+    d: int,
+    order: int,
+) -> List[List[int]]:
+    """Generate lists of all groups of indices of order up to and including `order`.
+
+    Args:
+        d: the dimensionality or maximum index.
+        order: the order to which the lists should be generated.
+            For example, `order=2` will generate all singleton lists and all lists of
+            pairs of indices.
+
+    Returns:
+        List of list of indices.
+    """
+    assert order > 0
+
+    index_lists: List[List[int]] = []
+    all_indices = list(range(d))
+
+    for i in range(1, order + 1):
+        d_choose_i = [list(comb) for comb in combinations(all_indices, i)]
+        index_lists = index_lists + d_choose_i
+
+    return index_lists
 
 
 def _generate_conv_masks(

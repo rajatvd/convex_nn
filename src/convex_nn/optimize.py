@@ -95,13 +95,12 @@ def optimize(
 
     # Instantiate convex model and other options.
     if formulation == "gated_relu":
-        G = sample_gate_vectors(np.random.default_rng(seed), d, max_neurons)
+        G = sample_gate_vectors(seed, d, max_neurons)
         model = ConvexGatedReLU(G, c=c)
         solver = RFISTA(model)
     elif formulation == "relu":
-        G = sample_gate_vectors(
-            np.random.default_rng(seed), d, math.floor(max_neurons / 2)
-        )
+        # ReLU models can have up to 2 * G neurons.
+        G = sample_gate_vectors(seed, d, math.floor(max_neurons / 2))
         model = ConvexReLU(G, c=c)
         solver = AL(model)
     else:

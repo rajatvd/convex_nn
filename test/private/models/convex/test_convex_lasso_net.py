@@ -37,7 +37,7 @@ class TestConvexLassoNet(unittest.TestCase):
             self.d,
             c=self.c,
         )
-        self.U = activations.sample_gate_vectors(self.rng, self.d, 100)
+        self.U = activations.sample_dense_gates(self.rng, self.d, 100)
         self.D, self.U = lab.all_to_tensor(
             activations.compute_activation_patterns(train_set[0], self.U)
         )

@@ -33,14 +33,14 @@ class TestGatedReLUMLP(unittest.TestCase):
         train_set, _, self.wopt = gen_regression_data(
             self.rng, self.n, 0, self.d, c=self.c
         )
-        self.U = activations.sample_gate_vectors(self.rng, self.d, 100)
+        self.U = activations.sample_dense_gates(self.rng, self.d, 100)
         self.D, self.U = lab.all_to_tensor(
             activations.compute_activation_patterns(train_set[0], self.U)
         )
         self.X, self.y = lab.all_to_tensor(train_set)
         self.wopt = lab.tensor(self.wopt)
 
-        self.U = activations.sample_gate_vectors(self.rng, self.d, self.p)
+        self.U = activations.sample_dense_gates(self.rng, self.d, self.p)
         self.D, self.U = activations.compute_activation_patterns(self.X, self.U)
 
         # initialize model

@@ -31,7 +31,7 @@ class TestLSTSQSolvers(unittest.TestCase):
     def setUp(self):
         lab.set_backend(lab.NUMPY)
         train_set, _, _ = gen_regression_data(self.rng, self.n, 0, self.d)
-        self.U = activations.sample_gate_vectors(self.rng, self.d, 100)
+        self.U = activations.sample_dense_gates(self.rng, self.d, 100)
         self.D, self.U = lab.all_to_tensor(
             activations.compute_activation_patterns(train_set[0], self.U)
         )
