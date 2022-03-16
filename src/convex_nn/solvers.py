@@ -210,8 +210,14 @@ class CVXPYSolver(Optimizer):
             solver_kwargs: keyword arguments that will be passed directly to the underlying solver.
                 See `solver options <https://www.cvxpy.org/tutorial/advanced/index.html#setting-solver-options>`_.
             clean_sol: whether or not to clean the solution using a proximal-gradient step.
+                This is only supported for unconstrained problems.
         """
         super().__init__(model)
+
+        if clean_sol and isinstance(model, ConvexReLU):
+            raise ValueError(
+                "Cleaning solutions using a proximal-gradient step is only supported for unconstrained problems."
+            )
 
         if solver not in self.supported_solvers:
             raise ValueError(
