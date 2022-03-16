@@ -36,7 +36,7 @@ def get_logger(
     return logger
 
 
-def set_device(device: str = "cpu", seed: int = 778):
+def set_device(device: str = "cpu", dtype="float32", seed: int = 778):
     """Set the device to be used by LAB, the global dtype, and random seeds."""
     if device == "cpu":
         lab.set_backend("numpy")
@@ -45,6 +45,5 @@ def set_device(device: str = "cpu", seed: int = 778):
         lab.set_backend("torch")
         lab.set_device(device)
 
-    # TODO: change this back and make it possible for users to change.
-    lab.set_dtype("float64")
+    lab.set_dtype(dtype)
     lab.set_seeds(seed)

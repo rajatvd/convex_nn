@@ -37,6 +37,7 @@ from convex_nn.private.interface import (
 
 Formulation = Literal["gated_relu", "relu"]
 Device = Literal["cpu", "cuda"]
+Dtype = Literal["float32", "float64"]
 
 
 def optimize(
@@ -51,6 +52,7 @@ def optimize(
     verbose: bool = False,
     log_file: str = None,
     device: Device = "cpu",
+    dtype: Dtype = "float32",
     seed: int = 778,
 ) -> Tuple[Model, Metrics]:
     """Convenience function for training neural networks by convex reformulation.
@@ -76,6 +78,8 @@ def optimize(
         log_file: a path to an optional log file.
         device: the device on which to run. Must be one of `cpu` (run on CPU) or
             `cuda` (run on cuda-enabled GPUs if available).
+        dtype: the floating-point type to use. `"float32"` is faster than `"float64"` but can
+            lead to excessive numerical errors on badly conditioned datasets.
         seed: an integer seed for reproducibility.
 
     Returns:
@@ -137,6 +141,7 @@ def optimize_model(
     verbose: bool = False,
     log_file: str = None,
     device: Device = "cpu",
+    dtype: Dtype = "float32",
     seed: int = 778,
 ) -> Tuple[Model, Metrics]:
     """Train a neural network by convex reformulation.
@@ -155,6 +160,8 @@ def optimize_model(
         log_file: a path to an optional log file.
         device: the device on which to run. Must be one of `cpu` (run on CPU) or
             `cuda` (run on cuda-enabled GPUs if available).
+        dtype: the floating-point type to use. `"float32"` is faster than `"float64"` but can
+            lead to excessive numerical errors on badly conditioned datasets.
         seed: an integer seed for reproducibility.
 
     Returns:
@@ -169,7 +176,7 @@ def optimize_model(
         )
         device = "cpu"
 
-    set_device(device, seed)
+    set_device(device, dtype, seed)
 
     if metrics.has_test_metrics() and (X_test is None or y_test is None):
         logger.warning(
@@ -235,6 +242,7 @@ def optimize_path(
     verbose: bool = False,
     log_file: str = None,
     device: Device = "cpu",
+    dtype: Dtype = "float32",
     seed: int = 778,
 ) -> Tuple[List[Union[Model, str]], List[Metrics]]:
     """Train a neural network by convex reformulation.
@@ -256,6 +264,8 @@ def optimize_path(
         log_file: a path to an optional log file.
         device: the device on which to run. Must be one of `cpu` (run on CPU) or
             `cuda` (run on cuda-enabled GPUs if available).
+        dtype: the floating-point type to use. `"float32"` is faster than `"float64"` but can
+            lead to excessive numerical errors on badly conditioned datasets.
         seed: an integer seed for reproducibility.
     """
     # set backend settings.
@@ -268,7 +278,7 @@ def optimize_path(
         )
         device = "cpu"
 
-    set_device(device, seed)
+    set_device(device, dtype, seed)
 
     if metrics.has_test_metrics() and (X_test is None or y_test is None):
         logger.warning(
