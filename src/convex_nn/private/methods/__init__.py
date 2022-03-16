@@ -71,7 +71,7 @@ from .cvxpy import (
 from .termination_criteria import (
     GradientNorm,
     StepLength,
-    ConstrainedOptimality,
+    ConstrainedHeuristic,
 )
 
 
@@ -125,5 +125,5 @@ __all__ = [
     "Lassplore",
     "GradientNorm",
     "StepLength",
-    "ConstrainedOptimality",
+    "ConstrainedHeuristic",
 ]

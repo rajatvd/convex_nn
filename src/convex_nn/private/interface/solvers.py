@@ -26,7 +26,7 @@ from convex_nn.private.methods import (
     FISTA,
     AugmentedLagrangian,
     GradientNorm,
-    ConstrainedOptimality,
+    ConstrainedHeuristic,
     QuadraticBound,
     MultiplicativeBacktracker,
     Lassplore,
@@ -132,7 +132,7 @@ def build_optimizer(
     elif isinstance(optimizer, AL):
 
         inner_term_criterion = GradientNorm(optimizer.tol)
-        outer_term_criterion = ConstrainedOptimality(
+        outer_term_criterion = ConstrainedHeuristic(
             optimizer.tol, optimizer.constraint_tol
         )
 
