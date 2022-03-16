@@ -1,5 +1,9 @@
 """
 Helpers for computing metrics during optimization.
+
+
+TODO:
+    - Active features should not take into account inactive neurons.
 """
 from typing import Dict, Any, List, Tuple, Optional
 import timeit

@@ -10,7 +10,11 @@ from convex_nn.private.methods.optimizers.proximal_optimizer import (
     ProximalOptimizer,
     ProximalLSOptimizer,
 )
-from convex_nn.private.methods.line_search import StepSizeUpdater, LSCondition, Backtracker
+from convex_nn.private.methods.line_search import (
+    StepSizeUpdater,
+    LSCondition,
+    Backtracker,
+)
 from convex_nn.private.prox import ProximalOperator
 
 

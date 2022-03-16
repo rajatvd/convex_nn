@@ -6,7 +6,11 @@ from typing import Callable, Optional, Tuple, Dict, Any
 import lab
 
 from convex_nn.private.models.model import Model
-from convex_nn.private.methods.line_search import StepSizeUpdater, LSCondition, Backtracker
+from convex_nn.private.methods.line_search import (
+    StepSizeUpdater,
+    LSCondition,
+    Backtracker,
+)
 
 
 class Optimizer:
@@ -86,8 +90,6 @@ class Optimizer:
         )
 
         return model, None, {"step_size": self.step_size}
-
-    __call__ = step
 
 
 class LSOptimizer(Optimizer):

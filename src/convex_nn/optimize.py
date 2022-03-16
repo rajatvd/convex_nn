@@ -3,7 +3,6 @@ Optimize neural networks using convex reformulations.
 
 TODO:
     - extract types into a new `types.py` module.
-    - Should we allow regularizer objects to be passed to optimize?
 """
 from typing import Optional, Tuple, Literal, List, Union
 import math

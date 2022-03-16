@@ -34,12 +34,19 @@ class OptimizationProcedure:
 
     term_criterion: TerminationCriterion
 
-    def __init__(self, optimizer: Optimizer):
+    def __init__(
+        self,
+        optimizer: Optimizer,
+        pre_process: Optional[Callable] = None,
+        post_process: Optional[Callable] = None,
+    ):
         """
         :param optimizer: an callable optimizer instance.
         """
 
         self.optimizer = optimizer
+        self.pre_process = pre_process
+        self.post_process = post_process
 
     def reset(self):
         """Reset the optimization procedure (including any attached optimizers) to their original state."""
@@ -89,6 +96,11 @@ class OptimizationProcedure:
 
         start_time = self._get_start_time(None)
         model = initializer(model)
+
+        # optional pre-processing.
+        if self.pre_process is not None:
+            model = self.pre_process(model, X, y)
+
         metrics_log, start_time = self._record_time(metrics_log, start_time)
 
         # pre-training metrics
@@ -106,6 +118,10 @@ class OptimizationProcedure:
             X,
             y,
         )
+
+        # optional post-processing.
+        if self.post_process is not None:
+            model = self.post_process(model, X, y)
 
         # post-training metrics
         metrics_log, start_time = self._record_time(metrics_log, start_time)

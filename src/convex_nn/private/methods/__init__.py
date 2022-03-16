@@ -13,9 +13,6 @@ from .optimization_procedures import (
     ITER_LOG_FREQ,
     EPOCH_LOG_FREQ,
 )
-
-from .callbacks import ObservedSignPatterns, ConeDecomposition
-
 from .core import (
     ls,
     gradient_step,
@@ -54,6 +51,8 @@ from .line_search import (
     Lassplore,
 )
 
+from .callbacks import ObservedSignPatterns, ConeDecomposition, ProximalCleanup
+
 from .external_solver import LinearSolver
 
 from .cvxpy import (
@@ -83,6 +82,7 @@ __all__ = [
     "DoubleLoopProcedure",
     "ObservedSignPatterns",
     "ConeDecomposition",
+    "ProximalCleanup",
     "ls",
     "gradient_step",
     "gd_ls",

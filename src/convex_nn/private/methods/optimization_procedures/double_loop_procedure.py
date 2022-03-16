@@ -17,9 +17,17 @@ from convex_nn.private.methods.optimization_procedures.iterative import (
     IterativeOptimizationProcedure,
 )
 
-from convex_nn.private.methods.optimizers import Optimizer, MetaOptimizer, ProximalOptimizer
+from convex_nn.private.methods.optimizers import (
+    Optimizer,
+    MetaOptimizer,
+    ProximalOptimizer,
+)
 from convex_nn.private.models.model import Model
-from convex_nn.private.metrics import update_metrics, init_metrics, format_recent_metrics
+from convex_nn.private.metrics import (
+    update_metrics,
+    init_metrics,
+    format_recent_metrics,
+)
 from convex_nn.private.methods.termination_criteria import TerminationCriterion
 
 

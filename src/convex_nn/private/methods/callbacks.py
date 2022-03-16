@@ -8,6 +8,13 @@ import numpy as np
 import lab
 
 from convex_nn.private.models import Model
+from convex_nn.private.methods.optimizers.pgd import PGDLS
+from convex_nn.private.methods.line_search import (
+    QuadraticBound,
+    MultiplicativeBacktracker,
+    Lassplore,
+)
+from convex_nn.private.prox import ProximalOperator
 
 
 class ObservedSignPatterns:
@@ -80,3 +87,26 @@ class ConeDecomposition:
         decomposed_model, _ = self.solver(model, X, y)
 
         return decomposed_model
+
+
+class ProximalCleanup:
+    """Cleanup the solution to an optimization problem by taking one proximal-gradient step."""
+
+    def __init__(self, prox: ProximalOperator):
+        """
+        :param prox: the proximal-operator to use when cleaning-up the model solution.
+        """
+        self.prox = prox
+        # create optimizer to use
+        self.optimizer = PGDLS(
+            1.0,
+            QuadraticBound(),
+            MultiplicativeBacktracker(beta=0.8),
+            Lassplore(alpha=1.25, threshold=5.0),
+            prox=self.prox,
+        )
+
+    def __call__(self, model: Model, X: lab.Tensor, y: lab.Tensor) -> Model:
+        cleaned_model, _, exit_state = self.optimizer.step(model, X, y)
+
+        return cleaned_model

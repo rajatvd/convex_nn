@@ -2,19 +2,21 @@
 Functions for generating synthetic datasets.
 
 Public Functions:
-    
+
     gen_classification_data: generate a synthetic classification dataset with targets given by a random neural network.
 
     gen_regression_data: generate a synthetic regression dataset with targets given by a noisy linear model.
 
+    sample_planted_model: generate synthetic data from a variety of simple planted models.
 """
 
-from typing import Tuple
+from typing import Tuple, Literal, Optional, Union, Callable
 import math
 
 import numpy as np
 from scipy.stats import ortho_group  # type: ignore
 
+Transform = Literal["cosine", "polynomial"]
 
 # local types
 
@@ -56,13 +58,7 @@ def gen_classification_data(
     w1 = w[: d * hidden_units].reshape(hidden_units, d)
     w2 = w[d * hidden_units :].reshape(1, hidden_units)
 
-    # sample random orthonormal matrix
-    Q = ortho_group.rvs(d, random_state=rng)
-    # sample eigenvalues so that lambda_1 / lambda_d = kappa.
-    eigs = rng.uniform(low=1, high=kappa, size=d - 2)
-    eigs = np.concatenate([np.array([kappa, 1]), eigs])
-    # compute covariance
-    Sigma = np.dot(Q.T, np.multiply(np.expand_dims(eigs, axis=1), Q))
+    Sigma = sample_covariance_matrix(rng, d, kappa)
 
     X = []
     y = []
@@ -105,7 +101,6 @@ def gen_regression_data(
     c: int = 1,
     sigma: float = 0,
     kappa: float = 1,
-    unitize_data_cols: bool = True,
 ) -> Tuple[Dataset, Dataset, np.ndarray]:
     """Create a regression dataset with a random Gaussian design matrix.
 
@@ -129,13 +124,7 @@ def gen_regression_data(
     rng = np.random.default_rng(seed=data_seed)
     # sample "true" model
     w_opt = rng.standard_normal((d, c))
-    # sample random orthonormal matrix
-    Q = ortho_group.rvs(d, random_state=rng)
-    # sample eigenvalues so that lambda_1 / lambda_d = kappa.
-    eigs = rng.uniform(low=1, high=kappa, size=d - 2)
-    eigs = np.concatenate([np.array([kappa, 1]), eigs])
-    # compute covariance
-    Sigma = np.dot(Q.T, np.multiply(np.expand_dims(eigs, axis=1), Q))
+    Sigma = sample_covariance_matrix(rng, d, kappa)
 
     X = rng.multivariate_normal(np.zeros(d), cov=Sigma, size=n + n_test)
     y = np.dot(X, w_opt)
@@ -147,3 +136,105 @@ def gen_regression_data(
     test_set = (X[n:], y[n:])
 
     return train_set, test_set, w_opt
+
+
+def gen_sparse_regression_problem(
+    data_seed: int,
+    n: int,
+    n_test: int,
+    d: int,
+    sigma: float = 0,
+    kappa: float = 1,
+    num_zeros: int = 0,
+    transform: Optional[Union[Transform, Callable]] = None,
+) -> Tuple[Dataset, Dataset, np.ndarray]:
+    """Sample data from a feature-sparse planted model.
+
+    Create a realizable regression problem by sampling data from a simple planted model. A variety
+    of planted models are available; see `transform` argument. Inspired by code form Tolga Ergen.
+
+    Args:
+        data_seed: the seed to use when generating the synthetic dataset.
+        n: number of examples in dataset.
+        n_test: number of test examples.
+        d: number of features for each example.
+        sigma: variance of (Gaussian) noise added to targets. Defaults to `0` for a noiseless model.
+        kappa: condition number of E[X.T X]. Defaults to 1 (perfectly conditioned covariance).
+        num_zeros: number of exact zeros in the true model, so `that num_zeros / d` is the degree of
+            feature sparsity.
+        transform: a non-linear transformation
+
+    Returns:
+
+    """
+
+    rng = np.random.default_rng(seed=data_seed)
+    # sample "true" model
+    w_opt = rng.standard_normal((d))
+
+    # true model is sparse
+    if num_zeros > 0:
+        zero_indices = rng.choice(d, size=num_zeros, replace=False)
+        w_opt[zero_indices] = 0.0
+
+    # sample covariance matrix.
+    Sigma = sample_covariance_matrix(rng, d, kappa)
+
+    X = rng.multivariate_normal(np.zeros(d), cov=Sigma, size=n + n_test)
+    y = np.dot(X, w_opt)
+
+    if transform is None:
+        # no transform
+        y = y
+    elif transform == "cosine":
+        # cosine transform
+        y = np.cos(y)
+    elif transform == "polynomial":
+        # simple cubic
+        y = y + (y ** 2) / 2 + (y ** 3) / 3
+    else:
+        try:
+            y = transform(y)
+        except TypeError:
+            raise ValueError(
+                f"Transform {transform} not recognized. It must be a predefined transform, a callable function, or `None`."
+            )
+
+    # add noise
+    if sigma != 0:
+        y = y + rng.normal(0, scale=sigma)
+
+    train_set = (X[:n], y[:n])
+    test_set = (X[n:], y[n:])
+
+    return train_set, test_set, w_opt
+
+
+def sample_covariance_matrix(
+    rng: np.random.Generator, d: int, kappa: float
+) -> np.ndarray:
+    """Sample a covariance matrix with a specific condition number.
+
+    This functions samples a symmetric positive-definite matrix
+    with condition number exactly `kappa`. The minimum eigenvalue is `1` and the
+    maximum is `kappa`, while the remaining eigenvalues are distributed uniformly
+    at random in the interval `[1, kappa]`.
+
+    Args:
+        rng: a NumPy random number generator.
+        d: the dimensionality of the covariance matrix.
+        kappa: condition number of the covariance matrix.
+
+    Returns:
+        :math:`\\Sigma`: a :math:`d \\times \\d` matrix with condition number `kappa`.
+    """
+
+    # sample random orthonormal matrix
+    Q = ortho_group.rvs(d, random_state=rng)
+    # sample eigenvalues so that lambda_1 / lambda_d = kappa.
+    eigs = rng.uniform(low=1, high=kappa, size=d - 2)
+    eigs = np.concatenate([np.array([kappa, 1]), eigs])
+    # compute covariance
+    Sigma = np.dot(Q.T, np.multiply(np.expand_dims(eigs, axis=1), Q))
+
+    return Sigma

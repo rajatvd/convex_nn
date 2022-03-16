@@ -11,7 +11,7 @@ import lab
 from convex_nn.private.models.model import Model
 from convex_nn.private.models.regularizers.l2 import L2Regularizer
 from convex_nn.private.models import ConvexMLP, ReLUMLP
-from convex_nn.private.models.sign_patterns import get_sign_patterns
+from convex_nn.activations import sample_gate_vectors, compute_activation_patterns
 
 # constants
 
@@ -68,15 +68,20 @@ def get_initializer(
             if hasattr(model_to_init, "U"):
                 model_to_init.set_weights(model_to_init.U)
             else:
-                D, U = get_sign_patterns(
-                    train_data[0], config.get("sign_patterns", None)
+                act_config = config.get("sign_patterns", {"seed": 778})
+
+                G = sample_gate_vectors(
+                    act_config["seed"], train_data[0].shape[1], act_config["n_samples"]
                 )
-                U = U.T
+                D, G = compute_activation_patterns(lab.to_np(train_data[0]), G)
+                G = lab.tensor(G.T, dtype=lab.get_dtype())
+
                 if isinstance(model_to_init, ReLUMLP):
-                    p = U.shape[0]
+                    p = G.shape[0]
                     model_to_init.p = p
-                    U = lab.concatenate([lab.ravel(U), lab.ones(p)])
-                model_to_init.set_weights(U)
+                    G = lab.concatenate([lab.ravel(G), lab.ones(p)])
+
+                model_to_init.set_weights(G)
 
         elif name == ZERO:
             if isinstance(model_to_init, ReLUMLP):

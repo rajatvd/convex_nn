@@ -191,6 +191,7 @@ class CVXPYSolver(Optimizer):
         model: the model that should be optimized.
         solver: the underlying solver to use with CVXPY.
         solver_kwargs: a dictionary of keyword arguments to be passed directly to the underlying solver.
+        clean_sol: whether or not to clean the solution using a proximal-gradient step.
 
      Notes:
          This solver only supports computation on CPU. The user's choice of device will be overridden if necessary.
@@ -198,7 +199,7 @@ class CVXPYSolver(Optimizer):
 
     supported_solvers: List[str] = ["ecos", "cvxopt", "scs", "gurobi", "mosek"]
 
-    def __init__(self, model: Model, solver, solver_kwargs={}):
+    def __init__(self, model: Model, solver, solver_kwargs={}, clean_sol=False):
         """Initialize the CVXPY-based optimizer.
 
         Args:
@@ -208,6 +209,7 @@ class CVXPYSolver(Optimizer):
                 for details on these methods.
             solver_kwargs: keyword arguments that will be passed directly to the underlying solver.
                 See `solver options <https://www.cvxpy.org/tutorial/advanced/index.html#setting-solver-options>`_.
+            clean_sol: whether or not to clean the solution using a proximal-gradient step.
         """
         super().__init__(model)
 
@@ -218,6 +220,7 @@ class CVXPYSolver(Optimizer):
 
         self.solver = solver
         self.solver_kwargs = solver_kwargs
+        self.clean_sol = clean_sol
 
     def cpu_only(self) -> bool:
         return True

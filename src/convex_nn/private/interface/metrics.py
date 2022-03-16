@@ -38,6 +38,8 @@ def build_metrics_tuple(
             continue
         elif key == "model_loss":
             train_metrics.append("base_objective")
+        elif key == "constraint_gaps":
+            train_metrics.append("constraint_gaps")
         elif key == "lagrangian_grad":
             train_metrics.append("lagrangian_grad")
         # use convex model for training (same as non-convex)
@@ -51,13 +53,13 @@ def build_metrics_tuple(
             test_metrics.append("nc_accuracy")
         # use non-convex model for testing
         elif key == "test_mse":
-            test_metrics.append("squared_error")
+            test_metrics.append("nc_squared_error")
         elif key == "total_neurons":
-            additional_metrics.append("total_neurons")
+            additional_metrics.append("active_neurons")
         elif key == "neuron_sparsity":
             additional_metrics.append("group_sparsity")
         elif key == "total_features":
-            additional_metrics.append("total_features")
+            additional_metrics.append("active_features")
         elif key == "feature_sparsity":
             additional_metrics.append("feature_sparsity")
         elif key == "total_weights":
@@ -91,6 +93,8 @@ def update_public_metrics(
             metrics.time = np.cumsum(np.array(value))
         elif key == "train_base_objective":
             metrics.model_loss = value
+        elif key == "train_constraint_gaps":
+            metrics.constraint_gaps = value
         elif key == "train_lagrangian_grad":
             metrics.lagrangian_grad = value
         elif key == "train_accuracy":
@@ -104,11 +108,11 @@ def update_public_metrics(
         # use non-convex model for testing
         elif key == "test_nc_squared_error":
             metrics.test_mse = value
-        elif key == "total_neurons":
+        elif key == "active_neurons":
             metrics.total_neurons = value
         elif key == "group_sparsity":
             metrics.neuron_sparsity = value
-        elif key == "total_features":
+        elif key == "active_features":
             metrics.total_features = value
         elif key == "feature_sparsity":
             metrics.feature_sparsity = value

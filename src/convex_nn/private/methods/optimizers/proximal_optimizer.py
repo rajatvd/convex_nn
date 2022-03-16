@@ -133,7 +133,6 @@ class ProximalLSOptimizer(LSOptimizer):
             Defaults to `None' which indicates full-batch.
         :returns: the updated model and exit state of the line-search.
         """
-
         # model must be wrapped in a regularizer.
         obj_fn, grad_fn = model.get_closures(
             X, y, ignore_regularizer=True, batch_size=batch_size

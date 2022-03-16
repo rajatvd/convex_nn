@@ -45,5 +45,6 @@ def set_device(device: str = "cpu", seed: int = 778):
         lab.set_backend("torch")
         lab.set_device(device)
 
-    lab.set_dtype("float32")
+    # TODO: change this back and make it possible for users to change.
+    lab.set_dtype("float64")
     lab.set_seeds(seed)

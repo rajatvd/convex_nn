@@ -14,15 +14,15 @@ from convex_nn.private.models import (
     Model,
     ConvexMLP,
     AL_MLP,
-    ConvexLassoNet,
-    AL_LassoNet,
 )
 
 from .cvxpy_solver import CVXPYSolver
 
 
 class DecompositionProgram(CVXPYSolver):
-    """Base class for CVXPY programs that convert a convex gatedReLU model
+    """Convert a Gated ReLU model into a ReLU model by cone decomposition.
+
+    Base class for CVXPY programs that convert a convex Gated ReLU model
     into a convex ReLU model by decomposing the weights onto the constraint
     cones :math:`K_i` and :math:`-K_i`.
     """
@@ -38,10 +38,6 @@ class DecompositionProgram(CVXPYSolver):
         """Call the CVXPY solver to compute the decomposition."""
 
         assert isinstance(model, ConvexMLP)
-        if isinstance(model, (AL_MLP, ConvexLassoNet)):
-            raise ValueError(
-                "Cone decomposition is only defined for instances of 'ConvexMLP'"
-            )
 
         # lookup problem dimensions
         n, d = X.shape

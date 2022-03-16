@@ -33,6 +33,7 @@ from convex_nn.private.methods import (
     LinearSolver,
     CVXPYGatedReLUSolver,
     CVXPYReLUSolver,
+    ProximalCleanup,
 )
 from convex_nn.private.methods import Optimizer as InteralOpt
 import convex_nn.private.prox as prox
@@ -167,6 +168,11 @@ def build_optimizer(
         # check which formulation we need to solve.
         model = optimizer.model
 
+        post_process = None
+        if optimizer.clean_sol:
+            prox = build_prox_operator(regularizer)
+            post_process = ProximalCleanup(prox)
+
         if isinstance(model, ConvexReLU):
             opt = CVXPYReLUSolver(optimizer.solver, optimizer.solver_kwargs)
         elif isinstance(model, ConvexGatedReLU):
@@ -174,7 +180,7 @@ def build_optimizer(
         else:
             raise ValueError(f"Model {model} not recognized by CVXPYSolver.")
 
-        opt_proc = OptimizationProcedure(opt)
+        opt_proc = OptimizationProcedure(opt, post_process=post_process)
 
     elif isinstance(optimizer, ConeDecomposition):
         raise NotImplementedError(
