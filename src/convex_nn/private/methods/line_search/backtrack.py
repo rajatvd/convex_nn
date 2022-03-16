@@ -1,6 +1,4 @@
-"""
-Rules for backtracking and updating step-sizes during a line-search.
-"""
+"""Rules for backtracking and updating step-sizes during a line-search."""
 from typing import List, Optional
 
 import lab
@@ -16,6 +14,7 @@ class Backtracker:
         grad: Optional[lab.Tensor] = None,
     ) -> float:
         """Pick the next candidate step-size for a line-search.
+
         :param step_size: the step_size previously tried.
         :returns: a new step-size to try.
         """
@@ -38,6 +37,7 @@ class MultiplicativeBacktracker(Backtracker):
         grad: Optional[lab.Tensor] = None,
     ) -> float:
         """Step-size selection by simple backtracking,
+
             step_size <- step_size * beta.
         :param step_size: the step_size previously tried.
         :returns: a new step-size to try.

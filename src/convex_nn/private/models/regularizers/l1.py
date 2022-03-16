@@ -1,6 +1,4 @@
-"""
-L1 Regularizer.
-"""
+"""L1 Regularizer."""
 
 from typing import Optional
 
@@ -11,7 +9,7 @@ from convex_nn.private.models.regularizers.regularizer import Regularizer
 
 
 class L1Regularizer(Regularizer):
-    """The l1-regularizer, which takes the form
+    """The l1-regularizer, which takes the form.
 
     .. math:: r(w) = \\lambda \\|w\\||_2^2.
 

@@ -1,6 +1,5 @@
-"""
-Convert metrics from :module:`convex_nn.metrics` into internal representations.
-"""
+"""Convert metrics from :module:`convex_nn.metrics` into internal
+representations."""
 from typing import Tuple, List, Dict, Any
 from copy import deepcopy
 

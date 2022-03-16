@@ -1,6 +1,5 @@
-"""
-Implementation of augmented Lagrangian method for fitting two-layer MLPs with orthant constraints.
-"""
+"""Implementation of augmented Lagrangian method for fitting two-layer MLPs
+with orthant constraints."""
 from typing import Dict, Any, Tuple, Optional
 
 import lab
@@ -26,6 +25,7 @@ class MetaOptimizer(Optimizer):
         batch_index: Optional[int] = None,
     ) -> Tuple[Model, TerminationCriterion, Optimizer, Dict[str, Any]]:
         """Execute one step of a meta optimization routine.
+
         :param model: the model to update.
         :param inner_term_criterion: the termination criterion of the inner optimization
             routine to which this meta optimizer is being applied.
@@ -41,6 +41,7 @@ class MetaOptimizer(Optimizer):
 
     def outer(self, model: Model) -> Model:
         """Put model in inner-loop mode.
+
         :param model: the model.
         :returns: updated model.
         """
@@ -49,6 +50,7 @@ class MetaOptimizer(Optimizer):
 
     def inner(self, model: Model) -> Model:
         """Put model in outer-loop mode.
+
         :param model: the model.
         :returns: updated model.
         """

@@ -1,6 +1,4 @@
-"""
-Block-diagonal matrix.
-"""
+"""Block-diagonal matrix."""
 from typing import Callable, Optional, Tuple, List
 
 import numpy as np
@@ -11,7 +9,9 @@ import lab
 
 
 class MatVecOperator(LinearOperator):
-    """Implementation of a generalized linear operator for matrix-vector products.
+    """Implementation of a generalized linear operator for matrix-vector
+    products.
+
     Matrix-matrix products are implemented by naive iterative over columns.
     Note: use 'dot' to support composition of MatVecOperators.
     """

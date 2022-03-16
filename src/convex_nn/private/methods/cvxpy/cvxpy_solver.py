@@ -1,6 +1,4 @@
-"""
-Basic interface for CVXPY-base solvers.
-"""
+"""Basic interface for CVXPY-base solvers."""
 
 from typing import Dict, Any, Tuple
 
@@ -12,8 +10,7 @@ from convex_nn.private.models import Model
 
 
 class CVXPYSolver(ExternalSolver):
-    """
-    Interface for solvers based on the `CVXPY <https://www.cvxpy.org>`_ DSL.
+    """Interface for solvers based on the `CVXPY <https://www.cvxpy.org>`_ DSL.
 
     Attributes:
         solver: underlying solver to use with CVXPY.

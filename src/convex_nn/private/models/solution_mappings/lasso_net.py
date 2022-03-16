@@ -1,6 +1,4 @@
-"""
-Solution mappings for LassoNet models.
-"""
+"""Solution mappings for LassoNet models."""
 
 import lab
 

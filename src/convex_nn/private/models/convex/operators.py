@@ -1,6 +1,4 @@
-"""
-Construct efficient operators for convex neural networks.
-"""
+"""Construct efficient operators for convex neural networks."""
 from typing import Tuple
 
 from .kernels import einsum_kernel as ek
@@ -21,8 +19,9 @@ expanded_bd_hessian = dk.expanded_bd_hessian
 
 
 def get_kernel(kernel_name: str) -> Tuple:
-    """Get a complete set of "kernel" functions for models.nns.ConvexMLP.
-    These kernel functions implement operations with the expanded data matrix
+    """Get a complete set of "kernel" functions for models.nns.ConvexMLP. These
+    kernel functions implement operations with the expanded data matrix.
+
     .. math:: A = [D_1 X, D_2 X, ..., D_P X],
     without (necessarily) forming A directly. Note that these *only* work with the squared
     loss at the moment.
@@ -48,9 +47,10 @@ def get_kernel(kernel_name: str) -> Tuple:
 
 
 def get_matrix_builders(kernel_name: str) -> Tuple:
-    """Get a complete set of "matrix builders" for models.nns.ConvexMLP.
-    These functions directly construct the matrices associated with the model, such as
-    the expanded data matrix,
+    """Get a complete set of "matrix builders" for models.nns.ConvexMLP. These
+    functions directly construct the matrices associated with the model, such
+    as the expanded data matrix,
+
     .. math:: A = [D_1 X, D_2 X, ..., D_P X],
     without (necessarily) computing intermediate products. Note that these *only* work
     with the squared loss at the moment.
@@ -74,7 +74,9 @@ def get_matrix_builders(kernel_name: str) -> Tuple:
 
 
 def einsum_kernel() -> Tuple:
-    """Get "kernel" operators for a ConvexMLP with squared loss based on einsum.
+    """Get "kernel" operators for a ConvexMLP with squared loss based on
+    einsum.
+
     These operators are quite cryptic, but often an order of magnitude faster than
     direct computation.
     :returns: tuple of Callable (data_mvp, data_t_mvp, grad, hessian_mvp, bd_hessian_mvp), where
@@ -96,6 +98,7 @@ def einsum_kernel() -> Tuple:
 
 def einsum_matrix_builders() -> Tuple:
     """Get matrix builders for a ConvexMLP with squared loss based on einsum.
+
     These functions are quite cryptic, but often an order of magnitude faster than
     direct computation.
     :returns: tuple of Callable (data, hessian, bd_hessian), where
@@ -112,6 +115,7 @@ def einsum_matrix_builders() -> Tuple:
 
 def direct_matrix_builders():
     """Get matrix builders for a ConvexMLP with squared loss based on einsum.
+
     These functions are compute the matrices slowly and directly and are only
     meant as reference implementations.
     :returns: tuple of Callable (data, hessian, bd_hessian), where
@@ -124,7 +128,9 @@ def direct_matrix_builders():
 
 
 def direct_kernel():
-    """Get "direct" operators for a ConvexMLP with squared loss based on einsum.
+    """Get "direct" operators for a ConvexMLP with squared loss based on
+    einsum.
+
     These operators compute quantities by directly forming the expanded data matrix,
     which is slow but reliable. They are intended only for comparisons or as a reference.
     :returns: tuple of Callable (data_mvp, data_t_mvp, grad, hessian_mvp, bd_hessian_mvp), where

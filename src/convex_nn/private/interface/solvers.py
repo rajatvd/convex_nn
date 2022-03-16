@@ -1,6 +1,5 @@
-"""
-Convert solvers from :module:`convex_nn.solvers` into internal optimizers and optimization procedures.
-"""
+"""Convert solvers from :module:`convex_nn.solvers` into internal optimizers
+and optimization procedures."""
 
 from typing import Optional
 

@@ -1,5 +1,4 @@
-"""
-Optimization methods for training neural networks by convex reformulation.
+"""Optimization methods for training neural networks by convex reformulation.
 
 Notes:
     We only support the squared loss at the moment.
@@ -39,7 +38,8 @@ class Optimizer:
 
 
 class RFISTA(Optimizer):
-    """Accelerated proximal-gradient solver with line-search and restarts for Gated ReLU models.
+    """Accelerated proximal-gradient solver with line-search and restarts for
+    Gated ReLU models.
 
     This optimizer solves the Gated ReLU training problem by directly solving the convex reformulation,
 
@@ -104,7 +104,8 @@ class AL(Optimizer):
         constraint_tol: float = 1e-6,
         delta: float = 1000,
     ):
-        """Initialize an augmented Lagrangian method using R-FISTA as a sub-solver.
+        """Initialize an augmented Lagrangian method using R-FISTA as a sub-
+        solver.
 
         Args:
             model: the model to be optimized. Note that it will be checked for compatibility with the optimizer.
@@ -127,7 +128,8 @@ class AL(Optimizer):
 
 
 class LeastSquaresSolver(Optimizer):
-    """Direct solver for the unregularized or L2-regularized Gated ReLU problem based on LSMR [1] or LSQR [2].
+    """Direct solver for the unregularized or L2-regularized Gated ReLU problem
+    based on LSMR [1] or LSQR [2].
 
     This optimizer solves the (L2-regularized) Gated ReLU training problem by solving the convex reformulation,
 
@@ -180,7 +182,8 @@ class LeastSquaresSolver(Optimizer):
 
 
 class CVXPYSolver(Optimizer):
-    """Solve convex reformulations using `CVXPY <https://www.cvxpy.org>`_ as a interface to different interior-point solvers.
+    """Solve convex reformulations using `CVXPY <https://www.cvxpy.org>`_ as a
+    interface to different interior-point solvers.
 
     `CVXPY <https://www.cvxpy.org>`_ provides a framework for denoting and solving convex optimization problems.
     The framework is compatible with a variety of solvers (mainly interior point methods); see `choosing a solver <https://www.cvxpy.org/tutorial/advanced/index.html#choosing-a-solver>`_ for details.

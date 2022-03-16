@@ -1,6 +1,5 @@
-"""
-"Direct" operators for convex neural networks based on manually constructing the underlying matrices.
-"""
+""""Direct" operators for convex neural networks based on manually constructing
+the underlying matrices."""
 from typing import Optional
 
 import lab
@@ -130,7 +129,8 @@ def expanded_data_matrix(
 
 
 def expanded_hessian(X: lab.Tensor, D: lab.Tensor, flatten: bool = False) -> lab.Tensor:
-    """Construct Hessian of the squared loss for the linear model
+    """Construct Hessian of the squared loss for the linear model.
+
         $sum_i D_i X v_i$
     where v_i is the i'th block of the input vector 'v'. Note: direct computation
     is not efficient; whenever possible, use the einsum kernels to construct an operator
@@ -161,8 +161,9 @@ def expanded_bd_hessian(
     X: lab.Tensor,
     D: lab.Tensor,
 ) -> lab.Tensor:
-    """Construct the diagonal blocks H_i of the Hessian of the squared loss
-    for the linear model
+    """Construct the diagonal blocks H_i of the Hessian of the squared loss for
+    the linear model.
+
         $sum_i D_i X v_i$
     where v_i is the i'th block of the input vector 'v'. Note: direct computation
     is not efficient; whenever possible, use the einsum kernels to construct an operator

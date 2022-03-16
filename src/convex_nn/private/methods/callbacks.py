@@ -1,6 +1,4 @@
-"""
-Callback functions to be executed after each iteration of optimization.
-"""
+"""Callback functions to be executed after each iteration of optimization."""
 from typing import Tuple, Dict, Optional, Callable
 
 import numpy as np
@@ -73,7 +71,8 @@ class ObservedSignPatterns:
 
 class ConeDecomposition:
 
-    """Convert a gated ReLU model into a ReLU model by solving the cone decomposition problem."""
+    """Convert a gated ReLU model into a ReLU model by solving the cone
+    decomposition problem."""
 
     def __init__(self, solver: Callable):
         """
@@ -90,7 +89,8 @@ class ConeDecomposition:
 
 
 class ProximalCleanup:
-    """Cleanup the solution to an optimization problem by taking one proximal-gradient step."""
+    """Cleanup the solution to an optimization problem by taking one proximal-
+    gradient step."""
 
     def __init__(self, prox: ProximalOperator):
         """

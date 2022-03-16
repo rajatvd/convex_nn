@@ -1,6 +1,4 @@
-"""
-Proximal operators.
-"""
+"""Proximal operators."""
 
 
 from .proximal_ops import (

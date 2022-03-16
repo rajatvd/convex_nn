@@ -1,6 +1,4 @@
-"""
-Line-search.
-"""
+"""Line-search."""
 
 # ===== module exports ===== #
 

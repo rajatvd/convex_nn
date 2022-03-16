@@ -1,6 +1,4 @@
-"""
-Orthant constraint.
-"""
+"""Orthant constraint."""
 from typing import Optional
 
 import lab
@@ -12,9 +10,9 @@ from convex_nn.private.prox import Orthant
 
 class OrthantConstraint(Constraint):
 
-    """Representation of the orthant constraint,
-        A_i x >= 0,
-    where A_i is a diagonal matrix with (A_i)_jk in {-1, 1}, as a regularizer.
+    """Representation of the orthant constraint, A_i x >= 0, where A_i is a
+    diagonal matrix with (A_i)_jk in {-1, 1}, as a regularizer.
+
     In essence, this is a wrapper for computation of the gradient mapping.
     """
 

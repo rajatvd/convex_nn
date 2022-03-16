@@ -1,6 +1,4 @@
-"""
-Metrics that can be recorded while training models.
-"""
+"""Metrics that can be recorded while training models."""
 import numpy as np
 
 
@@ -74,7 +72,8 @@ class Metrics(object):
         total_weights: bool = False,
         weight_sparsity: bool = False,
     ):
-        """Instantiate a metrics object by specifying which metrics should be collected during optimization.
+        """Instantiate a metrics object by specifying which metrics should be
+        collected during optimization.
 
         Args:
             metric_freq: the frequency at which to log metrics.
@@ -125,5 +124,6 @@ class Metrics(object):
             self.test_metrics = True
 
     def has_test_metrics(self) -> bool:
-        """Returns `True` if any test-set metric is enabled, `False` otherwise."""
+        """Returns `True` if any test-set metric is enabled, `False`
+        otherwise."""
         return self.test_metrics

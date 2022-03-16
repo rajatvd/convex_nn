@@ -1,6 +1,4 @@
-"""
-Gradient descent with line-search.
-"""
+"""Gradient descent with line-search."""
 from typing import Callable, Tuple, Dict, Any, Optional
 
 import lab
@@ -17,6 +15,7 @@ def gradient_step(
     prox: Optional[ProximalOperator] = None,
 ) -> lab.Tensor:
     """Take one step of gradient descent.
+
     :param w: the parameters to be updated.
     :param grad: the gradient of the objective function.
     :param step_size: the step-size to use.
@@ -39,7 +38,9 @@ def gd_ls(
     backtrack: Backtracker,
     prox: Optional[ProximalOperator] = None,
 ) -> Tuple[lab.Tensor, float, float, Dict[str, Any]]:
-    """Take one step of gradient descent using a line-search to pick the step-size.
+    """Take one step of gradient descent using a line-search to pick the step-
+    size.
+
     :param w: the parameters to be updated.
     :param f0: the objective function evaluated at w.
     :param descent_dir: the descent direction for the step.

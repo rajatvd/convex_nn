@@ -1,6 +1,4 @@
-"""
-Group L1 Regularizer.
-"""
+"""Group L1 Regularizer."""
 from typing import Optional
 
 import lab
@@ -11,7 +9,8 @@ from convex_nn.private.models.regularizers.regularizer import Regularizer
 
 class GroupL1Regularizer(Regularizer):
 
-    """The Group L1-regularizer, which has the mathematical form
+    """The Group L1-regularizer, which has the mathematical form.
+
         $f(w) = sum_i lambda_i ||w_i||_2$,
     where {w_i : i [p]} are the parameter groups.
     """
@@ -33,6 +32,7 @@ class GroupL1Regularizer(Regularizer):
         **kwargs,
     ) -> float:
         """Compute the penalty associated with the regularizer.
+
         :param w: parameter at which to compute the penalty.
         :returns: penalty value
         """
@@ -48,6 +48,7 @@ class GroupL1Regularizer(Regularizer):
         **kwargs,
     ) -> lab.Tensor:
         """Compute the minimum-norm subgradient (aka, the pseudo-gradient).
+
         :param w: parameter at which to compute the penalty gradient.
         :param base_grad: the gradient of the un-regularized objective. This is required
             to compute the minimum-norm subgradient.

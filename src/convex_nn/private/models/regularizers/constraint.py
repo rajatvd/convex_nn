@@ -1,6 +1,4 @@
-"""
-Orthant constraint.
-"""
+"""Orthant constraint."""
 from typing import Optional
 
 import lab
@@ -13,9 +11,9 @@ from convex_nn.private.prox import ProximalOperator
 class Constraint(Regularizer):
 
     """Representation of a regularizer based on convex constraints of the form,
-        f(W) geq 0,
-    where f is a convex function and W are the model weights.
-    In essence, this class is a wrapper for computation of the gradient mapping,
+    f(W) geq 0, where f is a convex function and W are the model weights. In
+    essence, this class is a wrapper for computation of the gradient mapping,
+
         g(xk) = xk - proj(xk - grad(xk)),
     which can be used as a stopping criterion.
     """
@@ -39,6 +37,7 @@ class Constraint(Regularizer):
 
     def penalty(self, w: lab.Tensor, **kwargs) -> float:
         """Compute the penalty associated with the regularizer.
+
         :param w: parameter at which to compute the penalty.
         :returns: penalty value
         """
@@ -51,7 +50,9 @@ class Constraint(Regularizer):
         step_size: float = 1.0,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the objective with respect to the model parameters.
+        """Compute the gradient of the objective with respect to the model
+        parameters.
+
         :param w: parameter at which to compute the penalty gradient.
         :param base_grad: gradient from the base model.
         :param step_size: step-size to use when computing the gradient mapping.

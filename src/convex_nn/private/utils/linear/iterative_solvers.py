@@ -1,6 +1,4 @@
-"""
-Iterative methods for solving linear systems and least-squares problems.
-"""
+"""Iterative methods for solving linear systems and least-squares problems."""
 from typing import Optional, Dict, Any, Tuple
 
 import numpy as np
@@ -31,7 +29,9 @@ def lstsq_iterative_solve(
     max_iters: int = 1000,
     tol: float = TOL,
 ) -> Tuple[np.ndarray, Dict[str, Any]]:
-    """Use an iterative method to solve the l2-regularized least-squares problem,
+    """Use an iterative method to solve the l2-regularized least-squares
+    problem,
+
     .. math::
 
         \|X w - y\|_2^2 + (\lambda/2) * \|w\|_2^2,
@@ -103,7 +103,8 @@ def linear_iterative_solve(
     max_iters: int = 1000,
     tol: float = TOL,
 ) -> Tuple[np.ndarray, Dict[str, Any]]:
-    """Use an iterative method to solve the linear system
+    """Use an iterative method to solve the linear system.
+
     .. math::
 
         Xw = b,

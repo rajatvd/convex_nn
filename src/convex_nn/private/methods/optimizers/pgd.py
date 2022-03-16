@@ -1,6 +1,4 @@
-"""
-Proximal gradient descent optimizer.
-"""
+"""Proximal gradient descent optimizer."""
 
 from convex_nn.private.methods.core import (
     proximal_gradient_step,

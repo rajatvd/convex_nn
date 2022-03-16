@@ -1,6 +1,4 @@
-"""
-Interface for model classes.
-"""
+"""Interface for model classes."""
 from math import ceil
 from typing import Optional, Tuple, Callable, Union, List, Dict
 
@@ -14,12 +12,14 @@ from convex_nn.private.models.regularizers import Regularizer
 class Model:
 
     """Interface for Model classes.
-    Models must be able to
-        (1) make predictions given data;
-        (2) compute a objective/objective associated with their predictions;
-        (3) compute first and (optionally) second-order derivatives of the objective with respect to their parameters.
-    Models classes thus wrap the functionality of a "forward pass", objective function, and "backward pass".
-    This abandons the compositionality of PyTorch or TensorFlow, but allows for better optimized computations.
+
+    Models must be able to     (1) make predictions given data;     (2) compute
+    a objective/objective associated with their predictions;     (3) compute
+    first and (optionally) second-order derivatives of the objective with
+    respect to their parameters. Models classes thus wrap the functionality of
+    a "forward pass", objective function, and "backward pass". This abandons
+    the compositionality of PyTorch or TensorFlow, but allows for better
+    optimized computations.
     """
 
     # public fields
@@ -85,12 +85,14 @@ class Model:
 
     def get_weights(self) -> List[lab.Tensor]:
         """Get model weights in an interpretable format.
+
         :returns: list of tensors.
         """
         return self.weights
 
     def _forward(self, X: lab.Tensor, w: lab.Tensor, **kwargs) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         :returns: the predictions f(x).
@@ -112,6 +114,7 @@ class Model:
         **kwargs,
     ) -> Union[float, lab.Tensor]:
         """Compute objective associated with examples X and targets y.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the objective.
@@ -130,7 +133,9 @@ class Model:
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the objective with respect to the model parameters.
+        """Compute the gradient of the objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the gradient.
@@ -149,6 +154,7 @@ class Model:
         **kwargs,
     ) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: (optional) specific parameter at which to compute the forward pass.
             Defaults to 'None', in which case the current model state is used.
@@ -174,6 +180,7 @@ class Model:
         **kwargs,
     ) -> Union[float, lab.Tensor]:
         """Compute objective associated with examples X and targets y.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: (optional) specific parameter at which to compute the objective.
@@ -206,7 +213,9 @@ class Model:
         step_size: Optional[float] = 1.0,
         **kwargs,
     ) -> Union[lab.Tensor, Tuple[lab.Tensor, lab.Tensor]]:
-        """Compute the gradient of the objective with respect to the model parameters.
+        """Compute the gradient of the objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: (optional) specific parameter at which to compute the gradient.
@@ -283,8 +292,9 @@ class Model:
         return objective_fn, grad_fn
 
     def data_operator(self, X: lab.Tensor, **kargs) -> LinearOperator:
-        """Construct a matrix operator to evaluate the data operator X v.
-        where 'v' is an input vector with shape (d,).
+        """Construct a matrix operator to evaluate the data operator X v. where
+        'v' is an input vector with shape (d,).
+
         :param X: (n,d) array containing the data examples.
         :returns: LinearOperator which computes the desired product.
         """

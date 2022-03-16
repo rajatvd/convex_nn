@@ -1,6 +1,4 @@
-"""
-Preconditioners for iterative linear-system solvers.
-"""
+"""Preconditioners for iterative linear-system solvers."""
 
 from typing import Optional, Union
 
@@ -12,6 +10,7 @@ def get_preconditioner(
     name: str, X: lab.Tensor, D: Optional[lab.Tensor] = None
 ) -> Union[MatVecOperator, lab.Tensor]:
     """Lookup and return preconditioner.
+
     :param name: the name of the preconditioner to return.
     :param X: (n,d) feature matrix of training examples.
     :param D: (optional) a matrix of sign patterns for the expanded
@@ -27,8 +26,9 @@ def get_preconditioner(
 
 
 def hessian_diagonal(X: lab.Tensor, D: Optional[lab.Tensor] = None) -> lab.Tensor:
-    """Compute the diagonal of the Hessian for the squared loss.
-    If D is not None, then the diagonal the expanded matrix
+    """Compute the diagonal of the Hessian for the squared loss. If D is not
+    None, then the diagonal the expanded matrix.
+
     .. math::
 
         [diag(D[:,1] X, ...., diag(D[:,P]) X],

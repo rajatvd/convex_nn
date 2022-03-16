@@ -12,6 +12,7 @@ import lab
 
 def squared_error(preds: lab.Tensor, y: lab.Tensor) -> float:
     """Compute squared loss,
+
         $(1/2)*||preds - y||_2^2$
     :param preds: predictions.
     :param y: targets.
@@ -23,6 +24,7 @@ def squared_error(preds: lab.Tensor, y: lab.Tensor) -> float:
 
 def logistic_loss(preds: lab.Tensor, y: lab.Tensor):
     """Compute the logistic loss,
+
         $log(1 + exp(-y*preds))$
     :param preds: predictions.
     :param y: targets. These should be in {-1, 1}
@@ -33,8 +35,9 @@ def logistic_loss(preds: lab.Tensor, y: lab.Tensor):
 
 
 def binned_accuracy(preds: lab.Tensor, y: lab.Tensor, n_classes: Optional[int] = 10):
-    """Compute the accuracy of classification method by binning
-    the predictions.
+    """Compute the accuracy of classification method by binning the
+    predictions.
+
     :param preds: the raw predictions from the model.
     :param y: the true targets/labels.
     :param n_classes: the number of target classes. It is assumed that the classes {0, 1, ..., n_classes}.
@@ -48,6 +51,7 @@ def binned_accuracy(preds: lab.Tensor, y: lab.Tensor, n_classes: Optional[int] =
 def accuracy(preds: lab.Tensor, y: lab.Tensor):
     """Compute the accuracy of classification, assuming y is a one-hot encoded
     vector.
+
     :param preds: the raw predictions from the model.
     :param y: the one-hot encoded true targets/labels
     :returns: accuracy score
@@ -67,13 +71,14 @@ def l1_penalty(w: lab.Tensor, lam: float) -> float:
 
 
 def l2_penalty(w: lab.Tensor, lam: float) -> float:
-    """ """
+    """"""
 
     return (lam / 2) * lab.sum(w ** 2)
 
 
 def group_l1_penalty(w: lab.Tensor, lam: Union[lab.Tensor, float]) -> float:
     """Compute the penalty associated with the regularizer.
+
     :param w: the parameter at which to compute group l1 penalty. Note that 'w'
         must have shape (x, P), where 'P' is the number of groups.
     :param lam: the coefficient(s) controlling the strength of regularization.
@@ -86,6 +91,7 @@ def group_l1_penalty(w: lab.Tensor, lam: Union[lab.Tensor, float]) -> float:
 
 def l1_squared_penalty(w: lab.Tensor, lam: Union[lab.Tensor, float]) -> float:
     """Compute the penalty associated with the regularizer.
+
     :param w: the parameter at which to compute group l1 penalty. Note that 'w'
         must have shape (x, P), where 'P' is the number of groups.
     :param lam: the coefficient(s) controlling the strength of regularization.
@@ -101,6 +107,7 @@ def l1_squared_penalty(w: lab.Tensor, lam: Union[lab.Tensor, float]) -> float:
 
 def relu(x: lab.Tensor) -> lab.Tensor:
     """Compute ReLU activation,
+
         $max(x, 0)$
     :param x: pre-activations
     """
@@ -111,6 +118,7 @@ def relu(x: lab.Tensor) -> lab.Tensor:
 
 def logistic_fn(x: lab.Tensor) -> lab.Tensor:
     """Compute logistic activation,
+
         $1 / (1 + exp(-x))$
     :param x: pre-activations
     """

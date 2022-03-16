@@ -1,6 +1,4 @@
-"""
-Proximal operators for LassoNet models.
-"""
+"""Proximal operators for LassoNet models."""
 
 from typing import Optional, Union, Tuple
 
@@ -10,7 +8,8 @@ from convex_nn.private.prox.proximal_ops import ProximalOperator
 
 
 class HierProx(ProximalOperator):
-    """Implementation of the hierarchical proximal operator *without* group L1 regularization."""
+    """Implementation of the hierarchical proximal operator *without* group L1
+    regularization."""
 
     def __init__(self, M: float):
         """
@@ -28,6 +27,7 @@ class HierProx(ProximalOperator):
         return_slacks: bool = False,
     ) -> Union[lab.Tensor, Tuple[lab.Tensor, lab.Tensor]]:
         """Compute the proximal operator.
+
         :param w: parameters to which apply the operator will be applied.
         :param beta: (NOT USED) the coefficient in the proximal operator.
             Note that it has no effect for projections such as this operator.

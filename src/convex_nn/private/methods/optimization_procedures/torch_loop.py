@@ -1,6 +1,4 @@
-"""
-Optimization procedure for PyTorch models.
-"""
+"""Optimization procedure for PyTorch models."""
 from logging import Logger, root, INFO
 from typing import Dict, Any, List, Tuple, Callable, Optional
 import timeit
@@ -79,7 +77,8 @@ class TorchLoop(IterativeOptimizationProcedure):
         self.post_process = post_process
 
     def reset(self):
-        """Reset the optimization procedure (including any attached optimizers) to their original state."""
+        """Reset the optimization procedure (including any attached optimizers)
+        to their original state."""
         # TODO: reset the optimizer.
 
     def _get_optimizer_step_size(self):
@@ -96,9 +95,11 @@ class TorchLoop(IterativeOptimizationProcedure):
         final_metrics: Optional[Tuple[List[str], List[str], List[str]]] = None,
         callback: Callable = None,
     ) -> Tuple[Dict[str, Any], Model, Dict[str, Any]]:
-        """Optimize a model using an iterative optimize method by running a "optimization" loop.
-        The loop runs for 'max_iters' number of iterations, collects optional metrics at every
-        iteration, and will terminate early if the conditions of 'term_criterion' are met.
+        """Optimize a model using an iterative optimize method by running a
+        "optimization" loop. The loop runs for 'max_iters' number of
+        iterations, collects optional metrics at every iteration, and will
+        terminate early if the conditions of 'term_criterion' are met.
+
         :param logger: a logging.Logger object that can be used to log information during
             optimization.
         :param model: the model to optimize.

@@ -1,6 +1,4 @@
-"""
-Methods.
-"""
+"""Methods."""
 
 # ===== module exports ===== #
 

@@ -1,6 +1,4 @@
-"""
-Regularizers.
-"""
+"""Regularizers."""
 
 from .regularizer import Regularizer
 from .constraint import Constraint

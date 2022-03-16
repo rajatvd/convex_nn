@@ -1,9 +1,10 @@
-"""
-Proximal operators. This module provides functions for solving minimization problems of the form
+"""Proximal operators. This module provides functions for solving minimization
+problems of the form.
+
     $argmin_x { d(x,w) + beta * g(x) }$,
 where d is a metric, g is a "simple" function, and beta is a parameter controlling the trade-off between d and g.
 
-TODO: 
+TODO:
     - Add proximal operator for L2-squared penalty so that we can support this using R-FISTA.
     - Clean-up group-by-feature to be less ugly.
     - Should we retain the Orthant and GroupL1Orthant operators? They don't have a use at the moment.
@@ -20,6 +21,7 @@ class ProximalOperator:
 
     def __call__(self, w: lab.Tensor, beta: Optional[float] = None) -> lab.Tensor:
         """Evaluate the proximal_operator.
+
         :param w: parameters to which apply the operator will be applied.
         :param beta: the coefficient in the proximal operator. This is usually a step-size.
         :returns: prox(w)
@@ -169,10 +171,8 @@ class GroupL1(Regularizer):
 
 class Orthant(ProximalOperator):
 
-    """The projection operator for the orthant constrain,
-        A_i x >= 0,
-    where A_i is a diagonal matrix with (A_i)_jk in {-1, 1}.
-    """
+    """The projection operator for the orthant constrain, A_i x >= 0, where A_i
+    is a diagonal matrix with (A_i)_jk in {-1, 1}."""
 
     def __init__(self, A: lab.Tensor):
         """

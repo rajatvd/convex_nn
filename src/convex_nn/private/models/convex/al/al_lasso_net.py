@@ -1,6 +1,4 @@
-"""
-Augmented Lagrangian for LassoNet.
-"""
+"""Augmented Lagrangian for LassoNet."""
 from typing import Tuple, Optional, Union, Any, List
 
 import lab
@@ -13,7 +11,8 @@ from convex_nn.private.loss_functions import squared_error
 
 class AL_LassoNet(AL_MLP):
 
-    """Base class for augmented Lagrangian of the convex formulation of a LassoNet."""
+    """Base class for augmented Lagrangian of the convex formulation of a
+    LassoNet."""
 
     def __init__(
         self,
@@ -88,6 +87,7 @@ class AL_LassoNet(AL_MLP):
 
     def get_weights(self) -> List[lab.Tensor]:
         """Get model weights in an interpretable format.
+
         :returns: list of tensors -- [network weights, skip weights].
         """
 
@@ -106,6 +106,7 @@ class AL_LassoNet(AL_MLP):
         **kwargs,
     ) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
@@ -128,6 +129,7 @@ class AL_LassoNet(AL_MLP):
         **kwargs,
     ) -> float:
         """Compute the l2 objective with respect to the model weights.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: specific parameter at which to compute the objective.
@@ -162,7 +164,9 @@ class AL_LassoNet(AL_MLP):
         flatten: bool = False,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of augmented Lagrangian objective with respect to the model weights.
+        """Compute the gradient of augmented Lagrangian objective with respect
+        to the model weights.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the gradient.
@@ -219,7 +223,8 @@ class AL_LassoNet(AL_MLP):
         w: Optional[lab.Tensor] = None,
         index_range: Optional[Tuple[int, int]] = None,
     ):
-        """Compute violation of the linear constraints
+        """Compute violation of the linear constraints.
+
         .. math::
 
             X v_i - a_i

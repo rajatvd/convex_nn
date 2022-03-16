@@ -1,6 +1,4 @@
-"""
-Convex formulations of neural networks.
-"""
+"""Convex formulations of neural networks."""
 
 from typing import Optional, List, Tuple, Dict
 from math import ceil
@@ -19,7 +17,8 @@ from convex_nn.private.loss_functions import squared_error, relu
 
 
 class ConvexMLP(Model):
-    """Convex formulation of a two-layer neural network (multi-layer perceptron) with ReLU activations."""
+    """Convex formulation of a two-layer neural network (multi-layer
+    perceptron) with ReLU activations."""
 
     def __init__(
         self,
@@ -85,6 +84,7 @@ class ConvexMLP(Model):
         self, X: lab.Tensor, w: lab.Tensor, D: Optional[lab.Tensor] = None, **kwargs
     ) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
@@ -103,6 +103,7 @@ class ConvexMLP(Model):
         **kwargs,
     ) -> float:
         """Compute the l2 objective with respect to the model weights.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the objective.
@@ -124,9 +125,10 @@ class ConvexMLP(Model):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the l2 objective with respect to the model weights.
-        As in 'self.__call__' above, we could optimize this by implementing it in a
-        faster low-level language.
+        """Compute the gradient of the l2 objective with respect to the model
+        weights. As in 'self.__call__' above, we could optimize this by
+        implementing it in a faster low-level language.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the gradient.
@@ -148,7 +150,9 @@ class ConvexMLP(Model):
         X: lab.Tensor,
         D: Optional[lab.Tensor] = None,
     ) -> LinearOperator:
-        """Construct a matrix operator to evaluate the matrix-vector equivalent to the sum,
+        """Construct a matrix operator to evaluate the matrix-vector equivalent
+        to the sum,
+
         .. math::
 
             \\sum_i D_i X v_i
@@ -195,6 +199,7 @@ class ConvexMLP(Model):
         self, patterns: lab.Tensor, weights: lab.Tensor, remove_zero=False
     ) -> lab.Tensor:
         """Attempt to augment the current model with additional sign patterns.
+
         :param patterns: the tensor of sign patterns to add to the current set.
         :param weights: the tensor of weights which induced the new patterns.
         :param remove_zero: whether or not to remove the zero vector.
@@ -269,7 +274,9 @@ class ConvexMLP(Model):
         w: Optional[lab.Tensor] = None,
         **kwargs,
     ) -> Tuple[lab.Tensor, lab.Tensor]:
-        """Compute the gradient of the l2 objective with respect to the model parameters.
+        """Compute the gradient of the l2 objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: (optional) specific parameter at which to compute the sign patterns.

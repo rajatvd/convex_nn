@@ -1,5 +1,4 @@
-"""
-Functions for generating synthetic datasets.
+"""Functions for generating synthetic datasets.
 
 Public Functions:
 
@@ -31,8 +30,9 @@ def gen_classification_data(
     hidden_units: int = 50,
     kappa: float = 1.0,
 ) -> Tuple[Dataset, Dataset]:
-    """Create a binary classification dataset with a random Gaussian design matrix and targets given
-    by a two-layer neural network with random Gaussian weights.
+    """Create a binary classification dataset with a random Gaussian design
+    matrix and targets given by a two-layer neural network with random Gaussian
+    weights.
 
     If `kappa` is supplied, then the design matrix satisfies :math:`\\kappa(X) \\approx \\text{kappa}`.
 
@@ -165,7 +165,6 @@ def gen_sparse_regression_problem(
         transform: a non-linear transformation
 
     Returns:
-
     """
 
     rng = np.random.default_rng(seed=data_seed)

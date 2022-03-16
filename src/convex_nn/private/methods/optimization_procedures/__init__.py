@@ -1,6 +1,4 @@
-"""
-Optimization procedures.
-"""
+"""Optimization procedures."""
 
 # ===== module exports ===== #
 

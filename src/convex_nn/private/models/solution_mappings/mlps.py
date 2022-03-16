@@ -1,6 +1,4 @@
-"""
-Solution mappings for the C-ReLU and C-GReLU problems.
-"""
+"""Solution mappings for the C-ReLU and C-GReLU problems."""
 import torch
 
 import lab

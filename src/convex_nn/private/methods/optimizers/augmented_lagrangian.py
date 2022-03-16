@@ -1,6 +1,5 @@
-"""
-Implementation of augmented Lagrangian method for fitting two-layer MLPs with orthant constraints.
-"""
+"""Implementation of augmented Lagrangian method for fitting two-layer MLPs
+with orthant constraints."""
 from typing import Dict, Any, Tuple, Optional
 import lab
 
@@ -54,9 +53,7 @@ class AugmentedLagrangian(MetaOptimizer):
         self.delta: Optional[float] = None
 
     def reset(self):
-        """
-        Reset the optimizer to its initial state.
-        """
+        """Reset the optimizer to its initial state."""
 
         self.delta = None
 
@@ -69,8 +66,10 @@ class AugmentedLagrangian(MetaOptimizer):
         y: lab.Tensor,
         batch_index: Optional[int] = None,
     ) -> Tuple[Model, TerminationCriterion, Optimizer, Dict[str, Any]]:
-        """Execute one step of the augmented Lagrangian method. Warning: this will solve a
-            another optimization problem as sub-routine, which can be costly.
+        """Execute one step of the augmented Lagrangian method. Warning: this
+        will solve a another optimization problem as sub-routine, which can be
+        costly.
+
         :param model: the model to update.
         :param inner_term_criterion: the termination criterion of the inner optimization
             routine to which this meta optimizer is being applied.

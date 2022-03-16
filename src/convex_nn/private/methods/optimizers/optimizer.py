@@ -1,6 +1,4 @@
-"""
-Base class for iterative optimizers.
-"""
+"""Base class for iterative optimizers."""
 from typing import Callable, Optional, Tuple, Dict, Any
 
 import lab
@@ -17,8 +15,8 @@ class Optimizer:
 
     """The base class for optimization methods.
 
-    Optimizer is a stateful wrapper around a 'step_fn' --- a function which
-    can be called to compute one step of an iterative optimization method.
+    Optimizer is a stateful wrapper around a 'step_fn' --- a function which can
+    be called to compute one step of an iterative optimization method.
     """
 
     def __init__(
@@ -43,9 +41,7 @@ class Optimizer:
         self.f1: Optional[float] = None
 
     def reset(self):
-        """
-        Reset the optimizer to its initial state.
-        """
+        """Reset the optimizer to its initial state."""
 
         self.step_size = self.init_step_size
         self.f0 = None
@@ -62,6 +58,7 @@ class Optimizer:
         batch_size: Optional[int] = None,
     ) -> Tuple[Model, Optional[float], Dict[str, Any]]:
         """Execute one step of an iterative optimization method.
+
         :param model: the model to update.
         :param X: the (n,d) data matrix to use in the update.
         :param y: the (n,) vector of targets.
@@ -96,8 +93,8 @@ class LSOptimizer(Optimizer):
 
     """Optimization method with line-search.
 
-    Like optimizer, this is a stateful wrapper around a 'step_fn', which
-    can be called to execute one step of the f.o. method, including the line-search.
+    Like optimizer, this is a stateful wrapper around a 'step_fn', which can be
+    called to execute one step of the f.o. method, including the line-search.
     """
 
     def __init__(
@@ -122,9 +119,7 @@ class LSOptimizer(Optimizer):
         self.backtrack_fn = backtrack_fn
 
     def reset(self):
-        """
-        Reset the optimizer to its initial state.
-        """
+        """Reset the optimizer to its initial state."""
         super().reset()
         self.old_step_size = None
 
@@ -139,6 +134,7 @@ class LSOptimizer(Optimizer):
         batch_size: Optional[int] = None,
     ) -> Tuple[Model, Optional[float], Dict[str, Any]]:
         """Execute one step of an iterative optimization method.
+
         :param model: the model to update.
         :param X: the (n,d) data matrix to use in the update.
         :param y: the (n,) vector of targets.

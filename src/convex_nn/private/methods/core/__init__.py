@@ -1,6 +1,4 @@
-"""
-Core optimization routines.
-"""
+"""Core optimization routines."""
 
 from .line_search import ls
 from .gradient_descent import gradient_step, gd_ls

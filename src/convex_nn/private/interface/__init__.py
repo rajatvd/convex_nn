@@ -1,6 +1,5 @@
-"""
-Functions for interfacing between the public API and the models, optimizers, and data representations used in the :module:`private`.
-"""
+"""Functions for interfacing between the public API and the models, optimizers,
+and data representations used in the :module:`private`."""
 
 from .data import (
     normalized_into_input_space,

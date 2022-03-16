@@ -1,6 +1,4 @@
-"""
-Utilities.
-"""
+"""Utilities."""
 
 from .linear_operators import MatVecOperator
 

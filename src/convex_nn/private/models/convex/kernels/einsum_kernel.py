@@ -1,6 +1,4 @@
-"""
-Einsum-based operators for convex neural networks.
-"""
+"""Einsum-based operators for convex neural networks."""
 
 import numpy as np
 

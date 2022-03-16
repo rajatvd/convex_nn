@@ -1,6 +1,5 @@
-"""
-Wrapper for PyTorch Sequential module ensuring that it meets the interface specific in model.py
-"""
+"""Wrapper for PyTorch Sequential module ensuring that it meets the interface
+specific in model.py."""
 
 from typing import Optional, Union, Tuple
 
@@ -14,10 +13,8 @@ import convex_nn.private.loss_functions as loss_fns
 
 
 class SequentialWrapper(torch.nn.Sequential, Model):
-    """
-    Model-style wrapper for PyTorch Sequential module that provides an interface for objective
-    and gradient computation.
-    """
+    """Model-style wrapper for PyTorch Sequential module that provides an
+    interface for objective and gradient computation."""
 
     activation_history: Optional[torch.Tensor] = None
     weight_history: Optional[torch.Tensor] = None
@@ -53,6 +50,7 @@ class SequentialWrapper(torch.nn.Sequential, Model):
         **kwargs,
     ) -> torch.Tensor:
         """Compute objective associated with examples X and targets y.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: (NOT USED) specific parameter at which to compute the objective.
@@ -87,7 +85,9 @@ class SequentialWrapper(torch.nn.Sequential, Model):
         batch_size: Optional[int] = None,
         **kwargs,
     ) -> Union[lab.Tensor, Tuple[lab.Tensor, lab.Tensor]]:
-        """Compute the gradient of the objective with respect to the model parameters.
+        """Compute the gradient of the objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: (NOT USED) specific parameter at which to compute the gradient.
@@ -114,7 +114,9 @@ class SequentialWrapper(torch.nn.Sequential, Model):
         w: Optional[lab.Tensor] = None,
         **kwargs,
     ) -> Tuple[torch.Tensor, lab.Tensor]:
-        """Compute the gradient of the l2 objective with respect to the model parameters.
+        """Compute the gradient of the l2 objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: (NOT USED) specific parameter at which to compute the sign patterns.

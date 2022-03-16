@@ -1,6 +1,4 @@
-"""
-Utilities for initializing optimization methods.
-"""
+"""Utilities for initializing optimization methods."""
 
 from typing import Union, Tuple, Optional, List
 import math
@@ -39,8 +37,10 @@ def init_max_epochs(
     max_iters: Optional[int] = None,
     batch_size: Optional[int] = None,
 ) -> int:
-    """Determine the maximum number of epochs to run an optimization algorithm given either either
-    the number of epochs directly or the number of iterations desired.
+    """Determine the maximum number of epochs to run an optimization algorithm
+    given either either the number of epochs directly or the number of
+    iterations desired.
+
     :param train_set: an (X,y) tuple containing the training set.
     :param max_epochs: the number of epochs to run. This will be return directly if it is non 'None'.
     :param max_iters: the maximum number of (inner) iterations to run the optimization algorithm.

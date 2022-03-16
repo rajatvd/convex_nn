@@ -1,6 +1,4 @@
-"""
-Model initializers.
-"""
+"""Model initializers."""
 from logging import Logger
 from typing import Tuple, Dict, Any, Callable
 
@@ -34,7 +32,9 @@ def get_initializer(
     train_data: Tuple[lab.Tensor, lab.Tensor],
     config: Dict[str, Any],
 ) -> Callable[[Model], Model]:
-    """Construct and return a closure which can be used to initialize a model before optimization.
+    """Construct and return a closure which can be used to initialize a model
+    before optimization.
+
     :param logger: a logger instance.
     :param rng: a seeded random number generator.
     :param train_data: the training set. This is required for "clever" initializations based on
@@ -43,7 +43,9 @@ def get_initializer(
     """
 
     def initialize_model(model_to_init: Model) -> Model:
-        """Initialize the given model according to the given initializer config.
+        """Initialize the given model according to the given initializer
+        config.
+
         :param model_to_init: the model to initialize.
         :returns: the initialized model.
         """

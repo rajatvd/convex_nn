@@ -1,6 +1,4 @@
-"""
-Line search conditions and tools.
-"""
+"""Line search conditions and tools."""
 from typing import List
 
 import numpy as np
@@ -34,7 +32,8 @@ class QuadraticBound(LSCondition):
     def __call__(
         self, f0: float, f1: float, step: lab.Tensor, grad: lab.Tensor, step_size: float
     ) -> bool:
-        """Check the Armijo or sufficient progress condition, which is
+        """Check the Armijo or sufficient progress condition, which is.
+
             $f(x_{k+1} ≤ f(x_k) + <grad, step> + eta/2 ||step||_2^2$.
         :param f0: previous objective value, f(x_k).
         :param f1: new objective value, f(x_{k+1}).
@@ -70,7 +69,8 @@ class Armijo(LSCondition):
         grad: lab.Tensor,
         step_size: float,
     ) -> bool:
-        """Check the Armijo or sufficient progress condition, which is
+        """Check the Armijo or sufficient progress condition, which is.
+
             $f(x_{k+1} ≤ f(x_k) + rho <grad, step>$.
         :param f0: previous objective value, f(x_k).
         :param f1: new objective value, f(x_{k+1}).

@@ -1,6 +1,4 @@
-"""
-Basic line-search loop.
-"""
+"""Basic line-search loop."""
 
 from typing import Callable, Dict, Tuple, Any
 
@@ -28,7 +26,9 @@ def ls(
     ls_cond: LSCondition,
     backtrack: Backtracker,
 ) -> Tuple[lab.Tensor, float, float, Dict[str, Any]]:
-    """Take one step of a iterative method using a line-search to pick the step-size.
+    """Take one step of a iterative method using a line-search to pick the
+    step-size.
+
     :param test_fn: function that returns the next test point given w, grad, and the next step_size.
     :param w: the parameters to be updated.
     :param f0: the objective function evaluated at w.

@@ -1,6 +1,4 @@
-"""
-Regularizers for training neural networks by convex reformulation.
-"""
+"""Regularizers for training neural networks by convex reformulation."""
 
 
 class Regularizer:

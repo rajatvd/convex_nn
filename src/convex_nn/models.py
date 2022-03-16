@@ -1,11 +1,10 @@
-"""
-Non-convex and convex formulations of two-layer neural networks.
+"""Non-convex and convex formulations of two-layer neural networks.
 
 Overview:
     This module provides implementations of non-convex and convex formulations for two-layer ReLU and Gated ReLU networks.
     The difference between ReLU and Gated ReLU networks is the activation function; Gated ReLU networks use fixed "gate" vectors when computing the activation pattern while standard ReLU networks use the model parameters when computation the activation.
     Concretely, the prediction function for a two ReLU network is
-    
+
     .. math:: h(X) = \\sum_{i=1}^p (X W_{1i}^{\\top})_+ \\cdot W_{2i}^{\\top},
 
     where :math:`W_{1} \\in \\mathbb{R}^{p \\times d}` are the parameters of the first layer, and :math:`W_{2} \\in \\mathbb{R}^{c \\times p}` are the parameters of the second layer.

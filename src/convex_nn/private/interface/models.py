@@ -1,6 +1,5 @@
-"""
-Convert models from :module:`convex_nn.models` into internal representations and vice versa.
-"""
+"""Convert models from :module:`convex_nn.models` into internal representations
+and vice versa."""
 
 from typing import Optional
 

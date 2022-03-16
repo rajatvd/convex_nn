@@ -1,6 +1,4 @@
-"""
-Convex re-formulations of neural network models.
-"""
+"""Convex re-formulations of neural network models."""
 
 from .convex_mlp import ConvexMLP
 from .convex_lasso_net import ConvexLassoNet

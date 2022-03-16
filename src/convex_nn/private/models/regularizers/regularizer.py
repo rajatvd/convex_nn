@@ -1,6 +1,4 @@
-"""
-Interface for model classes.
-"""
+"""Interface for model classes."""
 
 from typing import Optional, Union
 
@@ -28,6 +26,7 @@ class Regularizer:
 
     def penalty(self, w: lab.Tensor, **kwargs) -> float:
         """Compute the penalty associated with the regularizer.
+
         :param w: parameter at which to compute the penalty value.
         :returns: penalty value
         """
@@ -41,6 +40,7 @@ class Regularizer:
         **kargs,
     ) -> lab.Tensor:
         """Compute the gradient of the regularizer.
+
         :param w: parameter at which to compute the penalty gradient.
         :param base_grad: (optional) the gradient of the un-regularized objective. This is
             used to compute the minimum-norm subgradient for "pseudo-gradient" methods.

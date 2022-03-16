@@ -1,6 +1,4 @@
-"""
-Implementation of logistic regression for binary classification.
-"""
+"""Implementation of logistic regression for binary classification."""
 from typing import Optional
 
 import lab
@@ -30,6 +28,7 @@ class LogisticRegression(Model):
         **kwargs,
     ) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         """
@@ -48,6 +47,7 @@ class LogisticRegression(Model):
         **kwargs,
     ) -> float:
         """Compute logistic objective associated with examples X and targets y.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the objective.
@@ -64,7 +64,9 @@ class LogisticRegression(Model):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the logistic objective with respect to the model parameters.
+        """Compute the gradient of the logistic objective with respect to the
+        model parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the gradient.

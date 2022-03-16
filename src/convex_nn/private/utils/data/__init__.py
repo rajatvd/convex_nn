@@ -1,6 +1,4 @@
-"""
-Utilities for generating and processing datasets.
-"""
+"""Utilities for generating and processing datasets."""
 
 from .synthetic import (
     gen_regression_data,

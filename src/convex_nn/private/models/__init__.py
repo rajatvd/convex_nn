@@ -1,6 +1,4 @@
-"""
-Models.
-"""
+"""Models."""
 
 from .model import Model
 from .linear import L2Regression, LogisticRegression

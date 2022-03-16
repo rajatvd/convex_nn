@@ -1,6 +1,4 @@
-"""
-Proximal gradient descent with line-search.
-"""
+"""Proximal gradient descent with line-search."""
 
 from typing import Callable, Tuple, Dict, Any
 from functools import partial
@@ -23,6 +21,7 @@ def proximal_gradient_step(
     prox: ProximalOperator,
 ) -> lab.Tensor:
     """Take one step of proximal gradient descent.
+
     :param w: the parameters to be updated.
     :param grad: the gradient of the smooth component of the loss function.
     :param step_size: the step-size to use.
@@ -74,7 +73,9 @@ def proximal_gradient_ls(
     backtrack: Backtracker,
     prox: ProximalOperator,
 ) -> Tuple[lab.Tensor, float, float, Dict[str, Any]]:
-    """Take one step of proximal gradient descent using a line-search to pick the step-size.
+    """Take one step of proximal gradient descent using a line-search to pick
+    the step-size.
+
     :param w: the parameters to be updated.
     :param f0: the objective function evaluated at w.
     :param descent_dir: the descent direction for the step.
@@ -121,7 +122,9 @@ def fista_ls(
     t: float,
     mu: float = 0.0,
 ) -> Tuple[lab.Tensor, lab.Tensor, float, float, float, Dict[str, Any]]:
-    """Take one step of proximal gradient descent using a line-search to pick the step-size.
+    """Take one step of proximal gradient descent using a line-search to pick
+    the step-size.
+
     :param w: the parameters to be updated.
     :param f0: the objective function evaluated at w.
     :param descent_dir: the descent direction for the step.

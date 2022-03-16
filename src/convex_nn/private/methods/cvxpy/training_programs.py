@@ -1,5 +1,5 @@
-"""Solvers for convex reformulations of neural networks based on the `CVXPY <https://www.cvxpy.org>`_ DSL.
-
+"""Solvers for convex reformulations of neural networks based on the `CVXPY
+<https://www.cvxpy.org>`_ DSL.
 
 TODO:
     - How to handle GL1 penalties for the convex LassoNet models?
@@ -28,9 +28,11 @@ from .cvxpy_solver import CVXPYSolver
 
 
 class ConvexReformulationSolver(CVXPYSolver):
-    """Solver for convex reformulations of neural network based on `CVXPY <https://www.cvxpy.org>`_.
+    """Solver for convex reformulations of neural network based on `CVXPY
+    <https://www.cvxpy.org>`_.
 
-    This is an abstract class that wraps CVXPY expressions used in all of the convex reformulations.
+    This is an abstract class that wraps CVXPY expressions used in all of the
+    convex reformulations.
     """
 
     c: int
@@ -58,7 +60,8 @@ class ConvexReformulationSolver(CVXPYSolver):
     def get_cone_constraints(
         self, W: cp.Variable, X: np.ndarray, A: np.ndarray
     ) -> List[cp.Expression]:
-        """Form polyhedral cone constraints for the convex reformulation of a ReLU neural network.
+        """Form polyhedral cone constraints for the convex reformulation of a
+        ReLU neural network.
 
         Args:
             W: a :math:`p * c \\times d` matrix of variables upon which to place the constraints,
@@ -78,7 +81,8 @@ class ConvexReformulationSolver(CVXPYSolver):
     def get_squared_error(
         self, W: cp.Variable, X: np.ndarray, y: np.ndarray, D: np.ndarray
     ) -> cp.Expression:
-        """Form CVXPY expression for the squared-error in the convex reformulation.
+        """Form CVXPY expression for the squared-error in the convex
+        reformulation.
 
         Args:
             W: a :math:`p * c \\times d` matrix of variables for the model weights,
@@ -137,7 +141,8 @@ class CVXPYGatedReLUSolver(ConvexReformulationSolver):
     def __call__(
         self, model: ConvexMLP, X: np.ndarray, y: np.ndarray
     ) -> Tuple[Model, Dict[str, Any]]:
-        """Solve the convex reformulation for two-layer models with Gated ReLU activations.
+        """Solve the convex reformulation for two-layer models with Gated ReLU
+        activations.
 
         Args:
             model: the convex formulation to optimize.
@@ -187,7 +192,8 @@ class CVXPYReLUSolver(ConvexReformulationSolver):
     def __call__(
         self, model: AL_MLP, X: np.ndarray, y: np.ndarray
     ) -> Tuple[Model, Dict[str, Any]]:
-        """Solve the convex reformulation for two-layer models with ReLU activations.
+        """Solve the convex reformulation for two-layer models with ReLU
+        activations.
 
         Args:
             model: the convex formulation to optimize.
@@ -246,7 +252,8 @@ class CVXPYReLUSolver(ConvexReformulationSolver):
 
 
 class CVXPYGatedLassoNetSolver(ConvexReformulationSolver):
-    """CVXPY-based solver for convex LassoNet models with Gated ReLU activations."""
+    """CVXPY-based solver for convex LassoNet models with Gated ReLU
+    activations."""
 
     def get_squared_error(
         self,
@@ -299,7 +306,8 @@ class CVXPYGatedLassoNetSolver(ConvexReformulationSolver):
     def __call__(
         self, model: ConvexLassoNet, X: np.ndarray, y: np.ndarray
     ) -> Tuple[Model, Dict[str, Any]]:
-        """Solve the convex reformulation for two-layer LassoNet models with Gated ReLU activations.
+        """Solve the convex reformulation for two-layer LassoNet models with
+        Gated ReLU activations.
 
         Args:
             model: the convex formulation to optimize.
@@ -372,7 +380,8 @@ class CVXPYReLULassoNetSolver(CVXPYGatedLassoNetSolver):
     def __call__(
         self, model: AL_LassoNet, X: np.ndarray, y: np.ndarray
     ) -> Tuple[Model, Dict[str, Any]]:
-        """Solve the convex reformulation for two-layer LassoNet models with ReLU activations.
+        """Solve the convex reformulation for two-layer LassoNet models with
+        ReLU activations.
 
         Args:
             model: the convex formulation to optimize.

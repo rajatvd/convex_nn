@@ -1,6 +1,4 @@
-"""
-CVXPY solvers for the cone decomposition problem.
-"""
+"""CVXPY solvers for the cone decomposition problem."""
 
 from typing import Dict, Any, Tuple
 
@@ -22,9 +20,9 @@ from .cvxpy_solver import CVXPYSolver
 class DecompositionProgram(CVXPYSolver):
     """Convert a Gated ReLU model into a ReLU model by cone decomposition.
 
-    Base class for CVXPY programs that convert a convex Gated ReLU model
-    into a convex ReLU model by decomposing the weights onto the constraint
-    cones :math:`K_i` and :math:`-K_i`.
+    Base class for CVXPY programs that convert a convex Gated ReLU model into a
+    convex ReLU model by decomposing the weights onto the constraint cones
+    :math:`K_i` and :math:`-K_i`.
     """
 
     def get_objective(self, V, U) -> cp.Minimize:
@@ -96,46 +94,37 @@ class DecompositionProgram(CVXPYSolver):
 
 
 class MinL2Decomposition(DecompositionProgram):
-    """
-    Decompose by minimize the sum of L2 norms.
-    """
+    """Decompose by minimize the sum of L2 norms."""
 
     def get_objective(self, V, U) -> cp.Minimize:
         return cp.Minimize(cp.sum(cp.pnorm(U, p=2, axis=1) + cp.pnorm(V, p=2, axis=1)))
 
 
 class MinRelaxedL2Decomposition(DecompositionProgram):
-    """
-    Decompose by minimize the sum of L2 norms.
-    """
+    """Decompose by minimize the sum of L2 norms."""
 
     def get_objective(self, V, U) -> cp.Minimize:
         return cp.Minimize(cp.sum(V ** 2))
 
 
 class MinL1Decomposition(DecompositionProgram):
-    """
-    Decompose by minimize the sum of L2 norms.
-    """
+    """Decompose by minimize the sum of L2 norms."""
 
     def get_objective(self, V, U) -> cp.Minimize:
         return cp.Minimize(cp.sum(cp.pnorm(U, p=1, axis=1) + cp.pnorm(V, p=1, axis=1)))
 
 
 class FeasibleDecomposition(DecompositionProgram):
-    """
-    Decompose by minimize the sum of L2 norms.
-    """
+    """Decompose by minimize the sum of L2 norms."""
 
     def get_objective(self, V, U) -> cp.Minimize:
         return cp.Minimize(1)
 
 
 class SOCPDecomposition(CVXPYSolver):
-    """Base class for CVXPY programs that convert a convex gatedReLU model
-    into a convex ReLU model by decomposing the weights onto the constraint
-    cones :math:`K_i` and :math:`-K_i`.
-    """
+    """Base class for CVXPY programs that convert a convex gatedReLU model into
+    a convex ReLU model by decomposing the weights onto the constraint cones
+    :math:`K_i` and :math:`-K_i`."""
 
     def __call__(
         self, model: Model, X: np.ndarray, y: np.ndarray

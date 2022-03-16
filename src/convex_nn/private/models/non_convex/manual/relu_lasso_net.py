@@ -1,6 +1,4 @@
-"""
-Implementation of one-layer LassoNet with Gated ReLU activations.
-"""
+"""Implementation of one-layer LassoNet with Gated ReLU activations."""
 
 from typing import Optional, Tuple, List
 
@@ -67,6 +65,7 @@ class ReLULassoNet(Model):
 
     def get_weights(self) -> List[lab.Tensor]:
         """Get model weights in an interpretable format.
+
         :returns: list of tensors -- [network_1, network_2, skip weights].
         """
         network_weights, skip_weights = self._split_weights(self.weights)
@@ -90,6 +89,7 @@ class ReLULassoNet(Model):
 
     def _forward(self, X: lab.Tensor, w: lab.Tensor, **kwargs) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         """
@@ -106,6 +106,7 @@ class ReLULassoNet(Model):
         **kwargs,
     ) -> float:
         """Compute objective associated with examples X and targets y.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: parameter at which to compute the objective.
@@ -122,7 +123,9 @@ class ReLULassoNet(Model):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the l2 objective with respect to the model parameters.
+        """Compute the gradient of the l2 objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: parameter at which to compute the gradient pass.

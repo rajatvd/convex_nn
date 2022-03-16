@@ -1,6 +1,4 @@
-"""
-Non-convex models implemented in PyTorch.
-"""
+"""Non-convex models implemented in PyTorch."""
 
 from .sequential_wrapper import SequentialWrapper
 from .layer_wrapper import LayerWrapper

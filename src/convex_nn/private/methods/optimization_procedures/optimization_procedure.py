@@ -1,6 +1,4 @@
-"""
-Base class for optimization procedures.
-"""
+"""Base class for optimization procedures."""
 
 from logging import Logger
 from typing import Dict, Any, List, Tuple, Callable, Optional
@@ -49,7 +47,8 @@ class OptimizationProcedure:
         self.post_process = post_process
 
     def reset(self):
-        """Reset the optimization procedure (including any attached optimizers) to their original state."""
+        """Reset the optimization procedure (including any attached optimizers)
+        to their original state."""
         pass
 
     def _record_time(self, metrics_log, start_time):
@@ -73,8 +72,10 @@ class OptimizationProcedure:
         metrics: Tuple[List[str], List[str], List[str]],
         final_metrics: Optional[Tuple[List[str], List[str], List[str]]] = None,
     ) -> Tuple[Dict[str, Any], Model, Dict[str, Any]]:
-        """Optimize a model using an optimize method by directly calling an optimization procedure.
-        Training and test metrics are collected before and after execution.
+        """Optimize a model using an optimize method by directly calling an
+        optimization procedure. Training and test metrics are collected before
+        and after execution.
+
         :param logger: a logging.Logger object that can be used to log information during
             optimization.
         :param model: the model to optimize.

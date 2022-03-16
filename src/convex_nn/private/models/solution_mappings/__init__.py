@@ -1,6 +1,5 @@
-"""
-Solution mappings for convex and non-convex formulations of neural network training problems.
-"""
+"""Solution mappings for convex and non-convex formulations of neural network
+training problems."""
 
 from .mlps import (
     is_relu_compatible,
@@ -29,7 +28,9 @@ from convex_nn.private.models.convex import AL_MLP, AL_LassoNet, ConvexMLP, Conv
 
 
 def is_compatible(torch_model: torch.nn.Module) -> bool:
-    """Check to see if there is a solution mapping mapping which is compatible with the architecture of the given model.
+    """Check to see if there is a solution mapping mapping which is compatible
+    with the architecture of the given model.
+
     :param torch_model: an instance of torch.nn.Module for which we want a convex program.
     :returns: true or false.
     """

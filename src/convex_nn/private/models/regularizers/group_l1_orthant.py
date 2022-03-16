@@ -1,6 +1,5 @@
-"""
-Combined group L1 penalty and orthant constraints for the augmented Lagrangian.
-"""
+"""Combined group L1 penalty and orthant constraints for the augmented
+Lagrangian."""
 from typing import Optional, Union, Callable
 
 import lab
@@ -13,9 +12,8 @@ from convex_nn.private.prox import Orthant
 
 class GroupL1Orthant(GroupL1Regularizer, OrthantConstraint):
 
-    """Combined group L1 and orthant constraint for the augmented Lagrangian of a
-    convex neural network.
-    """
+    """Combined group L1 and orthant constraint for the augmented Lagrangian of
+    a convex neural network."""
 
     def __init__(self, A: lab.Tensor, lam: float):
         """
@@ -34,6 +32,7 @@ class GroupL1Orthant(GroupL1Regularizer, OrthantConstraint):
         **kwargs,
     ) -> float:
         """Compute the penalty associated with the regularizer.
+
         :param w: parameter at which to compute the penalty.
         :param split_weights: a function which can be called to split the weights
             into the group l1 terms and the orthant-constrained terms.
@@ -51,7 +50,9 @@ class GroupL1Orthant(GroupL1Regularizer, OrthantConstraint):
         merge_weights: Callable[[lab.Tensor, lab.Tensor], lab.Tensor] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the objective with respect to the model parameters.
+        """Compute the gradient of the objective with respect to the model
+        parameters.
+
         :param w: parameter at which to compute the penalty gradient.
         :param base_grad: (optional) the gradient of the un-regularized objective. This is
             used to compute the minimum-norm subgradient for "pseudo-gradient" methods.

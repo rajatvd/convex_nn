@@ -1,6 +1,4 @@
-"""
-Helpers for computing metrics during optimization.
-
+"""Helpers for computing metrics during optimization.
 
 TODO:
     - Active features should not take into account inactive neurons.
@@ -18,6 +16,7 @@ import convex_nn.private.loss_functions as loss_fns
 
 def as_list(x: Any) -> List[Any]:
     """Wrap argument into a list if it is not iterable.
+
     :param x: a (potential) singleton to wrap in a list.
     :returns: [x] if x is not iterable and x if it is.
     """
@@ -36,6 +35,7 @@ def format_recent_metrics(
     metric_dict: Dict[str, Any], metrics: Tuple[List[str], List[str], List[str]]
 ):
     """Print the most recent metric evaluation contained in the metric log.
+
     :param metric_dict: a dictionary used to record metric information during optimization. This dictionary should
         be initialize by calling 'init_metrics' before being passed to this function.
     :param metrics: a tuple of the form (train_metrics, test_metrics, additional_metrics)
@@ -80,8 +80,9 @@ def merge_metric_lists(
 def init_metrics(
     metric_dict: Dict[str, List[Any]], metrics: Tuple[List[str], List[str], List[str]]
 ):
-    """Initialize a metric dictionary with the necessary lists. This should be called
-    before using 'update_metrics'.
+    """Initialize a metric dictionary with the necessary lists. This should be
+    called before using 'update_metrics'.
+
     :param metric_dict: a (possibly empty) dictionary used to record metric information during optimization.
     :param metrics: a tuple of the form (train_metrics, test_metrics, additional_metrics)
         specifying the metrics to be computed on the training set, test set, and data-independent
@@ -118,7 +119,9 @@ def update_metrics(
     train_grad: Optional[lab.Tensor] = None,
     batch_size: Optional[int] = None,
 ) -> Dict[str, List[Any]]:
-    """Update a dictionary of metrics given a model, a training set, a test set, and a list of metrics to use.
+    """Update a dictionary of metrics given a model, a training set, a test
+    set, and a list of metrics to use.
+
     :param metric_dict: a dictionary used to record metric information during optimization. This dictionary should
         be initialize by calling 'init_metrics' before being passed to this function.
     :param model: the model for which to compute the metrics.
@@ -189,6 +192,7 @@ def compute_metric(
     batch_size: Optional[int] = None,
 ) -> Any:
     """Lookup a metric by name and compute it for a given model and dataset.
+
     :param metric_name: the name of the metric to compute.
     :param metric_dict: a dictionary used to record metric information during optimization. This dictionary should
         be initialize by calling 'init_metrics' before being passed to this function.

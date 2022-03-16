@@ -1,6 +1,4 @@
-"""
-Optimization procedure for iterative methods (e.g. gradient descent).
-"""
+"""Optimization procedure for iterative methods (e.g. gradient descent)."""
 
 from logging import Logger, root, INFO
 from typing import Dict, Any, List, Tuple, Callable, Optional
@@ -78,7 +76,8 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
         self.post_process = post_process
 
     def reset(self):
-        """Reset the optimization procedure (including any attached optimizers) to their original state."""
+        """Reset the optimization procedure (including any attached optimizers)
+        to their original state."""
         self.optimizer.reset()
 
     def _pre_optimization(
@@ -199,9 +198,11 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
         final_metrics: Optional[Tuple[List[str], List[str], List[str]]] = None,
         callback: Callable = None,
     ) -> Tuple[Dict[str, Any], Model, Dict[str, Any]]:
-        """Optimize a model using an iterative optimize method by running a "optimization" loop.
-        The loop runs for 'max_iters' number of iterations, collects optional metrics at every
-        iteration, and will terminate early if the conditions of 'term_criterion' are met.
+        """Optimize a model using an iterative optimize method by running a
+        "optimization" loop. The loop runs for 'max_iters' number of
+        iterations, collects optional metrics at every iteration, and will
+        terminate early if the conditions of 'term_criterion' are met.
+
         :param logger: a logging.Logger object that can be used to log information during
             optimization.
         :param model: the model to optimize.

@@ -1,6 +1,4 @@
-"""
-Base class for proximal-gradient optimizers.
-"""
+"""Base class for proximal-gradient optimizers."""
 from typing import Callable, Optional, Tuple, Any, Dict
 
 import lab
@@ -19,8 +17,8 @@ class ProximalOptimizer(Optimizer):
 
     """The base class for proximal-gradient-type methods.
 
-    Optimizer is a stateful wrapper around a 'step_fn' --- a function which
-    can be called to compute one step of an iterative optimization method.
+    Optimizer is a stateful wrapper around a 'step_fn' --- a function which can
+    be called to compute one step of an iterative optimization method.
     """
 
     def __init__(
@@ -52,6 +50,7 @@ class ProximalOptimizer(Optimizer):
         batch_size: Optional[int] = None,
     ) -> Tuple[Model, Optional[float], Dict[str, Any]]:
         """Execute one step of an iterative optimization method.
+
         :param model: the model to update.
         :param X: the (n,d) data matrix to use in the update.
         :param y: the (n,) vector of targets.
@@ -85,8 +84,8 @@ class ProximalLSOptimizer(LSOptimizer):
 
     """First-order optimization method with line-search.
 
-    Like optimizer, this is a stateful wrapper around a 'step_fn', which
-    can be called to execute one step of the f.o. method, including the line-search.
+    Like optimizer, this is a stateful wrapper around a 'step_fn', which can be
+    called to execute one step of the f.o. method, including the line-search.
     """
 
     def __init__(
@@ -123,6 +122,7 @@ class ProximalLSOptimizer(LSOptimizer):
         batch_size: Optional[int] = None,
     ) -> Tuple[Model, Optional[float], Dict[str, Any]]:
         """Execute one step of an iterative optimization method.
+
         :param model: the model to update.
         :param X: the (n,d) data matrix to use in the update.
         :param y: the (n,) vector of targets.

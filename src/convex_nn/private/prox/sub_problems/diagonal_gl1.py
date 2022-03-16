@@ -1,7 +1,5 @@
-"""
-Sub-problem for evaluating the proximal operator associated with the group L1 regularizer
-with a diagonal preconditioner.
-"""
+"""Sub-problem for evaluating the proximal operator associated with the group
+L1 regularizer with a diagonal preconditioner."""
 from typing import Optional, Tuple, Callable
 
 import lab
@@ -9,9 +7,9 @@ import lab
 
 class GL1DiagonalSubproblem:
 
-    """Model for the root-finding problem that must be solved when computing the
-    proximal operator for a group L1 regularizer with diagonal preconditioning.
-    """
+    """Model for the root-finding problem that must be solved when computing
+    the proximal operator for a group L1 regularizer with diagonal
+    preconditioning."""
 
     def __init__(self, w: lab.Tensor, H: lab.Tensor):
         """

@@ -1,6 +1,4 @@
-"""
-Gradient descent optimizer.
-"""
+"""Gradient descent optimizer."""
 
 from convex_nn.private.methods.core import gradient_step, gd_ls
 from convex_nn.private.methods.optimizers.optimizer import Optimizer, LSOptimizer
@@ -25,8 +23,7 @@ class GD(Optimizer):
 
 class GDLS(LSOptimizer):
 
-    """Gradient descent with line-search.
-    """
+    """Gradient descent with line-search."""
 
     def __init__(
         self,

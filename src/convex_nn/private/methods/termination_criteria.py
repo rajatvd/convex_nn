@@ -1,6 +1,5 @@
 """Termination criteria for optimization methods.
 
-
 TODO:
     - Update `StepLength` to be the gradient mapping. The major
         difference is multiplication by a step-size.
@@ -68,7 +67,8 @@ class GradientNorm(TerminationCriterion):
     """First-order optimality criterion.
 
     Terminate optimization if and only if the norm of minimum-norm subgradient
-    is below a certain tolerance."""
+    is below a certain tolerance.
+    """
 
     def __call__(
         self,
@@ -170,7 +170,6 @@ class ConstrainedHeuristic(TerminationCriterion):
 
     This criterion is not the same as checking stationarity of the Lagrangian, but appears to work
     well in practice.
-
     """
 
     grad_tol: float
@@ -192,8 +191,11 @@ class ConstrainedHeuristic(TerminationCriterion):
         objective: Optional[lab.Tensor] = None,
         grad: Optional[lab.Tensor] = None,
     ) -> bool:
-        """Determine if the current point is both feasible and a first-order optimal point.
-        First-order optimality is checked by evaluating the norm of the  gradient mapping.
+        """Determine if the current point is both feasible and a first-order
+        optimal point.
+
+        First-order optimality is checked by evaluating the norm of the
+        gradient mapping.
         """
         if grad is None:
             grad = model.grad(X, y)

@@ -1,6 +1,4 @@
-"""
-Implementation of linear regression with the least-squares objective.
-"""
+"""Implementation of linear regression with the least-squares objective."""
 from typing import Optional
 
 import lab
@@ -25,6 +23,7 @@ class L2Regression(Model):
 
     def _forward(self, X: lab.Tensor, w: lab.Tensor, **kwargs) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         """
@@ -39,6 +38,7 @@ class L2Regression(Model):
         **kwargs,
     ) -> float:
         """Compute objective associated with examples X and targets y.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: specific parameter at which to compute the forward pass.
@@ -57,7 +57,9 @@ class L2Regression(Model):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the l2 objective with respect to the model parameters.
+        """Compute the gradient of the l2 objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the forward pass.

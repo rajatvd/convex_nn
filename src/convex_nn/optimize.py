@@ -1,5 +1,4 @@
-"""
-Optimize neural networks using convex reformulations.
+"""Optimize neural networks using convex reformulations.
 
 TODO:
     - extract types into a new `types.py` module.
@@ -55,7 +54,8 @@ def optimize(
     dtype: Dtype = "float32",
     seed: int = 778,
 ) -> Tuple[Model, Metrics]:
-    """Convenience function for training neural networks by convex reformulation.
+    """Convenience function for training neural networks by convex
+    reformulation.
 
     Args:
         formulation: the convex reformulation to solve. Must be one of

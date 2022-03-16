@@ -1,6 +1,4 @@
-"""
-Core subroutines for augmented Lagrangian methods and ADMM.
-"""
+"""Core subroutines for augmented Lagrangian methods and ADMM."""
 from typing import Tuple
 
 import numpy as np

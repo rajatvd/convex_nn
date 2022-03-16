@@ -1,6 +1,5 @@
-"""
-Augmented lagrangian for the two-layer MLP with orthant inequality constraints.
-"""
+"""Augmented lagrangian for the two-layer MLP with orthant inequality
+constraints."""
 from typing import Tuple, Optional, Union, Any, List, Dict
 from math import ceil
 
@@ -91,6 +90,7 @@ class AL_MLP(ConvexMLP):
         **kwargs,
     ) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
@@ -109,6 +109,7 @@ class AL_MLP(ConvexMLP):
         **kwargs,
     ) -> float:
         """Compute the penalty term in the augmented Lagrangian.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the objective.
         :returns: the objective
@@ -137,7 +138,9 @@ class AL_MLP(ConvexMLP):
         flatten=False,
         **kwargs,
     ) -> Union[Tuple[lab.Tensor, lab.Tensor], lab.Tensor]:
-        """Compute the gradient of the penalty term in the augmented Lagrangian.
+        """Compute the gradient of the penalty term in the augmented
+        Lagrangian.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the gradient.
         :param flatten: whether or not to flatten the output into a single vector.
@@ -176,6 +179,7 @@ class AL_MLP(ConvexMLP):
         **kwargs,
     ) -> float:
         """Compute the l2 objective with respect to the model weights.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: specific parameter at which to compute the objective.
@@ -201,7 +205,9 @@ class AL_MLP(ConvexMLP):
         flatten: bool = False,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of augmented Lagrangian objective with respect to the model weights.
+        """Compute the gradient of augmented Lagrangian objective with respect
+        to the model weights.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the gradient.
@@ -261,7 +267,8 @@ class AL_MLP(ConvexMLP):
         w: Optional[lab.Tensor] = None,
         index_range: Optional[Tuple[int, int]] = None,
     ):
-        """Compute violation of the linear constraints
+        """Compute violation of the linear constraints.
+
         .. math::
 
             X v_i - a_i
@@ -288,6 +295,7 @@ class AL_MLP(ConvexMLP):
         index_range: Optional[Tuple[int, int]] = None,
     ):
         """Compute violation of the constraints.
+
         :param X: (n,d) array containing the data examples.
         :param w: (optional) specific parameter at which to compute the gradient.
         Defaults to 'None', in which case the current model state is used.
@@ -321,6 +329,7 @@ class AL_MLP(ConvexMLP):
         self, patterns: lab.Tensor, weights: lab.Tensor, remove_zero=False
     ) -> lab.Tensor:
         """Attempt to augment the current model with additional sign patterns.
+
         :param patterns: the tensor of sign patterns to add to the current set.
         :param weights: the tensor of weights which induced the new patterns.
         :param remove_zero: whether or not to remove the zero vector.

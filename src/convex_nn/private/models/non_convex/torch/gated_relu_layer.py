@@ -1,6 +1,4 @@
-"""
-Implementation of a Gated ReLU layer in PyTorch.
-"""
+"""Implementation of a Gated ReLU layer in PyTorch."""
 
 import torch
 import torch.nn.functional as F
@@ -8,8 +6,7 @@ import torch.nn.functional as F
 
 class GatedReLULayer(torch.nn.Module):
 
-    """
-    A gated ReLU layer with activation
+    """A gated ReLU layer with activation.
 
         Z = X W * max(X U, 0),
 

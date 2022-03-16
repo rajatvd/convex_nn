@@ -1,6 +1,4 @@
-"""
-The FISTA accelerated proximal gradient descent method.
-"""
+"""The FISTA accelerated proximal gradient descent method."""
 from typing import Optional, cast, Dict, Any, Tuple
 
 import lab
@@ -63,9 +61,7 @@ class FISTA(ProximalLSOptimizer):
         self.disp = None
 
     def reset(self):
-        """
-        Reset the secondary sequences to their initial state.
-        """
+        """Reset the secondary sequences to their initial state."""
         super().reset()
         # reset acceleration specific memory.
         self.restart()
@@ -98,6 +94,7 @@ class FISTA(ProximalLSOptimizer):
         batch_size: Optional[int] = None,
     ) -> Tuple[Model, Optional[float], Dict[str, Any]]:
         """Execute one step of an iterative optimization method.
+
         :param model: the model to update.
         :param X: the (n,d) data matrix to use in the update.
         :param y: the (n,) vector of targets.

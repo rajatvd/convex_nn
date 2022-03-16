@@ -1,6 +1,5 @@
-"""
-Utilities for interfacing between public API and :module:`convex_nn.private`.
-"""
+"""Utilities for interfacing between public API and
+:module:`convex_nn.private`."""
 
 import logging
 import lab

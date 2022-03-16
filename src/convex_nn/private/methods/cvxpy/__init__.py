@@ -1,5 +1,4 @@
-"""
-Pre-defined CVXPY programs.
+"""Pre-defined CVXPY programs.
 
 TODO:
     - Look into merging some of the CVXPY code to reduce boilerplate.

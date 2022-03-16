@@ -1,6 +1,4 @@
-"""
-Rules for update step-sizes after a line-search.
-"""
+"""Rules for update step-sizes after a line-search."""
 from typing import Optional
 
 import lab
@@ -19,8 +17,9 @@ class StepSizeUpdater:
         f1: Optional[float] = None,
         grad: Optional[lab.Tensor] = None,
     ) -> float:
-        """Compute a new step-size given the result of the most recent line-search and the step-size
-        from the previous iteration.
+        """Compute a new step-size given the result of the most recent line-
+        search and the step-size from the previous iteration.
+
         :param new_step_size: the step-size most recently returned by the line-search.
         :param old_step-size: the step-size from the previous iteration.
         :param s: the difference in iterates: w_k - w_{k-1}
@@ -31,7 +30,8 @@ class StepSizeUpdater:
 
 class KeepNew(StepSizeUpdater):
 
-    """Simple update rule which returns step-size from the most recent line-search."""
+    """Simple update rule which returns step-size from the most recent line-
+    search."""
 
     def __call__(
         self,
@@ -42,8 +42,9 @@ class KeepNew(StepSizeUpdater):
         f1: Optional[float] = None,
         grad: Optional[lab.Tensor] = None,
     ) -> float:
-        """Compute a new step-size given the result of the most recent line-search and the step-size
-        from the previous iteration.
+        """Compute a new step-size given the result of the most recent line-
+        search and the step-size from the previous iteration.
+
         :param new_step_size: the step-size most recently returned by the line-search.
         :param old_step-size: the step-size from the previous iteration.
         :param s: the difference in iterates: w_k - w_{k-1}
@@ -65,8 +66,9 @@ class KeepOld(StepSizeUpdater):
         f1: Optional[float] = None,
         grad: Optional[lab.Tensor] = None,
     ) -> float:
-        """Compute a new step-size given the result of the most recent line-search and the step-size
-        from the previous iteration.
+        """Compute a new step-size given the result of the most recent line-
+        search and the step-size from the previous iteration.
+
         :param new_step_size: the step-size most recently returned by the line-search.
         :param old_step-size: the step-size from the previous iteration.
         :param s: the difference in iterates: w_k - w_{k-1}
@@ -77,7 +79,8 @@ class KeepOld(StepSizeUpdater):
 
 class ForwardTrack(StepSizeUpdater):
 
-    """Compute the new step-size by slightly increasing the value returned by the line-search."""
+    """Compute the new step-size by slightly increasing the value returned by
+    the line-search."""
 
     def __init__(self, alpha: float = 1.1):
         """
@@ -94,8 +97,9 @@ class ForwardTrack(StepSizeUpdater):
         f1: Optional[float] = None,
         grad: Optional[lab.Tensor] = None,
     ) -> float:
-        """Compute a new step-size given the result of the most recent line-search and the step-size
-            from the previous iteration.
+        """Compute a new step-size given the result of the most recent line-
+        search and the step-size from the previous iteration.
+
         :param new_step_size: the step-size most recently returned by the line-search.
         :param old_step-size: the step-size from the previous iteration.
         :param s: the difference in iterates: w_k - w_{k-1}
@@ -106,7 +110,9 @@ class ForwardTrack(StepSizeUpdater):
 
 class Lassplore(StepSizeUpdater):
 
-    """Step-size update rule proposed in 'Large Scale Spare Logistic Regression' by Liu et al.
+    """Step-size update rule proposed in 'Large Scale Spare Logistic
+    Regression' by Liu et al.
+
     [https://dl.acm.org/doi/abs/10.1145/1557019.1557082]
     """
 
@@ -127,8 +133,9 @@ class Lassplore(StepSizeUpdater):
         f1: Optional[float] = None,
         grad: Optional[lab.Tensor] = None,
     ) -> float:
-        """Compute a new step-size given the result of the most recent line-search and the step-size
-            from the previous iteration.
+        """Compute a new step-size given the result of the most recent line-
+        search and the step-size from the previous iteration.
+
         :param new_step_size: the step-size most recently returned by the line-search.
         :param old_step-size: the step-size from the previous iteration.
         :param s: the difference in iterates: w_k - w_{k-1}

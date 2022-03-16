@@ -1,6 +1,4 @@
-"""
-Convex formulation of LassoNet model.
-"""
+"""Convex formulation of LassoNet model."""
 
 from typing import Optional, Tuple, List
 
@@ -62,6 +60,7 @@ class ConvexLassoNet(ConvexMLP):
 
     def get_weights(self) -> List[lab.Tensor]:
         """Get model weights in an interpretable format.
+
         :returns: list of tensors -- [network weights, skip weights].
         """
 
@@ -83,6 +82,7 @@ class ConvexLassoNet(ConvexMLP):
         **kwargs,
     ) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
@@ -105,7 +105,9 @@ class ConvexLassoNet(ConvexMLP):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> float:
-        """Compute the l2 objective with respect to the model weights *and* the L1 penalty on the skip connections.
+        """Compute the l2 objective with respect to the model weights *and* the
+        L1 penalty on the skip connections.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the objective.
@@ -132,7 +134,9 @@ class ConvexLassoNet(ConvexMLP):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the l2 objective with respect to the model weights.
+        """Compute the gradient of the l2 objective with respect to the model
+        weights.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: parameter at which to compute the gradient.

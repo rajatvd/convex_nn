@@ -1,10 +1,7 @@
-"""
-Interfaces for external optimization routines / solvers.
-
+"""Interfaces for external optimization routines / solvers.
 
 TODO:
     - Extend LinearSolver to support vector-target problems by simultaneously solving each regression problem.
-
 """
 
 from typing import Dict, Any, Tuple, Optional
@@ -16,8 +13,9 @@ from convex_nn.private.utils.linear import iterative_solvers, preconditioners
 
 
 class ExternalSolver:
-    """
-    Base class / interface for solvers that call external optimization routines (e.g. scipy.optimize).
+    """Base class / interface for solvers that call external optimization
+    routines (e.g. scipy.optimize).
+
     Subclasses should use '__call__' as an interface to the external routine.
     """
 
@@ -33,9 +31,7 @@ class ExternalSolver:
 
 class LinearSolver(ExternalSolver):
 
-    """
-    Interface to scipy.sparse.linalg' solvers for least-squares problems.
-    """
+    """Interface to scipy.sparse.linalg' solvers for least-squares problems."""
 
     def __init__(
         self,

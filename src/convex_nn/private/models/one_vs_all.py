@@ -1,6 +1,4 @@
-"""
-One-vs-all-classification model.
-"""
+"""One-vs-all-classification model."""
 
 from typing import Optional, Tuple, List
 
@@ -12,7 +10,7 @@ from convex_nn.private.loss_functions import squared_error
 
 
 class OneVsAllModel(Model):
-    """A one-vs-all model"""
+    """A one-vs-all model."""
 
     def __init__(
         self,
@@ -38,6 +36,7 @@ class OneVsAllModel(Model):
         self, X: lab.Tensor, w: lab.Tensor, D: Optional[lab.Tensor] = None, **kwargs
     ) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: (NOT USED) parameter at which to compute the forward pass.
         :param D: (optional) specific activation matrix at which to compute the forward pass.
@@ -55,6 +54,7 @@ class OneVsAllModel(Model):
         **kwargs,
     ) -> float:
         """Compute objective associated with examples X and targets y.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: (NOT USED) specific parameter at which to compute the forward pass.
@@ -72,7 +72,9 @@ class OneVsAllModel(Model):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the l2 objective with respect to the model weights.
+        """Compute the gradient of the l2 objective with respect to the model
+        weights.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n,d) array containing the data targets.
         :param w: (NOT USED) parameter at which to compute the gradient.

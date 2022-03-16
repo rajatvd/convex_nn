@@ -1,6 +1,4 @@
-"""
-Implementation of one-layer ReLU MLP with squared-error objective.
-"""
+"""Implementation of one-layer ReLU MLP with squared-error objective."""
 from typing import Optional, Tuple
 
 import lab
@@ -70,6 +68,7 @@ class ReLUMLP(Model):
 
     def _forward(self, X: lab.Tensor, w: lab.Tensor, **kwargs) -> lab.Tensor:
         """Compute forward pass.
+
         :param X: (n,d) array containing the data examples.
         :param w: parameter at which to compute the forward pass.
         """
@@ -86,6 +85,7 @@ class ReLUMLP(Model):
         **kwargs,
     ) -> float:
         """Compute objective associated with examples X and targets y.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: specific parameter at which to compute the forward pass.
@@ -102,7 +102,9 @@ class ReLUMLP(Model):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the l2 objective with respect to the model parameters.
+        """Compute the gradient of the l2 objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: parameter at which to compute the gradient pass.
@@ -140,7 +142,9 @@ class ReLUMLP(Model):
         w: Optional[lab.Tensor] = None,
         **kwargs,
     ) -> Tuple[lab.Tensor, lab.Tensor]:
-        """Compute the gradient of the l2 objective with respect to the model parameters.
+        """Compute the gradient of the l2 objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: (optional) specific parameter at which to compute the sign patterns.

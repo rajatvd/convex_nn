@@ -1,5 +1,4 @@
-"""
-Process raw data into a format suitable for optimization.
+"""Process raw data into a format suitable for optimization.
 
 TODO:
     - decide on the format for external data and provide this somewhere, possibly as part of a public `types` module.
@@ -13,8 +12,8 @@ from convex_nn.private.utils.data.transforms import unitize_columns
 def normalized_into_input_space(
     weights: lab.Tensor, column_norms: lab.Tensor
 ) -> lab.Tensor:
-    """Map the weights of a model in the column-normalized data space
-    into the original data (ie. as input) space.
+    """Map the weights of a model in the column-normalized data space into the
+    original data (ie. as input) space.
 
     Args:
         weights: a :math:`(\\ldots \\times d)` tensor of weights to map back into the input space.
@@ -28,8 +27,8 @@ def normalized_into_input_space(
 
 
 def input_into_normalized_space(model_weights, column_norms):
-    """Map the weights of a model in the original data space
-    into the column-normalized data space.
+    """Map the weights of a model in the original data space into the column-
+    normalized data space.
 
     Args:
         weights: a :math:`(\\ldots \\times d)` tensor of weights to map into the column-normalized space.

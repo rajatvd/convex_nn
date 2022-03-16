@@ -212,7 +212,8 @@ def generate_index_lists(
     d: int,
     order: int,
 ) -> List[List[int]]:
-    """Generate lists of all groups of indices of order up to and including `order`.
+    """Generate lists of all groups of indices of order up to and including
+    `order`.
 
     Args:
         d: the dimensionality or maximum index.

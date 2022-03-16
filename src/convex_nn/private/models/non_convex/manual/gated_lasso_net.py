@@ -1,6 +1,4 @@
-"""
-Implementation of one-layer LassoNet with Gated ReLU activations.
-"""
+"""Implementation of one-layer LassoNet with Gated ReLU activations."""
 
 from typing import Optional, Tuple
 
@@ -45,7 +43,9 @@ class GatedLassoNet(ReLULassoNet):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the l2 objective with respect to the model parameters.
+        """Compute the gradient of the l2 objective with respect to the model
+        parameters.
+
         :param X: (n,d) array containing the data examples.
         :param y: (n) array containing the data targets.
         :param w: parameter at which to compute the gradient pass.

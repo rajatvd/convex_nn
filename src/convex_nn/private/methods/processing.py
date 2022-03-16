@@ -14,7 +14,9 @@ class ProcessingFunction:
     """Abstract class for pre- and post-processing functions."""
 
     def __call__(self, model: Model, X: lab.Tensor, y: lab.Tensor) -> Model:
-        """Prepare/update/refine a model before or after optimization begins/ends, optionally using the training set (X, y).
+        """Prepare/update/refine a model before or after optimization
+        begins/ends, optionally using the training set (X, y).
+
         :param model: the model instance to process.
         :param X: the training features.
         :param y: the training targets.

@@ -1,10 +1,8 @@
-"""
-Data transformations and related utilities.
+"""Data transformations and related utilities.
 
 Public Functions:
-    
-    unitize_columns: unitize the columns of a training set, optionally, a test set.
 
+    unitize_columns: unitize the columns of a training set, optionally, a test set.
 """
 
 from typing import Tuple, Optional
@@ -19,7 +17,9 @@ def unitize_columns(
     train_set: Dataset,
     test_set: Optional[Dataset] = None,
 ) -> Tuple[Dataset, Dataset, lab.Tensor]:
-    """Transform a dataset so that the columns of the design matrix have unit norm,
+    """Transform a dataset so that the columns of the design matrix have unit
+    norm,
+
     .. math::
 
         \\text{diag} (\\tilde X^\\top \\tilde X) = I
