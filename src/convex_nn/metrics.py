@@ -1,4 +1,5 @@
 """Metrics that can be recorded while training models."""
+
 import numpy as np
 
 
@@ -6,18 +7,21 @@ class Metrics(object):
 
     """Metrics collected while optimizing models.
 
-    By default, only the objective, training time, and norm of the minimum-norm subgradient are collected.
+    By default, only the objective, training time, and norm of the
+    minimum-norm subgradient are collected.
 
     Attributes:
-        objective: the optimization objective, including any constraint penalty terms.
+        objective: the optimization objective, including any constraint
+            penalty terms.
         time: the cumulative wall-clock time.
-        grad_norm: squared 2-norm of the minimum-norm subgradient of the optimization objective, including penalty terms.
-        model_loss: the regularized loss of the model on the training set.
-            This is the same as `objective` but does not include constraint penalty terms.
+        grad_norm: squared 2-norm of the minimum-norm subgradient of the
+            optimization objective, including penalty terms.
+        model_loss: the regularized loss of the model on the training set. This
+            is the same as `objective` but does not include penalties.
         constraint_gaps: 2-norm of constraint violations.
             Ignored for unconstrained problems.
-        lagrangian_grad: 2-norm of the (primal) subgradient of the Lagrangian function.
-            Ignored for unconstrained problems.
+        lagrangian_grad: 2-norm of the (primal) subgradient of the
+            Lagrangian function. Ignored for unconstrained problems.
         train_accuracy: accuracy on the training set.
         train_mse: mean squared error on the training set.
         test_accuracy": accuracy on the test set.
@@ -26,11 +30,13 @@ class Metrics(object):
         neuron_sparsity: proportion of neurons which are not used by the model
           (ie. all weights are exactly zero for those neurons).
         active_features: number of features used by the model.
-        feature_sparsity: proportion of features which are not used by the model
-          (ie. all weights are exactly zero for those features).
+        feature_sparsity: proportion of features which are not used by the
+            model (ie. all weights are exactly zero for those features).
         weight_sparsity: proportion of weights are which zero.
-        metric_freq: the frequency at which metrics should be collected in iterations.
-        metrics_to_collect: internal dictionary specifying which metrics should be collected.
+        metric_freq: the frequency (in iterations) at which metrics should be
+            collected in iterations.
+        metrics_to_collect: internal dictionary specifying which metrics
+            should be collected.
     """
 
     test_metrics = False
@@ -72,32 +78,31 @@ class Metrics(object):
         total_weights: bool = False,
         weight_sparsity: bool = False,
     ):
-        """Instantiate a metrics object by specifying which metrics should be
-        collected during optimization.
-
+        """
         Args:
             metric_freq: the frequency at which to log metrics.
-            objective: whether or not to log the optimization objective, including any constraint penalty terms.
-            time: whether or not to log the cumulative wall-clock time.
-            grad_norm: whether or not to log squared 2-norm of the minimum-norm subgradient of the optimization
-                objective, including penalty terms.
-            model_loss: whether or not to log the regularized loss of the model on the training set.
-                This is the same as `objective` but does not include constraint penalty terms.
-            constraint_gaps: whether or not to log the squared 2-norm of constraint violations.
+            objective: the optimization objective, including any constraint
+                penalty terms.
+            time: the cumulative wall-clock time.
+            grad_norm: squared 2-norm of the minimum-norm subgradient of the
+                optimization objective, including penalty terms.
+            model_loss: the regularized loss of the model on the training set.
+                This is the same as `objective` but does not include penalties.
+            constraint_gaps: 2-norm of constraint violations.
                 Ignored for unconstrained problems.
-            lagrangian_grad: whether or not to log the squared 2-norm of the (primal) subgradient of the Lagrangian function.
-                Ignored for unconstrained problems.
-            train_accuracy: whether or not to log accuracy on the training set.
-            train_mse: whether or not to log mean the squared error on the training set.
-            test_accuracy": whether or not to log accuracy on the test set.
-            test_mse: whether or not to log the mean squared error on the test set.
-            total_neurons: whether or not to log the total number of neurons in the model.
-            neuron_sparsity: whether or not to log the proportion of neurons which are not used by the model
-              (ie. all weights are exactly zero for those neurons).
-            active_features: whether or not to log the number of features used by the model.
-            feature_sparsity: whether or not to log the proportion of features which are not used by the model
-              (ie. all weights are exactly zero for those features).
-            weight_sparsity: whether or not to log the proportion of weights are which zero.
+            lagrangian_grad: 2-norm of the (primal) subgradient of the
+                Lagrangian function. Ignored for unconstrained problems.
+            train_accuracy: accuracy on the training set.
+            train_mse: mean squared error on the training set.
+            test_accuracy": accuracy on the test set.
+            test_mse: means squared error on the test set.
+            total_neurons: total number of neurons in the model.
+            neuron_sparsity: proportion of neurons which are not used by the
+            model (ie. all weights are exactly zero for those neurons).
+            active_features: number of features used by the model.
+            feature_sparsity: proportion of features which are not used by the
+                model (ie. all weights are exactly zero for those features).
+            weight_sparsity: proportion of weights are which zero.
         """
 
         self.metric_freq = metric_freq

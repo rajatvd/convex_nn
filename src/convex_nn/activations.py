@@ -1,17 +1,29 @@
 """Generate activation patterns for convex reformulations of neural networks.
 
 Overview:
-    This module provides functions for generating activation patterns for ReLU or threshold activation patterns which are used when forming (subsampled) convex reformulations of ReLU and threshold-activation neural networks.
+    This module provides functions for generating gate vectors and activation
+    patterns for ReLU or threshold activation functions. These patterns are
+    used when forming (subsampled) convex reformulations of neural networks
+    with those activations. Gate vectors are also required for Gated ReLU
+    networks. 
+
     An activation pattern is a vector of the form,
 
     .. math:: d_i = 1(X w \\geq 0),
 
-    where :math:`1(z \\geq 0)` is an element-wise indicator function whose i'th element is one when :math:`z_i \\geq 0` and zero-otherwise and :math:`w \\in \\mathbb{R}^d` is a "gate vector".
-    Forming the convex reformulation of a neural network with ReLU activations requires enumerating the activation patterns a single ReLU or threshold neuron can take on,
+    where :math:`1(z \\geq 0)` is an element-wise indicator function whose
+    i'th element is one when :math:`z_i \\geq 0` and zero-otherwise and
+    :math:`w \\in \\mathbb{R}^d` is a "gate vector".
+    Forming the convex reformulation of a neural network with ReLU activations
+    requires enumerating the activation patterns a single ReLU or threshold
+    neuron can take on,
 
-    .. math:: \\mathcal{D} = \\left\\{  d = 1(X w \\geq 0) : w \\in \\mathbb{R}^d \\right\\}.
+    .. math:: \\mathcal{D} = \\left\\{  d = 1(X w \\geq 0) : w \\in
+        \\mathbb{R}^d \\right\\}.
 
-    In practice, :math`\\mathcal{D}` can approximated sampling vectors :math:`w \\sim P` according to some distribution :math:`P` and then computing the corresponding pattern :math:`d_i`.
+    In practice, :math`\\mathcal{D}` can approximated sampling vectors
+    :math:`w \\sim P` according to some distribution :math:`P` and then 
+    computing the corresponding pattern :math:`d_i`.
 
 TODO:
     - Where to put ugly conv mask code?
@@ -49,15 +61,20 @@ def sample_gate_vectors(
 
             - 'dense': sample dense gate vectors.
 
-            - 'feature_sparse': sample gate vectors which are sparse in specific features.
+            - 'feature_sparse': sample gate vectors which are sparse in
+                specific features.
 
-        order: the order maximum order of feature sparsity to consider. Only used for
-            `gate_type='feature_sparse'`. See :func:`sample_sparse_gates` for more details.
+        order: the order maximum order of feature sparsity to consider.
+            Only used for
+            `gate_type='feature_sparse'`. See :func:`sample_sparse_gates`
+                for more details.
 
     Notes:
-        It is possible to obtain more than `n_samples` gate vectors when `gate_type='feature_sparse'`
-        if `len(sparsity_indices)` does not divide evenly into n_samples. In this case, we use the ceiling
-        to avoid sampling zero gates for some sparsity patterns.
+        It is possible to obtain more than `n_samples` gate vectors when
+            `gate_type='feature_sparse'`
+        if `len(sparsity_indices)` does not divide evenly into n_samples. In
+            this case, we use the ceiling function to avoid sampling zero
+            gates for some sparsity patterns.
     """
 
     rng = np.random.default_rng(seed)
@@ -111,14 +128,16 @@ def sample_sparse_gates(
         rng: a NumPy random number generator.
         d: the dimensionality of the gate vectors.
         n_samples: the number of samples to use.
-        sparsity_indices: lists of indices (i.e. features) for which sparse gates should be generated.
-            Each index list will get `n_samples / len(sparsity_indices)` gates which are sparse
-            in those indices.
+        sparsity_indices: lists of indices (i.e. features) for which sparse
+            gates should be generated. Each index list will get
+            `n_samples / len(sparsity_indices)` gates which are sparse in those
+            indices.
 
     Notes:
-        It is possible to obtain more than `n_samples` gate vectors if `len(sparsity_indices)` does not
-        divide evenly into n_samples. In this case, we use the ceiling to avoid sampling zero gates for
-        some sparsity patterns.
+        - It is possible to obtain more than `n_samples` gate vectors if
+            `len(sparsity_indices)` does not divide evenly into n_samples.
+            In this case, we use the ceiling to avoid sampling zero gates for
+            some sparsity patterns.
 
     Returns:
         G -  a :math:`d \\times \\text{n_samples}` matrix of gate vectors.
@@ -178,17 +197,17 @@ def compute_activation_patterns(
     """Compute activation patterns corresponding to a set of gate vectors.
 
     Args:
-        X: an :math:`n \\times d` data matrix, where the examples are stored as rows.
-        G: an :math:`d \\times m` matrix of "gate vectors" used to generate the sign patterns.
-        filter_duplicates: whether or not to remove duplicate activation patterns and the corresponding
-        filter_zero: whether or not to filter the zero activation pattern and corresponding gates.
-            Defaults to `True`.
+        X: an (n x d) data matrix, where the examples are stored as rows.
+        G: an (d x m) matrix of "gate vectors" used to generate the activation
+            patterns.
+        filter_duplicates: whether or not to remove duplicate activation
+            patterns and the corresponding
+        filter_zero: whether or not to filter the zero activation pattern and
+            corresponding gates. Defaults to `True`.
     Returns:
-        (D, G), where
-
-        - D is a :math:`n \\times b` matrix of (possibly unique) sign patterns where each sign pattern is a column of the matrix and :math:`b \\leq m`.
-
-        - G is a :math:`d \\times b` matrix of gates vectors generating D.
+        `D`, an (n x p) matrix of (possibly unique) activation patterns where
+            :math:`p \\leq m` and `G`, a (d x b) matrix of gate vectors
+            generating `D`.
     """
     n, d = X.shape
 
@@ -218,8 +237,8 @@ def generate_index_lists(
     Args:
         d: the dimensionality or maximum index.
         order: the order to which the lists should be generated.
-            For example, `order=2` will generate all singleton lists and all lists of
-            pairs of indices.
+            For example, `order=2` will generate all singleton lists and
+            all lists of pairs of indices.
 
     Returns:
         List of list of indices.
@@ -246,7 +265,9 @@ def _generate_conv_masks(
     upper_left_coords = rng.integers(
         low=0, high=image_size - kernel_size - 1, size=(num_samples, 2)
     )
-    upper_left_indices = image_size * upper_left_coords[:, 0] + upper_left_coords[:, 1]
+    upper_left_indices = (
+        image_size * upper_left_coords[:, 0] + upper_left_coords[:, 1]
+    )
     upper_rows = [
         np.arange(upper_left_indices[i], upper_left_indices[i] + kernel_size)
         for i in range(num_samples)

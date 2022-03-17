@@ -15,7 +15,8 @@ class Regularizer:
 class NeuronGL1(Regularizer):
     """A neuron-wise group-L1 regularizer.
 
-    This regularizer produces neuron sparsity in the final model, meaning that some neurons will be completely inactive after training.
+    This regularizer produces neuron sparsity in the final model,
+    meaning that some neurons will be completely inactive after training.
     The regularizer has the form,
 
     .. math:: R(U) = \\lambda \\sum_{i = 1}^p \\|U_i\\|_2,
@@ -33,7 +34,8 @@ class NeuronGL1(Regularizer):
 class FeatureGL1(Regularizer):
     """A feature-wise group-L1 regularizer.
 
-    This regularizer produces feature sparsity in the final model, meaning that some features will not be used after training.
+    This regularizer produces feature sparsity in the final model, meaning
+    that some features will not be used after training.
     The regularizer has the form,
 
     .. math:: R(U) = \\lambda \\sum_{i = 1}^d \\|U_{\\cdot, i}\\|_2,

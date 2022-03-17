@@ -63,6 +63,45 @@ class TerminationCriterion:
         )
 
 
+class ConstrainedTerminationCriterion(TerminationCriterion):
+    """Convergence criterion for constrained optimization problems.
+
+    Base class for termination criteria for problems with constraints.
+    Provides functions for computing the constraint violations.
+
+    Attributes:
+        obj_tol: the tolerance for the primal objective.
+        constraint_tol: the tolerance for violation of the constraints.
+    """
+
+    ob_tol: float
+    constraint_tol: float
+
+    def __init__(self, grad_tol: float, constraint_tol: float):
+        """
+        Args:
+            ob_tol: the tolerance for determining optimality of the primal
+                optimization problem.
+            constraint_tol: the tolerance for determining feasibility.
+        """
+        self.ob_tol = ob_tol
+        self.constraint_tol = constraint_tol
+
+    def constraint_violations(self, model: Model, X: lab.Tensor) -> float:
+        """Compute current constraint violations.
+
+        Args:
+            model: the prediction model that is being optimized.
+            X: a :math:`n \\times d` matrix of training examples.
+
+        Returns:
+            Squared l2-norm of constraint violations.
+        """
+
+        e_gap, i_gap = model.constraint_gaps(X)
+        return lab.sum(e_gap ** 2 + lab.smax(i_gap, 0) ** 2)
+
+
 class GradientNorm(TerminationCriterion):
     """First-order optimality criterion.
 
@@ -165,7 +204,7 @@ class StepLength(TerminationCriterion):
         return lab.sqrt(lab.sum(step ** 2)) <= self.tol
 
 
-class ConstrainedHeuristic(TerminationCriterion):
+class ConstrainedHeuristic(ConstrainedTerminationCriterion):
     """Terminate if the gradient norm and constraint violations are both small.
 
     A heuristic condition which terminates optimization if and only if the
@@ -181,8 +220,8 @@ class ConstrainedHeuristic(TerminationCriterion):
             Lagrangian, but appears to work well in practice for penalized
             objectives.
 
-    Attribute:
-        grad_tol: the tolerance for the gradient norm. The penalized objective
+    Attributes:
+        obj_tol: the tolerance for the gradient norm. The penalized objective
             is approximately stationary if the gradient norm is less than
             `grad_tol`.
         constraint_tol: the tolerance for violation of the constraints.
@@ -190,17 +229,8 @@ class ConstrainedHeuristic(TerminationCriterion):
             violations is less than `constraint_tol`.
     """
 
-    grad_tol: float
+    obj_tol: float
     constraint_tol: float
-
-    def __init__(self, grad_tol: float, constraint_tol: float):
-        """
-        Args:
-            grad_tol: the tolerance for determining first-order optimality.
-            constraint_tol: the tolerance for determining feasibility.
-        """
-        self.grad_tol = grad_tol
-        self.constraint_tol = constraint_tol
 
     def __call__(
         self,
@@ -226,11 +256,9 @@ class ConstrainedHeuristic(TerminationCriterion):
         if grad is None:
             grad = model.grad(X, y)
 
-        e_gap, i_gap = model.constraint_gaps(X)
-        if (
-            lab.sum(e_gap ** 2 + lab.smax(i_gap, 0) ** 2)
-            <= self.constraint_tol
-        ):
+        gaps = self.constraint_violations(model, X)
+
+        if gaps <= self.constraint_violations:
             return lab.sum(grad ** 2) <= self.grad_tol
 
         return False
@@ -240,16 +268,22 @@ class LagrangianGradNorm(TerminationCriterion):
     """First-order optimality criterion for primal-dual methods.
 
     Terminate optimization if and only if the norm of minimum-norm subgradient
-    of the Lagrangian function is below a certain tolerance. This criterion
-    is only supported for solvers which maintain both primal and dual
-    parameters. The gradient is computed with respect the primal parameters.
+    of the Lagrangian function is below a certain tolerance and the current
+    point is approximately feasible. This criterion is only supported for
+    solvers which maintain both primal and dual parameters. The gradient is
+    computed with respect the primal parameters.
 
     Attributes:
-        tol: the tolerance for the gradient norm. The Lagrangian is
-            approximately stationary if the gradient norm is less than `tol`.
+        obj_tol: the tolerance for the gradient norm. The Lagrangian
+            is approximately stationary if the gradient norm is less than
+            `grad_tol`.
+        constraint_tol: the tolerance for violation of the constraints.
+            The model is approximately feasible if the norm of the constraint
+            violations is less than `constraint_tol`.
     """
 
-    tol: float
+    obj_tol: float
+    constraint_tol: float
 
     def __call__(
         self,
@@ -259,7 +293,8 @@ class LagrangianGradNorm(TerminationCriterion):
         objective: Optional[lab.Tensor] = None,
         grad: Optional[lab.Tensor] = None,
     ) -> bool:
-        """Terminate if the Lagrangian is approximately stationary.
+        """Terminate if the Lagrangian is approximately stationary and the
+        constraint violations are small.
 
         Args:
             model: the prediction model that is being optimized.
@@ -272,4 +307,8 @@ class LagrangianGradNorm(TerminationCriterion):
             Boolean indicating whether or not optimization should terminate.
         """
 
-        return lab.sum(model.lagrangian_grad(X, y) ** 2) <= self.tol
+        gaps = self.constraint_violations(model, X)
+        if gaps <= self.constraint_violations:
+            return lab.sum(model.lagrangian_grad(X, y) ** 2) <= self.obj_tol
+
+        return False
