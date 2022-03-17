@@ -8,14 +8,13 @@ TODO:
 from typing import Optional
 
 import lab
-
 from convex_nn.private.models.model import Model
 
 
 class TerminationCriterion:
     """Base class for termination criteria.
 
-    A boolean function with one or more internal tuning parameters that returns `True`
+    A boolean function with one or more tuning parameters that returns `True`
     when an optimization procedure should terminate and `False` otherwise.
 
     Attributes:
@@ -27,7 +26,8 @@ class TerminationCriterion:
     def __init__(self, tol: float):
         """
         Args:
-            tol: a tolerance parameter controlling sensitivity of the termination criterion.
+            tol: a tolerance parameter controlling sensitivity of the
+                termination criterion.
         """
 
         self.tol = tol
@@ -68,6 +68,11 @@ class GradientNorm(TerminationCriterion):
 
     Terminate optimization if and only if the norm of minimum-norm subgradient
     is below a certain tolerance.
+
+
+    Attributes:
+        tol: the tolerance for the gradient norm. The objective is
+            approximately stationary if the gradient norm is less than `tol`.
     """
 
     def __call__(
@@ -81,8 +86,8 @@ class GradientNorm(TerminationCriterion):
         """Terminate if gradient norm is sufficiently small.
 
         Determine if the norm of the minimum-norm sub-gradient (or gradient if
-        the function is smooth) is small enough (according to self.tol) to constitute
-        a first-order stationary point.
+        the function is smooth) is small enough (according to self.tol) to
+        constitute a first-order stationary point.
 
         The current objective value and gradient are optional parameters;
         these should be supplied if they have been pre-calculated for another
@@ -92,8 +97,7 @@ class GradientNorm(TerminationCriterion):
             model: the prediction model that is being optimized.
             X: a :math:`n \\times d` matrix of training examples.
             y: a :math:`n \\times c` matrix of training targets.
-            objective: the current objective value.
-                Provide only if already computed.
+            objective: the current objective value. NOT USED.
             grad: the current gradient of the objective.
                 Provide only if already computed.
 
@@ -113,14 +117,15 @@ class StepLength(TerminationCriterion):
     Terminate optimization if and only if the norm of the last step was
     below a certain tolerance.
 
+    Notes:
+        This criterion can significant increase the memory requirements
+        of an optimization procedure due to the `previous_weights` attributes.
+
     Attributes:
         previous_weights: the parameters of the model from the previous
             iteration. These are necessary to compute the length of the
             step.
 
-    Notes:
-        This criterion can significant increase the memory requirements
-        of an optimization procedure due to the `previous_weights` attributes.
     """
 
     previous_weights: Optional[lab.Tensor] = None
@@ -135,8 +140,8 @@ class StepLength(TerminationCriterion):
     ) -> bool:
         """Terminate if step-length is sufficiently small.
 
-        Determine if the norm of previous step is small enough (according to self.tol)
-        to indicate the method has converged.
+        Determine if the norm of previous step is small enough (according to
+        `self.tol`) to indicate the method has converged.
 
         The current objective value and gradient are not used.
 
@@ -161,24 +166,38 @@ class StepLength(TerminationCriterion):
 
 
 class ConstrainedHeuristic(TerminationCriterion):
-    """Terminate if the gradient and constraint violations are both small.
+    """Terminate if the gradient norm and constraint violations are both small.
 
     A heuristic condition which terminates optimization if and only if the
-    norm of minimum-norm
-    subgradient is below a certain tolerance and the norm of the constraints violations is below
-    a separate tolerance.
+    norm of minimum-norm subgradient is below a certain tolerance and the norm
+    of the constraints violations is below a separate tolerance.
 
-    This criterion is not the same as checking stationarity of the Lagrangian, but appears to work
-    well in practice.
+    Notes:
+        - The gradient norm must be computed with respect a penalized
+            objective; otherwise, termination is only possible if a solution
+            exists in the interior of the constraint set.
+
+        - This criterion is not the same as checking stationarity of the
+            Lagrangian, but appears to work well in practice for penalized
+            objectives.
+
+    Attribute:
+        grad_tol: the tolerance for the gradient norm. The penalized objective
+            is approximately stationary if the gradient norm is less than
+            `grad_tol`.
+        constraint_tol: the tolerance for violation of the constraints.
+            The model is approximately feasible if the norm of the constraint
+            violations is less than `constraint_tol`.
     """
 
     grad_tol: float
     constraint_tol: float
 
-    def __init__(self, grad_tol: float = TOL, constraint_tol: float = TOL):
+    def __init__(self, grad_tol: float, constraint_tol: float):
         """
-        :param grad_tol: the tolerance for determining first-order optimality.
-        :param constraint_tol: the tolerance for determining feasibility.
+        Args:
+            grad_tol: the tolerance for determining first-order optimality.
+            constraint_tol: the tolerance for determining feasibility.
         """
         self.grad_tol = grad_tol
         self.constraint_tol = constraint_tol
@@ -191,11 +210,18 @@ class ConstrainedHeuristic(TerminationCriterion):
         objective: Optional[lab.Tensor] = None,
         grad: Optional[lab.Tensor] = None,
     ) -> bool:
-        """Determine if the current point is both feasible and a first-order
-        optimal point.
+        """Terminate if gradient norm and constraint violations are small.
 
-        First-order optimality is checked by evaluating the norm of the
-        gradient mapping.
+        Args:
+            model: the prediction model that is being optimized.
+            X: a :math:`n \\times d` matrix of training examples.
+            y: a :math:`n \\times c` matrix of training targets.
+            objective: the current objective value. NOT USED.
+            grad: the current gradient of the objective.
+                Provide only if already computed.
+
+        Returns:
+            Boolean indicating whether or not optimization should terminate.
         """
         if grad is None:
             grad = model.grad(X, y)
@@ -211,4 +237,39 @@ class ConstrainedHeuristic(TerminationCriterion):
 
 
 class LagrangianGradNorm(TerminationCriterion):
-    grad_tol: float
+    """First-order optimality criterion for primal-dual methods.
+
+    Terminate optimization if and only if the norm of minimum-norm subgradient
+    of the Lagrangian function is below a certain tolerance. This criterion
+    is only supported for solvers which maintain both primal and dual
+    parameters. The gradient is computed with respect the primal parameters.
+
+    Attributes:
+        tol: the tolerance for the gradient norm. The Lagrangian is
+            approximately stationary if the gradient norm is less than `tol`.
+    """
+
+    tol: float
+
+    def __call__(
+        self,
+        model: Model,
+        X: lab.Tensor,
+        y: lab.Tensor,
+        objective: Optional[lab.Tensor] = None,
+        grad: Optional[lab.Tensor] = None,
+    ) -> bool:
+        """Terminate if the Lagrangian is approximately stationary.
+
+        Args:
+            model: the prediction model that is being optimized.
+            X: a :math:`n \\times d` matrix of training examples.
+            y: a :math:`n \\times c` matrix of training targets.
+            objective: the current objective value. NOT USED.
+            grad: the current gradient of the objective. NOT USED.
+
+        Returns:
+            Boolean indicating whether or not optimization should terminate.
+        """
+
+        return lab.sum(model.lagrangian_grad(X, y) ** 2) <= self.tol

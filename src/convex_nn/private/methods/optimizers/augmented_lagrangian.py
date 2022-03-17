@@ -93,9 +93,9 @@ class AugmentedLagrangian(MetaOptimizer):
                 self.initializing_delta = False
         else:
             e_gap, i_gap = model.constraint_gaps(X)
+            gap_norm = lab.sum(e_gap ** 2) + lab.sum(i_gap ** 2)
 
             if self.initializing_delta:
-                gap_norm = lab.sum(e_gap ** 2) + lab.sum(i_gap ** 2)
 
                 # the previous sub-problem did not make enough progress on the constraints;
                 # increase penalty strength
@@ -122,6 +122,13 @@ class AugmentedLagrangian(MetaOptimizer):
                     i_gap,
                     model.delta,
                 )
+
+                # TODO: revisit this.
+                # gaps are now too small to make progress.
+                if 10 * gap_norm < inner_term_criterion.tol:
+                    print("Increasing penalty strength")
+                    self.delta = self.delta * 10
+                    model.delta = self.delta
 
         inner_optimizer.reset()
         exit_status: Dict[str, Any] = {}

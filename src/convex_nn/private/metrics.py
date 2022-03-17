@@ -3,15 +3,14 @@
 TODO:
     - Active features should not take into account inactive neurons.
 """
-from typing import Dict, Any, List, Tuple, Optional
 import timeit
+from typing import Any, Dict, List, Optional, Tuple
 
-import lab
-
-from convex_nn.private.models.model import Model
-from convex_nn.private.models import ConvexMLP, AL_MLP
-import convex_nn.private.models.solution_mappings as sm
 import convex_nn.private.loss_functions as loss_fns
+import convex_nn.private.models.solution_mappings as sm
+import lab
+from convex_nn.private.models import AL_MLP, ConvexMLP
+from convex_nn.private.models.model import Model
 
 
 def as_list(x: Any) -> List[Any]:
@@ -32,7 +31,8 @@ def as_list(x: Any) -> List[Any]:
 
 
 def format_recent_metrics(
-    metric_dict: Dict[str, Any], metrics: Tuple[List[str], List[str], List[str]]
+    metric_dict: Dict[str, Any],
+    metrics: Tuple[List[str], List[str], List[str]],
 ):
     """Print the most recent metric evaluation contained in the metric log.
 
@@ -61,7 +61,9 @@ def format_recent_metrics(
         if metric_name == "subproblem_metrics":
             continue
 
-        metric_str = metric_str + f"{metric_name}: {metric_dict[metric_name][-1]}, "
+        metric_str = (
+            metric_str + f"{metric_name}: {metric_dict[metric_name][-1]}, "
+        )
 
     return metric_str
 
@@ -74,11 +76,16 @@ def merge_metric_lists(
     if rm is None:
         return lm
 
-    return list(set(lm[0] + rm[0])), list(set(lm[1] + rm[1])), list(set(lm[2] + rm[2]))
+    return (
+        list(set(lm[0] + rm[0])),
+        list(set(lm[1] + rm[1])),
+        list(set(lm[2] + rm[2])),
+    )
 
 
 def init_metrics(
-    metric_dict: Dict[str, List[Any]], metrics: Tuple[List[str], List[str], List[str]]
+    metric_dict: Dict[str, List[Any]],
+    metrics: Tuple[List[str], List[str], List[str]],
 ):
     """Initialize a metric dictionary with the necessary lists. This should be
     called before using 'update_metrics'.
@@ -220,7 +227,8 @@ def compute_metric(
         metric_name == "squared_error"
     ):  # TODO: should not use half when computing this
         metric = lab.to_scalar(
-            loss_fns.squared_error(model(X, batch_size=batch_size), y) / y.shape[0]
+            loss_fns.squared_error(model(X, batch_size=batch_size), y)
+            / y.shape[0]
         )
     elif metric_name == "grad_norm":
         if grad is None:
@@ -228,7 +236,8 @@ def compute_metric(
         metric = lab.to_scalar(lab.sum(grad ** 2))
     elif metric_name == "binary_accuracy":
         metric = lab.to_scalar(
-            lab.sum(lab.sign(model(X, batch_size=batch_size)) == y) / y.shape[0]
+            lab.sum(lab.sign(model(X, batch_size=batch_size)) == y)
+            / y.shape[0]
         )
     elif metric_name == "binned_accuracy":
         metric = lab.to_scalar(
@@ -241,7 +250,8 @@ def compute_metric(
             )
         else:
             metric = lab.to_scalar(
-                lab.sum(lab.sign(model(X, batch_size=batch_size)) == y) / y.shape[0]
+                lab.sum(lab.sign(model(X, batch_size=batch_size)) == y)
+                / y.shape[0]
             )
     elif metric_name == "time_stamp":
         metric = timeit.default_timer()
@@ -250,7 +260,8 @@ def compute_metric(
     elif metric_name == "feature_sparsity":
         reduced_weights = model.get_reduced_weights()
         feature_weights = lab.sum(
-            lab.abs(reduced_weights), axis=tuple(range(len(reduced_weights.shape) - 1))
+            lab.abs(reduced_weights),
+            axis=tuple(range(len(reduced_weights.shape) - 1)),
         )
         feature_weights = feature_weights + lab.sum(lab.abs(model.U), axis=-1)
         metric = lab.to_scalar(
@@ -259,7 +270,8 @@ def compute_metric(
     elif metric_name == "active_features":
         reduced_weights = model.get_reduced_weights()
         feature_weights = lab.sum(
-            lab.abs(reduced_weights), axis=tuple(range(len(reduced_weights.shape) - 1))
+            lab.abs(reduced_weights),
+            axis=tuple(range(len(reduced_weights.shape) - 1)),
         )
         feature_weights = feature_weights + lab.sum(lab.abs(model.U), axis=-1)
         metric = lab.to_scalar(lab.sum(feature_weights != 0.0))
@@ -271,9 +283,13 @@ def compute_metric(
     elif metric_name == "active_neurons":
         metric = lab.to_scalar(lab.sum(lab.sum(model.weights, axis=-1) != 0.0))
     elif metric_name == "sparsity":
-        metric = lab.to_scalar(lab.sum(model.weights == 0) / lab.size(model.weights))
+        metric = lab.to_scalar(
+            lab.sum(model.weights == 0) / lab.size(model.weights)
+        )
     elif metric_name == "group_norms":
-        metric = lab.to_scalar(lab.sum(lab.sqrt(lab.sum(model.weights ** 2, axis=-1))))
+        metric = lab.to_scalar(
+            lab.sum(lab.sqrt(lab.sum(model.weights ** 2, axis=-1)))
+        )
     elif metric_name == "constraint_gaps":
         try:
             e_gap, i_gap = model.constraint_gaps(X)
@@ -282,7 +298,10 @@ def compute_metric(
 
         metric = lab.to_scalar(lab.sum(e_gap ** 2 + lab.smax(i_gap, 0) ** 2))
     elif metric_name == "lagrangian_grad":
-        metric = lab.to_scalar(lab.sum(model.lagrangian_grad(X, y) ** 2))
+        try:
+            metric = lab.to_scalar(lab.sum(model.lagrangian_grad(X, y) ** 2))
+        except:
+            metric = 0.0
     elif metric_name == "num_backtracks":
         metric = sp_exit_state.get("attempts", 1) - 1
     elif metric_name == "sp_success":

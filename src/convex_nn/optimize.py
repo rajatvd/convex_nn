@@ -3,34 +3,33 @@
 TODO:
     - extract types into a new `types.py` module.
 """
-from typing import Optional, Tuple, Literal, List, Union
 import math
 import os
 import pickle as pkl
 from copy import deepcopy
+from typing import List, Literal, Optional, Tuple, Union
 
 import numpy as np
 
-from convex_nn.models import Model, ConvexGatedReLU, ConvexReLU
-from convex_nn.solvers import Optimizer, RFISTA, AL
-from convex_nn.regularizers import Regularizer
-from convex_nn.metrics import Metrics
 from convex_nn.activations import sample_gate_vectors
-from convex_nn.private.models.solution_mappings import get_nc_formulation
-
+from convex_nn.metrics import Metrics
+from convex_nn.models import ConvexGatedReLU, ConvexReLU, Model
 from convex_nn.private.interface import (
     build_internal_model,
     build_internal_regularizer,
-    build_optimizer,
     build_metrics_tuple,
-    update_public_model,
-    update_public_metrics,
+    build_optimizer,
     build_public_model,
+    get_logger,
     normalized_into_input_space,
     process_data,
-    get_logger,
     set_device,
+    update_public_metrics,
+    update_public_model,
 )
+from convex_nn.private.models.solution_mappings import get_nc_formulation
+from convex_nn.regularizers import Regularizer
+from convex_nn.solvers import AL, RFISTA, Optimizer
 
 # Types
 
@@ -65,25 +64,27 @@ def optimize(
             - `"relu"` - train a network with ReLU activations.
 
         max_neurons: the maximum number of neurons in the convex reformulation.
-            The final model will be neuron-sparse when `lam` is moderate and so
-            `max_neurons` should typically be as large as computationally possible.
         X_train: an :math:`n \\times d` matrix of training examples.
         y_train: an :math:`n \\times c` or vector matrix of training targets.
         X_test: an :math:`m \\times d` matrix of test examples.
         y_test: an :math:`n \\times c` or vector matrix of test targets.
         regularizer: an optional regularizer for the convex reformulation.
             Defaults to no regularization.
-        return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
-        verbose: whether or not the solver should print verbosely during optimization.
+        return_convex: whether or not to return the convex reformulation
+            instead of the final non-convex model.
+        verbose: whether or not the solver should print verbosely during
+            optimization.
         log_file: a path to an optional log file.
-        device: the device on which to run. Must be one of `cpu` (run on CPU) or
-            `cuda` (run on cuda-enabled GPUs if available).
-        dtype: the floating-point type to use. `"float32"` is faster than `"float64"` but can
-            lead to excessive numerical errors on badly conditioned datasets.
+        device: the device on which to run. Must be one of `cpu` (run on CPU)
+            or `cuda` (run on cuda-enabled GPUs if available).
+        dtype: the floating-point type to use. `"float32"` is faster than
+            `"float64"` but can lead to excessive numerical errors on badly
+            conditioned datasets.
         seed: an integer seed for reproducibility.
 
     Returns:
-        (Model, Metrics): the optimized model and metrics collected during optimization.
+        (Model, Metrics): the optimized model and metrics collected during
+        optimization.
     """
 
     model: Model
@@ -124,6 +125,7 @@ def optimize(
         verbose,
         log_file,
         device,
+        dtype,
         seed,
     )
 
@@ -149,30 +151,35 @@ def optimize_model(
     Args:
         model: a convex reformulation of a neural network model.
         solver: the optimizer to use when solving the reformulation.
-        metrics: a object specifying which metrics to collect during optimization.
+        metrics: a object specifying which metrics to collect during
+            optimization.
         X_train: an :math:`n \\times d` matrix of training examples.
         y_train: an :math:`n \\times c` or vector matrix of training targets.
         X_test: an :math:`m \\times d` matrix of test examples.
         y_test: an :math:`n \\times c` or vector matrix of test targets.
         regularizer: an optional regularizer for the convex reformulation.
-        return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
-        verbose: whether or not the solver should print verbosely during optimization.
+        return_convex: whether or not to return the convex reformulation
+            instead of the final non-convex model.
+        verbose: whether or not the solver should print verbosely during
+            optimization.
         log_file: a path to an optional log file.
-        device: the device on which to run. Must be one of `cpu` (run on CPU) or
-            `cuda` (run on cuda-enabled GPUs if available).
-        dtype: the floating-point type to use. `"float32"` is faster than `"float64"` but can
-            lead to excessive numerical errors on badly conditioned datasets.
+        device: the device on which to run. Must be one of `cpu` (run on CPU)
+            or `cuda` (run on cuda-enabled GPUs if available).
+        dtype: the floating-point type to use. `"float32"` is faster than
+            `"float64"` but can lead to excessive numerical errors on badly
+            conditioned datasets.
         seed: an integer seed for reproducibility.
 
     Returns:
-        (Model, Metrics): the optimized model and metrics collected during optimization.
+        The optimized model and metrics collected during optimization.
     """
     logger = get_logger("convex_nn", verbose, False, log_file)
 
     # set backend settings.
     if solver.cpu_only() and device != "cpu":
         logger.warning(
-            f"Solver {solver} only supports CPU. User supplied device {device} has been overridden."
+            f"Solver {solver} only supports CPU. User supplied device {device}\
+            has been overridden."
         )
         device = "cpu"
 
@@ -180,7 +187,8 @@ def optimize_model(
 
     if metrics.has_test_metrics() and (X_test is None or y_test is None):
         logger.warning(
-            "Metrics specifies test metrics, but no test set was provided. Test metrics will be collected on the training set. \n"
+            "Metrics specifies test metrics, but no test set was provided. \
+            Test metrics will be collected on the training set. \n"
         )
 
     # Note: this unitizes columns of data matrix.
@@ -250,22 +258,29 @@ def optimize_path(
     Args:
         model: a convex reformulation of a neural network model.
         solver: the optimizer to use when solving the reformulation.
-        path: a list of regularizer objects specifying the regularization path to explore.
-        metrics: a object specifying which metrics to collect during optimization.
+        path: a list of regularizer objects specifying the regularization path
+            to explore.
+        metrics: a object specifying which metrics to collect during
+            optimization.
         X_train: an :math:`n \\times d` matrix of training examples.
         y_train: an :math:`n \\times c` or vector matrix of training targets.
         X_test: an :math:`m \\times d` matrix of test examples.
         y_test: an :math:`n \\times c` or vector matrix of test targets.
-        warm_start: whether or not to warm-start each optimization problem in the path using the previous solution.
-        save_path: string specifying a directory where models in the regularization path should be saved.
-            All models will be retained in memory and returned if `save_path = None`.
-        return_convex: whether or not to return the convex reformulation instead of the final non-convex model.
-        verbose: whether or not the solver should print verbosely during optimization.
+        warm_start: whether or not to warm-start each optimization problem in
+            the path using the previous solution.
+        save_path: string specifying a directory where models in the
+            regularization path should be saved. All models will be retained
+            in memory and returned if `save_path = None`.
+        return_convex: whether or not to return the convex reformulation
+            instead of the final non-convex model.
+        verbose: whether or not the solver should print verbosely during
+            optimization.
         log_file: a path to an optional log file.
-        device: the device on which to run. Must be one of `cpu` (run on CPU) or
-            `cuda` (run on cuda-enabled GPUs if available).
-        dtype: the floating-point type to use. `"float32"` is faster than `"float64"` but can
-            lead to excessive numerical errors on badly conditioned datasets.
+        device: the device on which to run. Must be one of `cpu` (run on CPU)
+            or `cuda` (run on cuda-enabled GPUs if available).
+        dtype: the floating-point type to use. `"float32"` is faster than
+            `"float64"` but can lead to excessive numerical errors on badly
+            conditioned datasets.
         seed: an integer seed for reproducibility.
     """
     # set backend settings.
@@ -274,7 +289,8 @@ def optimize_path(
     # set backend settings.
     if solver.cpu_only() and device != "cpu":
         logger.warning(
-            f"Solver {solver} only supports CPU. User supplied device {device} has been overridden."
+            f"Solver {solver} only supports CPU. User supplied device {device}\
+              has been overridden."
         )
         device = "cpu"
 
@@ -282,7 +298,8 @@ def optimize_path(
 
     if metrics.has_test_metrics() and (X_test is None or y_test is None):
         logger.warning(
-            "Metrics specifies test metrics, but no test set was provided. Test metrics will be collected on the training set. \n"
+            "Metrics specifies test metrics, but no test set was provided.\
+            Test metrics will be collected on the training set. \n"
         )
 
     # Note: this unitizes columns of data matrix.

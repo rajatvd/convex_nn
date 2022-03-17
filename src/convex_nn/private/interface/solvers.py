@@ -3,39 +3,37 @@ and optimization procedures."""
 
 from typing import Optional
 
-from convex_nn.solvers import (
-    Optimizer,
-    RFISTA,
-    AL,
-    ConeDecomposition,
-    LeastSquaresSolver,
-    CVXPYSolver,
-)
-from convex_nn.regularizers import Regularizer, NeuronGL1, FeatureGL1, L2, L1
+import convex_nn.private.prox as prox
 from convex_nn.metrics import Metrics
-from .models import (
-    ConvexReLU,
-    ConvexGatedReLU,
-)
-
 from convex_nn.private.methods import (
-    OptimizationProcedure,
-    IterativeOptimizationProcedure,
-    DoubleLoopProcedure,
     FISTA,
     AugmentedLagrangian,
-    GradientNorm,
     ConstrainedHeuristic,
-    QuadraticBound,
-    MultiplicativeBacktracker,
-    Lassplore,
-    LinearSolver,
+    LagrangianGradNorm,
     CVXPYGatedReLUSolver,
     CVXPYReLUSolver,
-    ProximalCleanup,
+    DoubleLoopProcedure,
+    GradientNorm,
+    IterativeOptimizationProcedure,
+    LagrangianGradNorm,
+    Lassplore,
+    LinearSolver,
+    MultiplicativeBacktracker,
+    OptimizationProcedure,
 )
 from convex_nn.private.methods import Optimizer as InteralOpt
-import convex_nn.private.prox as prox
+from convex_nn.private.methods import ProximalCleanup, QuadraticBound
+from convex_nn.regularizers import L1, L2, FeatureGL1, NeuronGL1, Regularizer
+from convex_nn.solvers import (
+    AL,
+    RFISTA,
+    ConeDecomposition,
+    CVXPYSolver,
+    LeastSquaresSolver,
+    Optimizer,
+)
+
+from .models import ConvexGatedReLU, ConvexReLU
 
 
 def build_prox_operator(
@@ -66,7 +64,9 @@ def build_prox_operator(
     elif regularizer is None:
         op = prox.Identity()
     else:
-        raise ValueError(f"Optimizer does not support regularizer {regularizer}.")
+        raise ValueError(
+            f"Optimizer does not support regularizer {regularizer}."
+        )
 
     return op
 
@@ -134,6 +134,7 @@ def build_optimizer(
         outer_term_criterion = ConstrainedHeuristic(
             optimizer.tol, optimizer.constraint_tol
         )
+        # outer_term_criterion = LagrangianGradNorm(optimizer.tol)
 
         sub_opt = build_fista(regularizer)
         opt = AugmentedLagrangian(
@@ -175,7 +176,9 @@ def build_optimizer(
         if isinstance(model, ConvexReLU):
             opt = CVXPYReLUSolver(optimizer.solver, optimizer.solver_kwargs)
         elif isinstance(model, ConvexGatedReLU):
-            opt = CVXPYGatedReLUSolver(optimizer.solver, optimizer.solver_kwargs)
+            opt = CVXPYGatedReLUSolver(
+                optimizer.solver, optimizer.solver_kwargs
+            )
         else:
             raise ValueError(f"Model {model} not recognized by CVXPYSolver.")
 

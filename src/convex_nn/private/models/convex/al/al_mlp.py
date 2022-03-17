@@ -1,14 +1,12 @@
-"""Augmented lagrangian for the two-layer MLP with orthant inequality
-constraints."""
-from typing import Tuple, Optional, Union, Any, List, Dict
+"""Augmented lagrangian for the two-layer MLP with cone constraints."""
 from math import ceil
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import lab
-
+from convex_nn.private.loss_functions import squared_error
+from convex_nn.private.models.convex import operators
 from convex_nn.private.models.convex.convex_mlp import ConvexMLP
 from convex_nn.private.models.regularizers import Regularizer
-from convex_nn.private.models.convex import operators
-from convex_nn.private.loss_functions import squared_error
 
 
 class AL_MLP(ConvexMLP):
@@ -45,13 +43,12 @@ class AL_MLP(ConvexMLP):
         self.e_multipliers = lab.tensor([0.0])  # NOT USED.
         self.i_multipliers = lab.zeros((2, self.c, self.p, self.n))
 
-        self.delta = delta
+        self.delta = delta / self.n
         self.orthant = 2 * self.D - lab.ones_like(self.D)
 
-    def _penalty_scaling(self, X: lab.Tensor, scaling: Optional[float] = None) -> float:
-        return scaling if scaling is not None else X.shape[0]
-
-    def _orthant(self, index_range: Optional[Tuple[int, int]] = None) -> lab.Tensor:
+    def _orthant(
+        self, index_range: Optional[Tuple[int, int]] = None
+    ) -> lab.Tensor:
         if index_range is None:
             return self.orthant
 
@@ -124,7 +121,7 @@ class AL_MLP(ConvexMLP):
         penalty = (
             self.delta
             * lab.sum(lab.smax(gap + scaled_multipliers, 0) ** 2)
-            / (2 * self._penalty_scaling(X, scaling))
+            / 2
         )
 
         return penalty
@@ -149,6 +146,7 @@ class AL_MLP(ConvexMLP):
         """
         w = w.reshape(2, self.c, self.p, self.d)
         gap = self.i_constraint_gap(X, w, index_range)
+
         scaled_multipliers = lab.safe_divide(
             self._i_multipliers(index_range),
             self.delta,
@@ -157,9 +155,11 @@ class AL_MLP(ConvexMLP):
         grad = -(
             self.delta
             * lab.einsum(
-                "ij, lmji, ik->lmjk", self._orthant(index_range), shifted_gap, X
+                "ij, lmji, ik->lmjk",
+                self._orthant(index_range),
+                shifted_gap,
+                X,
             )
-            / self._penalty_scaling(X, scaling)
         )
 
         if flatten:
@@ -188,7 +188,9 @@ class AL_MLP(ConvexMLP):
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: the objective
         """
-        obj = squared_error(self._forward(X, w, D), y) / self._scaling(y, scaling)
+        obj = squared_error(self._forward(X, w, D), y) / self._scaling(
+            y, scaling
+        )
         if not ignore_lagrange_penalty:
             obj += self.lagrange_penalty_objective(X, w, index_range, scaling)
 
@@ -202,6 +204,7 @@ class AL_MLP(ConvexMLP):
         D: Optional[lab.Tensor] = None,
         index_range: Optional[Tuple[int, int]] = None,
         scaling: Optional[float] = None,
+        ignore_lagrange_penalty: bool = False,
         flatten: bool = False,
         **kwargs,
     ) -> lab.Tensor:
@@ -221,13 +224,52 @@ class AL_MLP(ConvexMLP):
         combined_weights = w[0] - w[1]
         v_grad = super()._grad(X, y, combined_weights, D, scaling=scaling)
 
-        grad = lab.stack([v_grad, -v_grad]) + self.lagrange_penalty_grad(
-            X, w, D=D, index_range=index_range, scaling=scaling
-        )
+        grad = lab.stack([v_grad, -v_grad])
+        if not ignore_lagrange_penalty:
+            grad = grad + self.lagrange_penalty_grad(
+                X, w, D=D, index_range=index_range, scaling=scaling
+            )
+
         if flatten:
             return lab.ravel(grad)
 
         return grad
+
+    def lagrangian(
+        self,
+        X: lab.Tensor,
+        y: lab.Tensor,
+        w: lab.Tensor,
+        D: Optional[lab.Tensor] = None,
+        index_range: Optional[Tuple[int, int]] = None,
+        scaling: Optional[float] = None,
+        ignore_lagrange_penalty: bool = False,
+        **kwargs,
+    ) -> float:
+        """Compute the Lagrangian function.
+
+        :param X: (n,d) array containing the data examples.
+        :param y: (n,d) array containing the data targets.
+        :param w: specific parameter at which to compute the objective.
+        :param D: (optional) specific activation matrix at which to compute the forward pass.
+        Defaults to self.D or manual computation depending on the value of self._train.
+        :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
+        :returns: the objective
+        """
+        w = self._weights(w).reshape(2, self.c, self.p, self.d)
+
+        obj = squared_error(self._forward(X, w, D), y) / self._scaling(
+            y, scaling
+        )
+
+        if self.regularizer is not None:
+            obj += self.regularizer.penalty(w)
+
+        gap = self.i_constraint_gap(X, w, index_range)
+
+        penalty = lab.sum(gap * self._i_multipliers(index_range))
+
+        return obj + penalty
 
     def lagrangian_grad(
         self,
@@ -239,22 +281,30 @@ class AL_MLP(ConvexMLP):
         scaling: Optional[float] = None,
         flatten: bool = False,
     ) -> lab.Tensor:
-
         w = self._weights(w).reshape(2, self.c, self.p, self.d)
-        combined_weights = w[0] - w[1]
-        v_grad = super()._grad(X, y, combined_weights, D)
 
-        obj_grad = lab.stack([v_grad, -v_grad])
-
-        grad = obj_grad - (
-            lab.einsum(
-                "imjk, kj, kl -> imjl",
-                self._i_multipliers(index_range),
-                self._orthant(index_range),
-                X,
-            )
-            / self._penalty_scaling(X, scaling)
+        # Doesn't include regularizer!!
+        obj_grad = self._grad(
+            X,
+            y,
+            w,
+            D,
+            index_range,
+            scaling,
+            ignore_lagrange_penalty=True,
         )
+
+        penalty_grad = lab.einsum(
+            "imjk, kj, kl -> imjl",
+            self._i_multipliers(index_range),
+            self._orthant(index_range),
+            X,
+        )
+
+        grad = obj_grad - penalty_grad
+
+        if self.regularizer is not None:
+            grad += self.regularizer.grad(w, grad, step_size=None)
 
         if flatten:
             return lab.ravel(grad)
@@ -302,7 +352,9 @@ class AL_MLP(ConvexMLP):
         :returns: equality constraint gap, inequality constraint gap.
         """
 
-        return lab.tensor([0.0]), lab.smax(self.i_constraint_gap(X, w, index_range), 0)
+        return lab.tensor([0.0]), lab.smax(
+            self.i_constraint_gap(X, w, index_range), 0
+        )
 
     def batch_Xy(
         self, batch_size: Optional[int], X: lab.Tensor, y: lab.Tensor
@@ -343,10 +395,14 @@ class AL_MLP(ConvexMLP):
 
             # initialize new model components at 0.
             added_weights = lab.zeros((2, self.c, weights.shape[0], self.d))
-            self.weights = lab.concatenate([self.weights, added_weights], axis=2)
+            self.weights = lab.concatenate(
+                [self.weights, added_weights], axis=2
+            )
 
             # update dual variables
-            added_multipliers = lab.zeros((2, self.c, weights.shape[0], self.n))
+            added_multipliers = lab.zeros(
+                (2, self.c, weights.shape[0], self.n)
+            )
             self.i_multipliers = lab.concatenate(
                 [self.i_multipliers, added_multipliers], axis=2
             )

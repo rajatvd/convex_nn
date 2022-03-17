@@ -70,6 +70,7 @@ from .termination_criteria import (
     GradientNorm,
     StepLength,
     ConstrainedHeuristic,
+    LagrangianGradNorm,
 )
 
 
@@ -124,4 +125,5 @@ __all__ = [
     "GradientNorm",
     "StepLength",
     "ConstrainedHeuristic",
+    "LagrangianGradNorm",
 ]
