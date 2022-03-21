@@ -117,7 +117,6 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
 
         # initial metrics
         metrics_log, _ = self._record_time(metrics_log, start_time)
-        print(metrics_log)
 
         metrics_log = update_metrics(
             metrics_log,
@@ -131,7 +130,8 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
             batch_size=self.batch_size,
         )
         logger.info(
-            "Pre-Optimization Metrics: " + format_recent_metrics(metrics_log, metrics)
+            "Pre-Optimization Metrics: "
+            + format_recent_metrics(metrics_log, metrics)
         )
 
         return (
@@ -183,7 +183,8 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
         )
 
         logger.info(
-            "Post-Optimization Metrics: " + format_recent_metrics(metrics_log, metrics)
+            "Post-Optimization Metrics: "
+            + format_recent_metrics(metrics_log, metrics)
         )
 
         return model, exit_status, metrics_log
@@ -217,7 +218,13 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
         """
 
         # pre-optimization setup
-        (model, metrics_log, exit_status, objective, grad,) = self._pre_optimization(
+        (
+            model,
+            metrics_log,
+            exit_status,
+            objective,
+            grad,
+        ) = self._pre_optimization(
             logger,
             model,
             initializer,
@@ -231,7 +238,9 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
 
         # optimization loop
         verbose = root.level <= INFO
-        for itr in tqdm(range(self.max_iters), desc=self.name, disable=(not verbose)):
+        for itr in tqdm(
+            range(self.max_iters), desc=self.name, disable=(not verbose)
+        ):
             start_time = self._get_start_time(start_time)
             if itr % self.log_freq == 0 and verbose:
                 tqdm.write(format_recent_metrics(metrics_log, metrics))
@@ -264,12 +273,17 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
                 objective = model.objective(X, y, batch_size=self.batch_size)
 
             grad = model.grad(
-                X, y, batch_size=self.batch_size, step_size=self.optimizer.step_size
+                X,
+                y,
+                batch_size=self.batch_size,
+                step_size=self.optimizer.step_size,
             )
 
             # calculate time and other metrics.
             if itr % self.metric_freq == 0:
-                metrics_log, start_time = self._record_time(metrics_log, start_time)
+                metrics_log, start_time = self._record_time(
+                    metrics_log, start_time
+                )
                 metrics_log = update_metrics(
                     metrics_log,
                     model,

@@ -1,7 +1,7 @@
 """Models."""
 
 from .model import Model
-from .linear import L2Regression, LogisticRegression
+from .linear import LinearRegression, LogisticRegression
 from .non_convex import (
     SequentialWrapper,
     LayerWrapper,
@@ -43,7 +43,7 @@ from .solution_mappings import (
 
 __all__ = [
     "Model",
-    "L2Regression",
+    "LinearRegression",
     "LogisticRegression",
     "SequentialWrapper",
     "LayerWrapper",

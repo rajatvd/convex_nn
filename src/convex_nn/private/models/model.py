@@ -1,8 +1,20 @@
-"""Interface for model classes."""
+"""Interface for models.
+
+TODO:
+    - A better implementation for batching.
+    - A better implementation for getting weights.
+    - A better implementation for computing the objective scaling.
+    - Rename `weights` to `parameters`.
+    - Refactor `weights` to be a list of arrays, instead of a single array.
+    """
+
 from math import ceil
 from typing import Optional, Tuple, Callable, Union, List, Dict
 
-from scipy.sparse.linalg import LinearOperator, aslinearoperator  # type: ignore
+from scipy.sparse.linalg import (  # type: ignore
+    LinearOperator,
+    aslinearoperator,
+)
 
 import lab
 
@@ -11,23 +23,37 @@ from convex_nn.private.models.regularizers import Regularizer
 
 class Model:
 
-    """Interface for Model classes.
+    """Interface for prediction models.
 
-    Models must be able to     (1) make predictions given data;     (2) compute
-    a objective/objective associated with their predictions;     (3) compute
-    first and (optionally) second-order derivatives of the objective with
-    respect to their parameters. Models classes thus wrap the functionality of
-    a "forward pass", objective function, and "backward pass". This abandons
-    the compositionality of PyTorch or TensorFlow, but allows for better
-    optimized computations.
+    Models classes wrap the functionality of a "forward pass", objective
+    function, and "backward pass". Models must be able to
+
+        1. Make predictions given data;
+
+        2. Compute the objective associated with their predictions;
+
+        3. Compute first-order derivatives of that objective.
+
+    This abandons the compositionality of auto-differentiation software, but
+    allows for optimized computation of the objective and gradient. A model
+    has an optional regularizer, which computes some penalty on the model
+    parameters.
+
+    Attributes:
+        d: the input dimension.
+        c: the output dimension.
+        weights: a tensor of parameters for the model.
+        regularizer: an optional regularizer.
     """
 
     # public fields
 
-    weights: lab.Tensor  # model parameters
     p: int = 0  # number of hidden units
     c: int = 1  # output dimension
+    weights: lab.Tensor  # model parameters
     regularizer: Optional[Regularizer]  # penalty/regularizer
+
+    # TODO: cleanup
     activation_history: Optional[lab.Tensor] = None
     weight_history: Optional[lab.Tensor] = None
     D: Optional[lab.Tensor] = None

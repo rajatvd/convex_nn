@@ -319,22 +319,23 @@ def compute_metric(
             old_value = metric_dict.get(f"subproblem_{key}", [])
             metric_dict[f"subproblem_{key}"] = old_value + as_list(value)
     elif "nc_" in metric_name:
-        if not isinstance(model, ConvexMLP):
-            metric = -1
-        else:
-            grelu = not isinstance(model, AL_MLP)
-            nc_model = sm.construct_nc_manual(model, grelu, remove_sparse=True)
-            compute_metric(
-                metric_name.split("nc_")[1],
-                metric_dict,
-                dict_key,
-                nc_model,
-                sp_exit_state,
-                data,
-                None,
-                None,
-                batch_size,
-            )
+        nc_model = model
+
+        # compute the non-convex model if one exists
+        if isinstance(model, ConvexMLP):
+            nc_model = sm.get_nc_formulation(model, remove_sparse=True)
+
+        compute_metric(
+            metric_name.split("nc_")[1],
+            metric_dict,
+            dict_key,
+            nc_model,
+            sp_exit_state,
+            data,
+            None,
+            None,
+            batch_size,
+        )
 
     else:
         raise ValueError(

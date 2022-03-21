@@ -8,26 +8,42 @@ from convex_nn.private.models.regularizers import Regularizer
 import convex_nn.private.loss_functions as loss_fns
 
 
-class L2Regression(Model):
+class LinearRegression(Model):
 
-    """Linear regression with least-squares (l2) objective."""
+    """Linear regression with least-squares objective.
 
-    def __init__(self, d: int, regularizer: Optional[Regularizer] = None):
+    Attributes:
+        d: the input dimension.
+        c: the output dimension.
+        weights: an (c, d) matrix of weights for the linear model.
+    """
+
+    def __init__(
+        self, d: int, c: int = 1, regularizer: Optional[Regularizer] = None
+    ):
         """
-        :param d: the dimensionality of the dataset (ie.number of features).
-        :param regularizer: (optional) a penalty function controlling the flexibility of the model.
+        Args:
+            d: the input dimension.
+            c: the output dimension.
+            regularizer: a penalty function controlling the flexibility of the
+                model.
         """
         super().__init__(regularizer)
         self.d = d
-        self.weights = lab.zeros(d)
+        self.c = c
+        self.weights = lab.zeros((c, d))
 
     def _forward(self, X: lab.Tensor, w: lab.Tensor, **kwargs) -> lab.Tensor:
         """Compute forward pass.
 
-        :param X: (n,d) array containing the data examples.
-        :param w: parameter at which to compute the forward pass.
+        Args:
+            X: (n,d) array containing the data examples.
+            w: parameter at which to compute the forward pass.
+
+        Returns:
+            The forward pass (i.e. predictions) at `w`.
         """
-        return X @ w
+        return X @ w.T
 
     def _objective(
         self,
@@ -37,13 +53,16 @@ class L2Regression(Model):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> float:
-        """Compute objective associated with examples X and targets y.
+        """Compute least-squares objective given a dataset.
 
-        :param X: (n,d) array containing the data examples.
-        :param y: (n,d) array containing the data targets.
-        :param w: specific parameter at which to compute the forward pass.
-        :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
-        :returns: objective L(f, (X, y)).
+        Args:
+            X: (n,d) array containing the data examples.
+            y: (n,c) array containing the data targets.
+            w: specific parameter at which to compute the forward pass.
+            scaling: scaling parameter for the objective. Defaults to `n * c`.
+
+        Returns:
+            The objective at `w`.
         """
         return loss_fns.squared_error(self._forward(X, w), y) / self._scaling(
             y, scaling
@@ -57,15 +76,18 @@ class L2Regression(Model):
         scaling: Optional[float] = None,
         **kwargs,
     ) -> lab.Tensor:
-        """Compute the gradient of the l2 objective with respect to the model
-        parameters.
+        """Compute gradient of the least-squares objective.
 
-        :param X: (n,d) array containing the data examples.
-        :param y: (n,d) array containing the data targets.
-        :param w: parameter at which to compute the forward pass.
-        :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
-        :returns: the gradient
+        Args:
+            X: (n,d) array containing the data examples.
+            y: (n,c) array containing the data targets.
+            w: parameter at which to compute the forward pass.
+            scaling: scaling parameter for the objective. Defaults to `n * c`.
+
+        Returns:
+            The gradient at `w`.
         """
 
         res = self._forward(X, w) - y
-        return lab.matmul(X.T, res) / self._scaling(y, scaling)
+        grad = lab.matmul(res.T, X) / self._scaling(y, scaling)
+        return grad

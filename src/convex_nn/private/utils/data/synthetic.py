@@ -190,7 +190,7 @@ def gen_sparse_regression_problem(
         y = np.cos(y)
     elif transform == "polynomial":
         # simple cubic
-        y = y + (y ** 2) / 2 + (y ** 3) / 3
+        y = y + (y ** 2) / 2 + (y ** 3) / 6
     else:
         try:
             y = transform(y)

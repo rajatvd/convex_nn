@@ -24,7 +24,12 @@ from typing import Union
 import torch
 
 from convex_nn.private.models.model import Model
-from convex_nn.private.models.convex import AL_MLP, AL_LassoNet, ConvexMLP, ConvexLassoNet
+from convex_nn.private.models.convex import (
+    AL_MLP,
+    AL_LassoNet,
+    ConvexMLP,
+    ConvexLassoNet,
+)
 
 
 def is_compatible(torch_model: torch.nn.Module) -> bool:
@@ -40,7 +45,6 @@ def is_compatible(torch_model: torch.nn.Module) -> bool:
 
 def get_nc_formulation(
     convex_model: Model,
-    implementation: str = "torch",
     remove_sparse: bool = False,
 ) -> Union[torch.nn.Module, Model]:
 
@@ -49,17 +53,9 @@ def get_nc_formulation(
         grelu = False
 
     if isinstance(convex_model, (ConvexLassoNet, AL_LassoNet)):
-        if implementation == "torch":
-            raise NotImplementedError(
-                "PyTorch models have not been implemented for LassoNet."
-            )
-        elif implementation == "manual":
-            return construct_nc_ln_manual(convex_model, grelu, remove_sparse)
+        return construct_nc_ln_manual(convex_model, grelu, remove_sparse)
     elif isinstance(convex_model, ConvexMLP):
-        if implementation == "torch":
-            return construct_nc_torch(convex_model, grelu, remove_sparse)
-        elif implementation == "manual":
-            return construct_nc_manual(convex_model, grelu, remove_sparse)
+        return construct_nc_manual(convex_model, grelu, remove_sparse)
     else:
         raise ValueError(
             f"Implementation {implementation} not recognized. Please add it to 'solution_mappings.mlps.py'"
