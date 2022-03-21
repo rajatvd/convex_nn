@@ -81,7 +81,11 @@ class ConvexMLP(Model):
         return local_D
 
     def _forward(
-        self, X: lab.Tensor, w: lab.Tensor, D: Optional[lab.Tensor] = None, **kwargs
+        self,
+        X: lab.Tensor,
+        w: lab.Tensor,
+        D: Optional[lab.Tensor] = None,
+        **kwargs,
     ) -> lab.Tensor:
         """Compute forward pass.
 
@@ -113,7 +117,9 @@ class ConvexMLP(Model):
         :returns: the objective
         """
 
-        return squared_error(self._forward(X, w, D), y) / self._scaling(y, scaling)
+        return squared_error(self._forward(X, w, D), y) / self._scaling(
+            y, scaling
+        )
 
     def _grad(
         self,
@@ -138,7 +144,9 @@ class ConvexMLP(Model):
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: the gradient
         """
-        grad = self._gradient(w, X, y, self._signs(X, D)) / self._scaling(y, scaling)
+        grad = self._gradient(w, X, y, self._signs(X, D)) / self._scaling(
+            y, scaling
+        )
 
         if flatten:
             grad = grad.reshape(-1)
@@ -191,7 +199,9 @@ class ConvexMLP(Model):
             def transpose(v):
                 return lab.squeeze(self._data_t_mvp(v, X=X, D=local_D))
 
-        op = MatVecOperator(shape=(n, pd), forward=forward, transpose=transpose)
+        op = MatVecOperator(
+            shape=(n, pd), forward=forward, transpose=transpose
+        )
 
         return op
 
@@ -213,7 +223,9 @@ class ConvexMLP(Model):
 
             # initialize new model components at 0.
             added_weights = lab.zeros((self.c, weights.shape[0], self.d))
-            self.weights = lab.concatenate([self.weights, added_weights], axis=1)
+            self.weights = lab.concatenate(
+                [self.weights, added_weights], axis=1
+            )
 
             # filter out the zero column.
             if remove_zero:

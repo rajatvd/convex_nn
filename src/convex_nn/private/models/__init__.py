@@ -26,11 +26,13 @@ from .regularizers import (
     Constraint,
     GroupL1Orthant,
     GroupL1Regularizer,
+    FeatureGroupL1Regularizer,
     L2Regularizer,
     L1Regularizer,
     OrthantConstraint,
     LassoNetConstraint,
     L1SquaredRegularizer,
+    DiagonalGL1Regularizer,
 )
 
 from .solution_mappings import (
@@ -58,10 +60,12 @@ __all__ = [
     "Regularizer",
     "Constraint",
     "GroupL1Regularizer",
+    "FeatureGroupL1Regularizer",
     "GroupL1Orthant",
     "L2Regularizer",
     "L1Regularizer",
     "L1SquaredRegularizer",
+    "DiagonalGL1Regularizer",
     "OrthantConstraint",
     "LassoNetConstraint",
     "is_compatible",

@@ -11,6 +11,7 @@ import lab
 from convex_nn.private.prox import (
     L1,
     GroupL1,
+    FeatureGroupL1,
     Orthant,
     GroupL1Orthant,
 )
@@ -85,6 +86,60 @@ class TestProximalOps(unittest.TestCase):
                 ],
             ]
         )
+        prox = FeatureGroupL1(lam=0)
+
+        # if lambda is 0, then the prox is the identity operator
+        self.assertTrue(
+            lab.allclose(prox(matrix, 1), matrix),
+            "Prox with lambda = 0 didn't reduce to the identity map for matrices.",
+        )
+
+        # if lambda is huge, then all entries are zeroed
+        prox.lam = np.sqrt(6) * 1000
+        self.assertTrue(
+            lab.all(prox(matrix, 1) == 0),
+            "Prox with lambda very large didn't zero all matrix entries.",
+        )
+
+        # if lambda is large, then some entries should be zerod
+        prox.lam = np.sqrt(6) * 100
+        zeroed_matrix = prox(matrix, 1)
+        self.assertTrue(
+            lab.all(zeroed_matrix[:, :, :, 0:3] == 0.0),
+            "The first three rows didn't get zeroed.",
+        )
+        self.assertTrue(
+            lab.all(zeroed_matrix[:, :, :, 3] != 0.0),
+            "The last row had zero elements.",
+        )
+
+        # if lambda is too small, then no entries are zeroed
+        prox.lam = 1
+        zeroed_matrix = prox(matrix, 1)
+        self.assertTrue(
+            lab.all(zeroed_matrix != 0), "All entires should be non-zero."
+        )
+
+    def test_group_l1(self):
+        """Test proximal operator for group l1 penalty."""
+        matrix = lab.tensor(
+            [
+                [
+                    [
+                        [-1.0, -10, -100, -1000],
+                        [-1, -10, -100, -1000],
+                        [-1, -10, -100, -1000],
+                    ]
+                ],
+                [
+                    [
+                        [1.0, 10, 100, 1000],
+                        [1, 10, 100, 1000],
+                        [1, 10, 100, 1000],
+                    ]
+                ],
+            ]
+        )
         matrix = lab.transpose(matrix, 3, 2)
 
         prox = GroupL1(lam=0)
@@ -117,7 +172,9 @@ class TestProximalOps(unittest.TestCase):
         # if lambda is too small, then no entries are zeroed
         prox.lam = 1
         zeroed_matrix = prox(matrix, 1)
-        self.assertTrue(lab.all(zeroed_matrix != 0), "All entires should be non-zero.")
+        self.assertTrue(
+            lab.all(zeroed_matrix != 0), "All entires should be non-zero."
+        )
 
     def test_orthant(self):
         """Test projecting onto orthants."""

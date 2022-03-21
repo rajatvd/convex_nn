@@ -42,7 +42,7 @@ class TestIneqAugmentedConvexMLP(unittest.TestCase):
         self.X, self.y = lab.all_to_tensor(train_set)
 
         self.P = self.D.shape[1]
-        self.regularizer = GroupL1Regularizer(1e-6)
+        self.regularizer = L2Regularizer(0.01)
 
         self.nn = AL_MLP(
             self.d,
@@ -138,7 +138,7 @@ class TestIneqAugmentedConvexMLP(unittest.TestCase):
                 "The gradient of the objective does not match the finite-difference approximation.",
             )
 
-    def test_weights_obj_grad(self):
+    def test_augmented_lagrangian(self):
         """Test implementation of objective and gradient for the augmented Lagrangian."""
 
         def obj_fn(w):

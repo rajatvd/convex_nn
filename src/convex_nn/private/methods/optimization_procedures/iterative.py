@@ -117,6 +117,7 @@ class IterativeOptimizationProcedure(OptimizationProcedure):
 
         # initial metrics
         metrics_log, _ = self._record_time(metrics_log, start_time)
+        print(metrics_log)
 
         metrics_log = update_metrics(
             metrics_log,

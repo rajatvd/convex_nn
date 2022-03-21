@@ -27,6 +27,7 @@ from convex_nn.private.models import (
     ReLUMLP,
     GatedReLUMLP,
     GroupL1Regularizer,
+    FeatureGroupL1Regularizer,
     L2Regularizer,
     L1Regularizer,
 )
@@ -56,7 +57,7 @@ def build_internal_regularizer(
     if isinstance(regularizer, NeuronGL1):
         reg = GroupL1Regularizer(lam, group_by_feature=False)
     elif isinstance(regularizer, FeatureGL1):
-        reg = GroupL1Regularizer(lam, group_by_feature=True)
+        reg = FeatureGroupL1Regularizer(lam)
     elif isinstance(regularizer, L2):
         reg = L2Regularizer(lam)
     elif isinstance(regularizer, L1):
@@ -106,8 +107,12 @@ def build_internal_model(
             ]
         )
     elif isinstance(model, ConvexGatedReLU):
-        internal_model = ConvexMLP(d, D, G, "einsum", regularizer=internal_reg, c=c)
-        internal_model.weights = lab.tensor(model.parameters[0], dtype=lab.get_dtype())
+        internal_model = ConvexMLP(
+            d, D, G, "einsum", regularizer=internal_reg, c=c
+        )
+        internal_model.weights = lab.tensor(
+            model.parameters[0], dtype=lab.get_dtype()
+        )
     else:
         raise ValueError(f"Model object {model} not supported.")
 
@@ -157,7 +162,9 @@ def build_public_model(internal_model: InternalModel) -> Model:
         model.set_parameters([lab.to_np(w1), lab.to_np(w2)])
 
     elif isinstance(internal_model, ReLUMLP):
-        model = NonConvexReLU(internal_model.d, internal_model.p, internal_model.c)
+        model = NonConvexReLU(
+            internal_model.d, internal_model.p, internal_model.c
+        )
         w1, w2 = internal_model._split_weights(internal_model.weights)
 
         model.set_parameters([lab.to_np(w1), lab.to_np(w2)])

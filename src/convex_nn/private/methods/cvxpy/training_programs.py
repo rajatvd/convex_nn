@@ -99,7 +99,10 @@ class ConvexReformulationSolver(CVXPYSolver):
         loss = 0.0
         for i in range(self.c):
             loss += cp.sum_squares(
-                cp.sum(cp.multiply(D, X @ W[i * self.p : (i + 1) * self.p].T), axis=1)
+                cp.sum(
+                    cp.multiply(D, X @ W[i * self.p : (i + 1) * self.p].T),
+                    axis=1,
+                )
                 - y[:, i]
             ) / (2 * self.n * self.c)
 
@@ -169,7 +172,9 @@ class CVXPYGatedReLUSolver(ConvexReformulationSolver):
         # infer verbosity of sub-solver.
         verbose = root.level <= INFO
         # solve the optimization problem
-        problem.solve(solver=self.solver, verbose=verbose, **self.solver_kwargs)
+        problem.solve(
+            solver=self.solver, verbose=verbose, **self.solver_kwargs
+        )
 
         # extract solution
         model.weights = lab.tensor(W.value, dtype=lab.get_dtype()).reshape(
@@ -219,15 +224,17 @@ class CVXPYReLUSolver(ConvexReformulationSolver):
 
         # define orthant constraints
         A = 2 * D_np - np.ones_like(D_np)
-        constraints = self.get_cone_constraints(U, X_np, A) + self.get_cone_constraints(
-            V, X_np, A
-        )
+        constraints = self.get_cone_constraints(
+            U, X_np, A
+        ) + self.get_cone_constraints(V, X_np, A)
 
         problem = cp.Problem(objective, constraints)
 
         verbose = root.level <= INFO
         # solve the optimization problem
-        problem.solve(solver=self.solver, verbose=verbose, **self.solver_kwargs)
+        problem.solve(
+            solver=self.solver, verbose=verbose, **self.solver_kwargs
+        )
 
         # extract solution
         model.weights = lab.stack(
@@ -278,7 +285,11 @@ class CVXPYGatedLassoNetSolver(ConvexReformulationSolver):
             A list of :math:`p * c` constraints, one for each of the target-activation pair.
         """
 
-        residual = X @ (beta[0] - beta[1]) + cp.sum(cp.multiply(D, X @ W.T), axis=1) - y
+        residual = (
+            X @ (beta[0] - beta[1])
+            + cp.sum(cp.multiply(D, X @ W.T), axis=1)
+            - y
+        )
 
         return cp.sum_squares(residual) / (2 * self.n)
 
@@ -301,7 +312,10 @@ class CVXPYGatedLassoNetSolver(ConvexReformulationSolver):
             A vector of sparsity-inducing constraints for the LassoNet model.
         """
 
-        return [cp.abs(W[:, i]) <= M * (beta[0, i] + beta[1, i]) for i in range(self.d)]
+        return [
+            cp.abs(W[:, i]) <= M * (beta[0, i] + beta[1, i])
+            for i in range(self.d)
+        ]
 
     def __call__(
         self, model: ConvexLassoNet, X: np.ndarray, y: np.ndarray
@@ -344,13 +358,17 @@ class CVXPYGatedLassoNetSolver(ConvexReformulationSolver):
         constraints = [beta >= 0]
 
         if model.regularizer is not None:
-            constraints += self.get_sparsity_constraints(W, beta, model.regularizer.M)
+            constraints += self.get_sparsity_constraints(
+                W, beta, model.regularizer.M
+            )
 
         problem = cp.Problem(objective, constraints)
 
         # solve the optimization problem
         verbose = root.level <= INFO
-        problem.solve(solver=self.solver, verbose=verbose, **self.solver_kwargs)
+        problem.solve(
+            solver=self.solver, verbose=verbose, **self.solver_kwargs
+        )
 
         # extract solution
         model.weights = lab.expand_dims(
@@ -427,24 +445,34 @@ class CVXPYReLULassoNetSolver(CVXPYGatedLassoNetSolver):
         )
 
         if model.regularizer is not None:
-            constraints += self.get_sparsity_constraints(W, beta, model.regularizer.M)
+            constraints += self.get_sparsity_constraints(
+                W, beta, model.regularizer.M
+            )
 
         problem = cp.Problem(objective, constraints)
 
         # solve the optimization problem
         verbose = root.level <= INFO
-        problem.solve(solver=self.solver, verbose=verbose, **self.solver_kwargs)
+        problem.solve(
+            solver=self.solver, verbose=verbose, **self.solver_kwargs
+        )
 
         # extract solution
         skip_weights = lab.tensor(beta.value, dtype=lab.get_dtype())
         stacked_weights = lab.stack(
             [
                 lab.concatenate(
-                    [lab.tensor(U.value, dtype=lab.get_dtype()), skip_weights[:1]],
+                    [
+                        lab.tensor(U.value, dtype=lab.get_dtype()),
+                        skip_weights[:1],
+                    ],
                     axis=0,
                 ),
                 lab.concatenate(
-                    [lab.tensor(V.value, dtype=lab.get_dtype()), skip_weights[1:]],
+                    [
+                        lab.tensor(V.value, dtype=lab.get_dtype()),
+                        skip_weights[1:],
+                    ],
                     axis=0,
                 ),
             ],

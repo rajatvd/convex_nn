@@ -258,22 +258,23 @@ def compute_metric(
     elif metric_name == "total_neurons":
         metric = model.p
     elif metric_name == "feature_sparsity":
-        reduced_weights = model.get_reduced_weights()
+        reduced_weights = model.weights
         feature_weights = lab.sum(
             lab.abs(reduced_weights),
             axis=tuple(range(len(reduced_weights.shape) - 1)),
         )
-        feature_weights = feature_weights + lab.sum(lab.abs(model.U), axis=-1)
+        # feature_weights = feature_weights + lab.sum(lab.abs(model.U), axis=-1)
+
         metric = lab.to_scalar(
             lab.sum(feature_weights == 0.0) / reduced_weights.shape[-1]
         )
     elif metric_name == "active_features":
-        reduced_weights = model.get_reduced_weights()
+        reduced_weights = model.weights
         feature_weights = lab.sum(
             lab.abs(reduced_weights),
             axis=tuple(range(len(reduced_weights.shape) - 1)),
         )
-        feature_weights = feature_weights + lab.sum(lab.abs(model.U), axis=-1)
+        # feature_weights = feature_weights + lab.sum(lab.abs(model.U), axis=-1)
         metric = lab.to_scalar(lab.sum(feature_weights != 0.0))
     elif metric_name == "group_sparsity":
         metric = lab.to_scalar(
@@ -290,6 +291,11 @@ def compute_metric(
         metric = lab.to_scalar(
             lab.sum(lab.sqrt(lab.sum(model.weights ** 2, axis=-1)))
         )
+    elif metric_name == "dual_param_norm":
+        try:
+            metric = lab.to_scalar(lab.sum(model.i_multipliers ** 2))
+        except:
+            metric = lab.tensor([0.0])
     elif metric_name == "constraint_gaps":
         try:
             e_gap, i_gap = model.constraint_gaps(X)

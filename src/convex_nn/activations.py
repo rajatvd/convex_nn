@@ -130,8 +130,8 @@ def sample_sparse_gates(
         n_samples: the number of samples to use.
         sparsity_indices: lists of indices (i.e. features) for which sparse
             gates should be generated. Each index list will get
-            `n_samples / len(sparsity_indices)` gates which are sparse in those
-            indices.
+            `n_samples / len(sparsity_indices)` gates which are sparse in
+            every feature except the given indices.
 
     Notes:
         - It is possible to obtain more than `n_samples` gate vectors if
@@ -147,8 +147,8 @@ def sample_sparse_gates(
 
     for indices in sparsity_indices:
         # create mask
-        mask = np.ones((d, 1))
-        mask[indices, :] = 0
+        mask = np.zeros((d, 1))
+        mask[indices, :] = 1
 
         G = sample_dense_gates(rng, d, samples_per_list)
 

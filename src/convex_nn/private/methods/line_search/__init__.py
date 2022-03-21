@@ -7,6 +7,7 @@ from .conditions import (
     LSCondition,
     FSS,
     QuadraticBound,
+    DiagQB,
     Armijo,
 )
 from .step_size_updates import (
@@ -23,6 +24,7 @@ __all__ = [
     "LSCondition",
     "FSS",
     "QuadraticBound",
+    "DiagQB",
     "Armijo",
     "StepSizeUpdater",
     "KeepNew",

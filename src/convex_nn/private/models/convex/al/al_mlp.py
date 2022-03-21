@@ -258,15 +258,18 @@ class AL_MLP(ConvexMLP):
         """
         w = self._weights(w).reshape(2, self.c, self.p, self.d)
 
+        # doesn't include regularization
         obj = squared_error(self._forward(X, w, D), y) / self._scaling(
             y, scaling
         )
 
+        # regularization
         if self.regularizer is not None:
             obj += self.regularizer.penalty(w)
 
         gap = self.i_constraint_gap(X, w, index_range)
 
+        # penalty terms from Lagrangian
         penalty = lab.sum(gap * self._i_multipliers(index_range))
 
         return obj + penalty
@@ -283,7 +286,7 @@ class AL_MLP(ConvexMLP):
     ) -> lab.Tensor:
         w = self._weights(w).reshape(2, self.c, self.p, self.d)
 
-        # Doesn't include regularizer!!
+        # Doesn't include regularization.
         obj_grad = self._grad(
             X,
             y,
@@ -294,6 +297,7 @@ class AL_MLP(ConvexMLP):
             ignore_lagrange_penalty=True,
         )
 
+        # penalty terms from Lagrangian
         penalty_grad = lab.einsum(
             "imjk, kj, kl -> imjl",
             self._i_multipliers(index_range),
@@ -303,8 +307,9 @@ class AL_MLP(ConvexMLP):
 
         grad = obj_grad - penalty_grad
 
+        # regularization
         if self.regularizer is not None:
-            grad += self.regularizer.grad(w, grad, step_size=None)
+            grad += self.regularizer.grad(w, grad)
 
         if flatten:
             return lab.ravel(grad)

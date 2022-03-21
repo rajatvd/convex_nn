@@ -46,13 +46,17 @@ class TestIneqLassoNet(unittest.TestCase):
 
         self.P = self.D.shape[1]
 
-        self.nn = AL_LassoNet(self.d, self.D, self.U, delta=2, gamma=1.0, c=self.c)
+        self.nn = AL_LassoNet(
+            self.d, self.D, self.U, delta=2, gamma=1.0, c=self.c
+        )
 
     def test_forward(self):
         """Test network predictions."""
 
         weights = lab.tensor(
-            self.rng.standard_normal((2, self.c, self.P + 1, self.d), dtype=self.dtype)
+            self.rng.standard_normal(
+                (2, self.c, self.P + 1, self.d), dtype=self.dtype
+            )
         )
         self.nn.weights = weights
 
@@ -73,12 +77,51 @@ class TestIneqLassoNet(unittest.TestCase):
             "Network predictions did not match direct calculation.",
         )
 
+    def test_langrangian_grad(self):
+        """Test implementation of objective and gradient for the Lagrangian function."""
+
+        # no L1 penalty.
+        self.nn.gamma = 0
+
+        def obj_fn(w):
+            return self.nn.lagrangian(
+                self.X,
+                self.y,
+                lab.tensor(w).reshape(2, self.c, self.P + 1, self.d),
+            )
+
+        def grad_fn(w):
+            return lab.to_np(
+                self.nn.lagrangian_grad(
+                    self.X,
+                    self.y,
+                    lab.tensor(w),
+                    flatten=True,
+                )
+            )
+
+        for tr in range(self.tries):
+            weights = self.rng.standard_normal(
+                (2, self.c, self.P + 1, self.d), dtype=self.dtype
+            )
+
+            self.assertTrue(
+                np.allclose(
+                    check_grad(obj_fn, grad_fn, weights.reshape(-1)),
+                    0.0,
+                    atol=1e-4,
+                ),
+                "The gradient of the objective does not match the finite-difference approximation.",
+            )
+
     def test_weights_obj_grad(self):
         """Test implementation of objective and gradient for the augmented Lagrangian."""
 
         def obj_fn(w):
             return self.nn.objective(
-                self.X, self.y, lab.tensor(w).reshape(2, self.c, self.P + 1, self.d)
+                self.X,
+                self.y,
+                lab.tensor(w).reshape(2, self.c, self.P + 1, self.d),
             )
 
         def grad_fn(w):

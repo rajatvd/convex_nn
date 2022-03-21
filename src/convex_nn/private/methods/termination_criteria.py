@@ -74,17 +74,17 @@ class ConstrainedTerminationCriterion(TerminationCriterion):
         constraint_tol: the tolerance for violation of the constraints.
     """
 
-    ob_tol: float
+    obj_tol: float
     constraint_tol: float
 
-    def __init__(self, grad_tol: float, constraint_tol: float):
+    def __init__(self, obj_tol: float, constraint_tol: float):
         """
         Args:
-            ob_tol: the tolerance for determining optimality of the primal
+            obj_tol: the tolerance for determining optimality of the primal
                 optimization problem.
             constraint_tol: the tolerance for determining feasibility.
         """
-        self.ob_tol = ob_tol
+        self.obj_tol = obj_tol
         self.constraint_tol = constraint_tol
 
     def constraint_violations(self, model: Model, X: lab.Tensor) -> float:
@@ -258,13 +258,13 @@ class ConstrainedHeuristic(ConstrainedTerminationCriterion):
 
         gaps = self.constraint_violations(model, X)
 
-        if gaps <= self.constraint_violations:
-            return lab.sum(grad ** 2) <= self.grad_tol
+        if gaps <= self.constraint_tol:
+            return lab.sum(grad ** 2) <= self.obj_tol
 
         return False
 
 
-class LagrangianGradNorm(TerminationCriterion):
+class LagrangianGradNorm(ConstrainedTerminationCriterion):
     """First-order optimality criterion for primal-dual methods.
 
     Terminate optimization if and only if the norm of minimum-norm subgradient
@@ -308,7 +308,7 @@ class LagrangianGradNorm(TerminationCriterion):
         """
 
         gaps = self.constraint_violations(model, X)
-        if gaps <= self.constraint_violations:
+        if gaps <= self.constraint_tol:
             return lab.sum(model.lagrangian_grad(X, y) ** 2) <= self.obj_tol
 
         return False

@@ -19,7 +19,9 @@ class ProximalOperator:
 
     """Base class for proximal operators."""
 
-    def __call__(self, w: lab.Tensor, beta: Optional[float] = None) -> lab.Tensor:
+    def __call__(
+        self, w: lab.Tensor, beta: Optional[float] = None
+    ) -> lab.Tensor:
         """Evaluate the proximal_operator.
 
         :param w: parameters to which apply the operator will be applied.
@@ -27,7 +29,9 @@ class ProximalOperator:
         :returns: prox(w)
         """
 
-        raise NotImplementedError("A proximal operator must implement '__call__'!")
+        raise NotImplementedError(
+            "A proximal operator must implement '__call__'!"
+        )
 
 
 class Identity(ProximalOperator):
@@ -36,7 +40,9 @@ class Identity(ProximalOperator):
     This proximal-operator always returns the input point.
     """
 
-    def __call__(self, w: lab.Tensor, beta: Optional[float] = None) -> lab.Tensor:
+    def __call__(
+        self, w: lab.Tensor, beta: Optional[float] = None
+    ) -> lab.Tensor:
         """Evaluate the identity operator.
 
         Args:
@@ -70,7 +76,7 @@ class Regularizer(ProximalOperator):
 class L2(Regularizer):
     """The proximal operator for the squared l2-norm.
 
-    The proximal operator returns a solution to the following optimization problem:
+    The proximal operator returns the unique solution to the following optimization problem:
 
     .. math:: \\min_x \\{\\|x - w\\|_2^2 + \\frac{\\beta * \\lambda}{2} \\|x\\|_2^2\\}.
 
@@ -96,7 +102,7 @@ class L1(Regularizer):
     """The proximal operator for the l1-norm.
 
     The l1 proximal operator is sometimes known as the soft-thresholding operator and
-    is a solution to the following problem:
+    is the unique solution to the following problem:
 
     .. math:: \\min_x \\{\\|x - w\\|_2^2 + \\beta * \\lambda \\|x\\|_1\\}.
     """
@@ -121,22 +127,12 @@ class GroupL1(Regularizer):
 
     Given group indices :math:`\\calI`, the group-l1 regularizer is the sum of
     l2-norms of the groups, :math:`r(w) = \\sum_{i \\in \\calI} \\|w_i\\|_2`.
-    The proximal operator is thus a solution to the following problem,
+    The proximal operator is thus the unique solution to the following problem,
 
     .. math:: \\min_x \\{\\|x - w\\|_2^2 + \\beta * \\lambda \\sum_{i=1 \\in \\calI} \\|x_i\\|_2\\}.
 
-    Groups are either defined over the last or second-to-last axis of the point w.
+    Groups are either defined to be the last axis of the point w.
     """
-
-    def __init__(self, lam: float, group_by_feature: bool = False):
-        """Initialize the proximal operator.
-        Args:
-        :param lam: parameter controlling the strength of the regularization.
-        :param group_by_feature: whether or not input-point should be grouped by column, rather
-            than row.
-        """
-        self.lam = lam
-        self.group_by_feature = group_by_feature
 
     def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
         """Evaluate the proximal operator given a point and a step-size.
@@ -148,9 +144,6 @@ class GroupL1(Regularizer):
         Returns:
             prox(w), the result of the proximal operator.
         """
-        if self.group_by_feature:
-            w = lab.transpose(w, -1, -2)
-
         # compute the squared norms of each group.
         norms = lab.sqrt(lab.sum(w ** 2, axis=-1, keepdims=True))
 
@@ -158,8 +151,98 @@ class GroupL1(Regularizer):
             lab.safe_divide(w, norms), lab.smax(norms - self.lam * beta, 0)
         )
 
-        if self.group_by_feature:
-            w_plus = lab.transpose(w_plus, -1, -2)
+        return w_plus
+
+
+class FeatureGroupL1(Regularizer):
+
+    """The proximal operator for the feature-wise group-l1 regularizer.
+
+    The feature-wise group-l1 regularizer is the sum of l2-norms of the
+    weights for each feature,
+
+    ..math:: r(w) = \\sum_{i \\in \\calI} \\|w_i\\|_2.
+
+    The proximal operator is the unique solution to the following problem,
+
+    .. math:: \\min_x \\{\\|x - w\\|_2^2 + \\beta * \\lambda
+        \\sum_{j=1}^d \\|x_{:,j}\\|_2\\},
+
+    where :math:`x_{:, j}` is the vector of all weights corresponding to
+    feature :math:`j`.
+    """
+
+    def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
+        """Evaluate the proximal operator given a point and a step-size.
+
+        Args:
+            w: the point at which the evaluate the operator.
+            beta: the step-size for the proximal step.
+
+        Returns:
+            prox(w), the result of the proximal operator.
+        """
+        # compute the squared norms of each feature group.
+        norms = lab.sqrt(
+            lab.sum(
+                w ** 2,
+                axis=tuple(range(len(w.shape) - 1)),
+                keepdims=True,
+            )
+        )
+
+        w_plus = lab.multiply(
+            lab.safe_divide(w, norms), lab.smax(norms - self.lam * beta, 0)
+        )
+
+        return w_plus
+
+
+# Experimental
+
+
+class DiagonalGL1(Regularizer):
+
+    """The proximal operator for the group-l1 regularizer.
+
+    Given group indices :math:`\\calI`, the group-l1 regularizer is the sum of
+    l2-norms of the groups, :math:`r(w) = \\sum_{i \\in \\calI} \\|w_i\\|_2`.
+    The proximal operator is thus the unique solution to the following problem,
+
+    .. math:: \\min_x \\{\\|x - w\\|_A^2 + \\beta * \\lambda \\sum_{i=1 \\in \\calI} \\|x_i\\|_A\\}.
+
+    Groups are either defined to be the last axis of the point w.
+    """
+
+    def __init__(
+        self, lam: float, A: lab.Tensor, group_by_feature: bool = False
+    ):
+        """Initialize the proximal operator.
+        Args:
+            lam: parameter controlling the strength of the regularization.
+            A: diagonal matrix in which to compute the operator.
+        """
+        self.lam = lam
+        self.A = A
+
+    def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
+        """Evaluate the proximal operator given a point and a step-size.
+
+        Args:
+            w: the point at which the evaluate the operator.
+            beta: the step-size for the proximal step.
+
+        Returns:
+            prox(w), the result of the proximal operator.
+        """
+
+        # compute the squared norms of each group.
+        z = lab.multiply(self.A, w)
+        norms = lab.sqrt(lab.sum(z * w, axis=-1, keepdims=True))
+
+        w_plus = lab.multiply(
+            lab.safe_divide(w, norms), lab.smax(norms - self.lam * beta, 0)
+        )
 
         return w_plus
 
@@ -176,7 +259,7 @@ class Orthant(ProximalOperator):
 
     def __init__(self, A: lab.Tensor):
         """
-        :param A: a matrix of sign patterns defining orthants on which to project.
+        A: a matrix of sign patterns defining orthants on which to project.
             The diagonal A_i is stored as the i'th column of A.
         """
         self.A = A
@@ -185,11 +268,13 @@ class Orthant(ProximalOperator):
         else:
             self.sum_string = "kj,imjk->imjk"
 
-    def __call__(self, w: lab.Tensor, beta: Optional[float] = None) -> lab.Tensor:
+    def __call__(
+        self, w: lab.Tensor, beta: Optional[float] = None
+    ) -> lab.Tensor:
         """
-        :param w: parameters to which the projection will be applied.
+        w: parameters to which the projection will be applied.
             This should be a (k x c x p x d) array, where each element of axis -1 corresponds to one column of A.
-        :param beta: NOT USED. The coefficient in the proximal operator. This is usually a step-size.
+        beta: NOT USED. The coefficient in the proximal operator. This is usually a step-size.
         :returns: updated parameters.
         """
 
@@ -204,9 +289,9 @@ class GroupL1Orthant(Regularizer):
 
     def __init__(self, d: int, lam: float, A: lab.Tensor):
         """
-        :param d: the dimensionality of each group for the regularizer.
-        :param lam: the strength of the group-L1 regularizer.
-        :param A: a matrix of sign patterns defining orthants on which to project.
+        d: the dimensionality of each group for the regularizer.
+        lam: the strength of the group-L1 regularizer.
+        A: a matrix of sign patterns defining orthants on which to project.
             The diagonal A_i is stored as the i'th column of A.
         """
         self.d = d
@@ -218,16 +303,16 @@ class GroupL1Orthant(Regularizer):
 
     def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
         """
-        :param w: parameters to which the projection will be applied.
+        w: parameters to which the projection will be applied.
             This should be a (k x c x p x d + n) array.
             The first 'd' entries in element of axis -1 correspond to the model weights (with group L1 regularizer)
             and the remaining 'n' entries correspond to the slack variables (with orthant constraint).
-        :param beta: The coefficient in the proximal operator. This is usually a step-size.
+        beta: The coefficient in the proximal operator. This is usually a step-size.
         :returns: updated parameters.
         """
         model_weights, slacks = w[:, :, :, : self.d], w[:, :, :, self.d :]
-        w_plus, s_plus = self.group_prox(model_weights, beta), self.orthant_proj(
-            slacks, beta
-        )
+        w_plus, s_plus = self.group_prox(
+            model_weights, beta
+        ), self.orthant_proj(slacks, beta)
 
         return lab.concatenate([w_plus, s_plus], axis=-1)

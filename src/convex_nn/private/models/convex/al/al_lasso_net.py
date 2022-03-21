@@ -70,7 +70,9 @@ class AL_LassoNet(AL_MLP):
         # separate out positive and negative skip weights.
         return w[:, :, : self.p], w[:, :, self.p]
 
-    def _join_weights(self, network_w: lab.Tensor, skip_w: lab.Tensor) -> lab.Tensor:
+    def _join_weights(
+        self, network_w: lab.Tensor, skip_w: lab.Tensor
+    ) -> lab.Tensor:
 
         return lab.concatenate([network_w, skip_w], axis=2)
 
@@ -81,7 +83,8 @@ class AL_LassoNet(AL_MLP):
         network_w, skip_w = self._split_weights(self.weights)
 
         reduced = lab.concatenate(
-            [network_w[0] - network_w[1], skip_w.reshape(self.c, 2, self.d)], axis=1
+            [network_w[0] - network_w[1], skip_w.reshape(self.c, 2, self.d)],
+            axis=1,
         )
         return reduced
 
@@ -115,7 +118,9 @@ class AL_LassoNet(AL_MLP):
         """
         network_w, skip_w = self._split_weights(w)
 
-        return super()._forward(X, network_w, D) + X @ (skip_w[0] - skip_w[1]).T
+        return (
+            super()._forward(X, network_w, D) + X @ (skip_w[0] - skip_w[1]).T
+        )
 
     def _objective(
         self,
@@ -144,12 +149,15 @@ class AL_LassoNet(AL_MLP):
         skip_weights_penalty = self.gamma * lab.sum(skip_w)
 
         obj = (
-            squared_error(self._forward(X, w, D), y) / self._scaling(y, scaling)
+            squared_error(self._forward(X, w, D), y)
+            / self._scaling(y, scaling)
             + skip_weights_penalty
         )
 
         if not ignore_lagrange_penalty:
-            obj += self.lagrange_penalty_objective(X, network_w, index_range, scaling)
+            obj += self.lagrange_penalty_objective(
+                X, network_w, index_range, scaling
+            )
 
         return obj
 
@@ -161,6 +169,7 @@ class AL_LassoNet(AL_MLP):
         D: Optional[lab.Tensor] = None,
         index_range: Optional[Tuple[int, int]] = None,
         scaling: Optional[float] = None,
+        ignore_lagrange_penalty: bool = False,
         flatten: bool = False,
         **kwargs,
     ) -> lab.Tensor:
@@ -179,16 +188,18 @@ class AL_LassoNet(AL_MLP):
         network_w, _ = self._split_weights(w)
         D = self._signs(X, D)
         residual = self._forward(X, w, D) - y
-        network_grad = lab.einsum("ij, il, ik->ljk", D, residual, X) / self._scaling(
-            y, scaling
-        )
+        network_grad = lab.einsum(
+            "ij, il, ik->ljk", D, residual, X
+        ) / self._scaling(y, scaling)
         skip_grad = X.T @ residual / self._scaling(y, scaling)
         skip_grad = lab.expand_dims(skip_grad.T, axis=1)
 
         split_network_grad = lab.stack([network_grad, -network_grad])
-        split_network_grad += self.lagrange_penalty_grad(
-            X, network_w, D=D, index_range=index_range, scaling=scaling
-        )
+
+        if not ignore_lagrange_penalty:
+            split_network_grad += self.lagrange_penalty_grad(
+                X, network_w, D=D, index_range=index_range, scaling=scaling
+            )
 
         split_skip_grad = lab.stack([skip_grad, -skip_grad])
         # apply L1 penalty
@@ -201,6 +212,45 @@ class AL_LassoNet(AL_MLP):
 
         return grad
 
+    def lagrangian(
+        self,
+        X: lab.Tensor,
+        y: lab.Tensor,
+        w: lab.Tensor,
+        D: Optional[lab.Tensor] = None,
+        index_range: Optional[Tuple[int, int]] = None,
+        scaling: Optional[float] = None,
+        ignore_lagrange_penalty: bool = False,
+        **kwargs,
+    ) -> float:
+        """Compute the Lagrangian function.
+
+        :param X: (n,d) array containing the data examples.
+        :param y: (n,d) array containing the data targets.
+        :param w: specific parameter at which to compute the objective.
+        :param D: (optional) specific activation matrix at which to compute the forward pass.
+        Defaults to self.D or manual computation depending on the value of self._train.
+        :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
+        :returns: the objective
+        """
+        w = self._weights(w).reshape(2, self.c, self.p + 1, self.d)
+
+        # doesn't include regularization
+        obj = squared_error(self._forward(X, w, D), y) / self._scaling(
+            y, scaling
+        )
+
+        # regularization
+        if self.regularizer is not None:
+            obj += self.regularizer.penalty(w)
+
+        gap = self.i_constraint_gap(X, w, index_range)
+
+        # penalty terms from Lagrangian
+        penalty = lab.sum(gap * self._i_multipliers(index_range))
+
+        return obj + penalty
+
     def lagrangian_grad(
         self,
         X: lab.Tensor,
@@ -211,11 +261,37 @@ class AL_LassoNet(AL_MLP):
         scaling: Optional[float] = None,
         flatten: bool = False,
     ) -> lab.Tensor:
+        w = self._weights(w).reshape(2, self.c, self.p + 1, self.d)
 
-        network_w, _ = self._split_weights(self._weights(w))
-        return super().lagrangian_grad(
-            X, y, network_w, D, index_range, scaling, flatten
+        # Doesn't include regularization.
+        grad = self._grad(
+            X,
+            y,
+            w,
+            D,
+            index_range,
+            scaling,
+            ignore_lagrange_penalty=True,
         )
+
+        # penalty terms from Lagrangian
+        penalty_grad = lab.einsum(
+            "imjk, kj, kl -> imjl",
+            self._i_multipliers(index_range),
+            self._orthant(index_range),
+            X,
+        )
+
+        grad[:, :, : self.p :, :] = grad[:, :, : self.p :, :] - penalty_grad
+
+        # regularization
+        if self.regularizer is not None:
+            grad += self.regularizer.grad(w, grad)
+
+        if flatten:
+            return lab.ravel(grad)
+
+        return grad
 
     def i_constraint_gap(
         self,

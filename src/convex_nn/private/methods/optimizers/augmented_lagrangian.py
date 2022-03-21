@@ -95,6 +95,7 @@ class AugmentedLagrangian(MetaOptimizer):
             e_gap, i_gap = model.constraint_gaps(X)
             gap_norm = lab.sum(e_gap ** 2) + lab.sum(i_gap ** 2)
 
+            # TODO: sometimes the lower window leads to weird failure cases.
             if self.initializing_delta:
 
                 # the previous sub-problem did not make enough progress on the constraints;
@@ -104,10 +105,12 @@ class AugmentedLagrangian(MetaOptimizer):
                     model.delta = self.delta
                 # the previous sub-problem made too much progress on the constraints;
                 # decrease penalty strength
-                elif gap_norm < self.eta_lower:
-                    self.delta = self.delta / self.tau
-                    model.delta = self.delta
-                    inner_term_criterion.tol = inner_term_criterion.tol / 2
+                # elif gap_norm < self.eta_lower:
+                #     self.delta = self.delta / self.tau
+                #     model.delta = self.delta
+                #     inner_term_criterion.tol = (
+                #         inner_term_criterion.tol / self.tau
+                #     )
                 else:
                     # gap within starting "window".
                     self.initializing_delta = False
@@ -123,12 +126,12 @@ class AugmentedLagrangian(MetaOptimizer):
                     model.delta,
                 )
 
-                # TODO: revisit this.
-                # gaps are now too small to make progress.
-                if 10 * gap_norm < inner_term_criterion.tol:
-                    print("Increasing penalty strength")
-                    self.delta = self.delta * 10
-                    model.delta = self.delta
+                # mechanism for tightening solution tolerances.
+                if self.tau * gap_norm < inner_term_criterion.tol:
+                    # reduce tolerance to ensure continued progress.
+                    inner_term_criterion.tol = (
+                        inner_term_criterion.tol / self.tau
+                    )
 
         inner_optimizer.reset()
         exit_status: Dict[str, Any] = {}

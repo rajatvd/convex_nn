@@ -1,16 +1,14 @@
 """Group L1 Regularizer."""
-
 from typing import Optional
 
 import lab
 
-from convex_nn.private.loss_functions import group_l1_penalty
 from convex_nn.private.models.regularizers.regularizer import Regularizer
 
 
-class GroupL1Regularizer(Regularizer):
+class FeatureGroupL1Regularizer(Regularizer):
 
-    """The group-sparsity inducing Group L1-regularizer.
+    """The group-sparsity inducing Group L1-regularizer over features.
 
     The group-L1 regularizer, sometimes called the L1-L2 regularizer,
     has the mathematical form,
@@ -18,12 +16,12 @@ class GroupL1Regularizer(Regularizer):
         ::math.. R(w) = \\lambda \\sum_{i \\in \\mathcal{I} ||w_i||_2,
 
     where :math:`\\mathcal{I}` is collection of disjoint index sets specifying
-    the groups for the regularizer. This class expects the final axis of the
-    inputs/weights :math:`w` to be the group axis.
+    the groups for the regularizer. This class expects the second-to-last axis
+    of the inputs/weights :math:`w` to be the feature-wise axis defining the
+    different groups.
 
-    The group-L1 regularizer induces group-sparsity, meaning entire groups
-    :math:`w_i` will be set to zero when :math:`\\lambda` is sufficiently
-    large.
+    This regularizer induces group-sparsity, meaning entire features will be
+    dropped out of the model when :math:`\\lambda` is sufficiently large.
 
     Attributes:
         lam: the regularization strength.
@@ -32,7 +30,8 @@ class GroupL1Regularizer(Regularizer):
 
     def __init__(self, lam: float):
         """
-        lam: a tuning parameter controlling the regularization strength.
+        Args:
+            lam: a tuning parameter controlling the regularization strength.
         """
 
         self.lam = lam
@@ -50,7 +49,15 @@ class GroupL1Regularizer(Regularizer):
         Returns:
             The value of the penalty at w.
         """
-        return group_l1_penalty(w, self.lam)
+
+        feature_norms = self.lam * lab.sqrt(
+            lab.sum(
+                w ** 2,
+                axis=tuple(range(len(w.shape) - 1)),
+            )
+        )
+
+        return lab.sum(feature_norms)
 
     def grad(
         self,
@@ -60,19 +67,29 @@ class GroupL1Regularizer(Regularizer):
     ) -> lab.Tensor:
         """Compute the minimum-norm subgradient (aka, the pseudo-gradient).
 
-        Args:
-            w: parameter at which to compute the penalty gradient.
-            base_grad: the gradient of the un-regularized objective.
-                This is required to compute the minimum-norm subgradient.
-
-        Returns:
-            minimum-norm subgradient.
+        :param w: parameter at which to compute the penalty gradient.
+        :param base_grad: the gradient of the un-regularized objective. This is required
+            to compute the minimum-norm subgradient.
+        :returns: minimum-norm subgradient.
         """
         # requires base_grad to compute minimum-norm subgradient
         assert base_grad is not None
 
-        weight_norms = lab.sqrt(lab.sum(w ** 2, axis=-1, keepdims=True))
-        grad_norms = lab.sqrt(lab.sum(base_grad ** 2, axis=-1, keepdims=True))
+        dims_to_sum = tuple(range(len(w.shape) - 1))
+        weight_norms = lab.sqrt(
+            lab.sum(
+                w ** 2,
+                axis=dims_to_sum,
+                keepdims=True,
+            )
+        )
+        grad_norms = lab.sqrt(
+            lab.sum(
+                base_grad ** 2,
+                axis=dims_to_sum,
+                keepdims=True,
+            )
+        )
 
         non_smooth_term = (
             base_grad
