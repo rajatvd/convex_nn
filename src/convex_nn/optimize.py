@@ -227,9 +227,7 @@ def optimize_model(
         return update_public_model(model, internal_model), Metrics
 
     # convert into internal non-convex model
-    nc_internal_model = get_nc_formulation(
-        internal_model, implementation="manual", remove_sparse=True
-    )
+    nc_internal_model = get_nc_formulation(internal_model, remove_sparse=True)
 
     # create non-convex model
     return build_public_model(nc_internal_model), metrics
@@ -344,7 +342,7 @@ def optimize_path(
             model_to_save = update_public_model(model, internal_model)
         else:
             nc_internal_model = get_nc_formulation(
-                internal_model, implementation="manual", remove_sparse=True
+                internal_model, remove_sparse=True
             )
             model_to_save = build_public_model(nc_internal_model)
 

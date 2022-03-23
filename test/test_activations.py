@@ -32,16 +32,16 @@ class TestActivations(unittest.TestCase):
             (self.X_train, self.y_train),
             (self.X_test, self.y_test),
             _,
-        ) = gen_regression_data(
-            123, n_train, n_test, self.d, c, kappa=kappa, unitize_data_cols=False
-        )
+        ) = gen_regression_data(123, n_train, n_test, self.d, c, kappa=kappa)
         self.seed = 123
         self.n_gates = 1000
 
     def test_dense_gates(self):
         """Test sampling dense gate vectors."""
 
-        G = sample_gate_vectors(self.seed, self.d, self.n_gates, gate_type="dense")
+        G = sample_gate_vectors(
+            self.seed, self.d, self.n_gates, gate_type="dense"
+        )
 
         # check gate shape.
         self.assertTrue(G.shape == (self.d, self.n_gates))
@@ -61,8 +61,8 @@ class TestActivations(unittest.TestCase):
         # check gate shape.
         self.assertTrue(G.shape == (self.d, self.n_gates))
 
-        # each gate should have exactly one sparse index
-        self.assertTrue(np.all(np.sum(G == 0, axis=0) == 1))
+        # each gate should have exactly one non-zero index
+        self.assertTrue(np.all(np.sum(G != 0, axis=0) == 1))
 
         # try generating index lists
         order_one = generate_index_lists(self.d, 1)
@@ -79,8 +79,8 @@ class TestActivations(unittest.TestCase):
             sparsity_indices=order_two,
         )
 
-        # each gate should have exactly one or two sparse indices
-        n_sparse_indices = np.sum(G == 0, axis=0)
+        # each gate should have exactly one or two non-zero indices
+        n_sparse_indices = np.sum(G != 0, axis=0)
         self.assertTrue(
             np.all(np.logical_or(n_sparse_indices == 1, n_sparse_indices == 2))
         )

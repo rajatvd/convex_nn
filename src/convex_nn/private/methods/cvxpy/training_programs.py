@@ -18,6 +18,7 @@ from convex_nn.private.models import (
     Regularizer,
     L2Regularizer,
     GroupL1Regularizer,
+    FeatureGroupL1Regularizer,
     ConvexMLP,
     AL_MLP,
     ConvexLassoNet,
@@ -98,13 +99,16 @@ class ConvexReformulationSolver(CVXPYSolver):
 
         loss = 0.0
         for i in range(self.c):
-            loss += cp.sum_squares(
-                cp.sum(
-                    cp.multiply(D, X @ W[i * self.p : (i + 1) * self.p].T),
-                    axis=1,
+            loss += (
+                cp.sum_squares(
+                    cp.sum(
+                        cp.multiply(D, X @ W[i * self.p : (i + 1) * self.p].T),
+                        axis=1,
+                    )
+                    - y[:, i]
                 )
-                - y[:, i]
-            ) / (2 * self.n * self.c)
+                / (2 * self.n * self.c)
+            )
 
         return loss
 
@@ -130,10 +134,9 @@ class ConvexReformulationSolver(CVXPYSolver):
         if isinstance(regularizer, L2Regularizer):
             return (lam / 2) * cp.sum_squares(W)
         elif isinstance(regularizer, GroupL1Regularizer):
-            if regularizer.group_by_feature:
-                return lam * cp.mixed_norm(W.T, p=2, q=1)
-            else:
-                return lam * cp.mixed_norm(W, p=2, q=1)
+            return lam * cp.mixed_norm(W, p=2, q=1)
+        elif isinstance(regularizer, FeatureGroupL1Regularizer):
+            return lam * cp.mixed_norm(W.T, p=2, q=1)
         else:
             raise ValueError(f"Regularizer {regularizer} not recognized!")
 

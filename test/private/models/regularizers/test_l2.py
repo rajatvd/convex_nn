@@ -10,7 +10,7 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from convex_nn.private.models import L2Regression
+from convex_nn.private.models import LinearRegression
 from convex_nn.private.models.regularizers.l2 import L2Regularizer
 from convex_nn.private.utils.linear import direct_solvers
 from convex_nn.private.utils.data import gen_regression_data
@@ -36,8 +36,8 @@ class TestL2Regularizer(unittest.TestCase):
 
         # initialize model
         self.regularizer = L2Regularizer(lam=self.lam)
-        self.lr = L2Regression(self.d)
-        self.regularized_model = L2Regression(self.d, regularizer=self.regularizer)
+        self.lr = LinearRegression(self.d)
+        self.regularized_model = LinearRegression(self.d, regularizer=self.regularizer)
         self.objective, self.grad = self.regularized_model.get_closures(self.X, self.y)
 
         def objective_fn(v):

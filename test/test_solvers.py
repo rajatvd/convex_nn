@@ -34,7 +34,7 @@ class TestRegularizers(unittest.TestCase):
             (self.X_test, self.y_test),
             _,
         ) = gen_regression_data(
-            123, n_train, n_test, d, self.c, kappa=kappa, unitize_data_cols=False
+            123, n_train, n_test, d, self.c, kappa=kappa
         )
         self.lam = 0.0001
 

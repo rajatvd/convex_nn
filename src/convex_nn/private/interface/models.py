@@ -15,6 +15,7 @@ from convex_nn.regularizers import (
 
 from convex_nn.models import (
     Model,
+    LinearModel,
     ConvexGatedReLU,
     NonConvexGatedReLU,
     ConvexReLU,
@@ -30,6 +31,7 @@ from convex_nn.private.models import (
     FeatureGroupL1Regularizer,
     L2Regularizer,
     L1Regularizer,
+    LinearRegression,
 )
 from convex_nn.activations import compute_activation_patterns
 
@@ -55,7 +57,7 @@ def build_internal_regularizer(
         lam = regularizer.lam
 
     if isinstance(regularizer, NeuronGL1):
-        reg = GroupL1Regularizer(lam, group_by_feature=False)
+        reg = GroupL1Regularizer(lam)
     elif isinstance(regularizer, FeatureGL1):
         reg = FeatureGroupL1Regularizer(lam)
     elif isinstance(regularizer, L2):
@@ -79,11 +81,14 @@ def build_internal_model(
     Returns:
         An internal model object with the same state as the public model.
     """
-    assert isinstance(model, (ConvexReLU, ConvexGatedReLU))
+    assert isinstance(model, (LinearModel, ConvexReLU, ConvexGatedReLU))
 
     internal_model: InternalModel
     d, c = model.d, model.c
     internal_reg = build_internal_regularizer(regularizer)
+
+    if isinstance(model, LinearModel):
+        return LinearRegression(d, c, regularizer=internal_reg)
 
     G = lab.tensor(model.G, dtype=lab.get_dtype())
     D, G = lab.all_to_tensor(
@@ -139,6 +144,8 @@ def update_public_model(model: Model, internal_model: InternalModel) -> Model:
             lab.to_np(internal_model.weights[0]),
             lab.to_np(internal_model.weights[1]),
         ]
+    elif isinstance(model, LinearModel):
+        model.parameters = [internal_model.weights]
 
     return model
 
@@ -168,6 +175,9 @@ def build_public_model(internal_model: InternalModel) -> Model:
         w1, w2 = internal_model._split_weights(internal_model.weights)
 
         model.set_parameters([lab.to_np(w1), lab.to_np(w2)])
+    elif isinstance(internal_model, LinearRegression):
+        model = LinearModel(internal_model.d, internal_model.c)
+        model.parameters = [internal_model.weights]
     else:
         raise ValueError(f"Model {internal_model} not supported.")
 

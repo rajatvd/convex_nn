@@ -2,11 +2,14 @@
 
 Public Functions:
 
-    gen_classification_data: generate a synthetic classification dataset with targets given by a random neural network.
+    gen_classification_data: generate a synthetic classification dataset with
+        targets given by a random neural network.
 
-    gen_regression_data: generate a synthetic regression dataset with targets given by a noisy linear model.
+    gen_regression_data: generate a synthetic regression dataset with targets
+        given by a noisy linear model.
 
-    sample_planted_model: generate synthetic data from a variety of simple planted models.
+    gen_sparse_regression_problem: generate synthetic data from a variety of
+        simple feature-sparse planted models.
 """
 
 from typing import Tuple, Literal, Optional, Union, Callable
@@ -34,23 +37,21 @@ def gen_classification_data(
     matrix and targets given by a two-layer neural network with random Gaussian
     weights.
 
-    If `kappa` is supplied, then the design matrix satisfies :math:`\\kappa(X) \\approx \\text{kappa}`.
+    If `kappa` is supplied, then the design matrix satisfies
+    :math:`\\kappa(X) \\approx \\text{kappa}`.
 
     Args:
         data_seed: the seed to use when generating the synthetic dataset.
         n: number of examples in dataset.
         n_test: number of test examples.
         d: number of features for each example.
-        hidden_units: (optional) the number of hidden units in the neural network.
-            Defaults to 50.
-        kappa: (optional) the (approximate) condition number of the train/test design matrices.
-            Defaults to 1.
+        hidden_units: (optional) the number of hidden units in the neural
+            network.
+        kappa: (optional) the (approximate) condition number of the train/test
+            design matrices.
 
     Returns:
-         ((X, y), (X_test, y_test), w_opt) --- 'X' is an n x d matrix containing the
-         training examples, 'y' is a n-length vector containing the training targets and,
-         (X_test, y_test) similarly form the test with `n_test` examples and 'w_opt' is the "true"
-         model.
+        A training set `(X_train, y_train)` and test set `(X_test, y_test)`.
     """
     rng = np.random.default_rng(seed=data_seed)
 
@@ -104,22 +105,24 @@ def gen_regression_data(
 ) -> Tuple[Dataset, Dataset, np.ndarray]:
     """Create a regression dataset with a random Gaussian design matrix.
 
-    If `kappa` is supplied, then the design matrix satisfies :math:`\\kappa(X) \\approx \\text{kappa}`.
+    If `kappa` is supplied, then the design matrix satisfies
+    :math:`\\kappa(X) \\approx \\text{kappa}`.
 
     Args:
         data_seed: the seed to use when generating the synthetic dataset.
         n: number of examples in dataset.
         n_test: number of test examples.
         d: number of features for each example.
-        c: (optional) dimension of the targets. Defaults to scalar targets (`c = 1`).
-        sigma: (optional) variance of (Gaussian) noise added to targets. Defaults to `0` for a noiseless model.
-        kappa: (optional) condition number of E[X.T X]. Defaults to 1 (perfectly conditioned covariance).
+        c: dimension of the targets.
+            Defaults to scalar targets (`c = 1`).
+        sigma: variance of (Gaussian) noise added to targets.
+            Defaults to `0` for a noiseless model.
+        kappa: condition number of :math:`\\mathbb{E_X}[X^\\top X]`.
+            Defaults to 1.
 
     Returns:
-        ((X, y), (X_test, y_test), w_opt) --- 'X' is an n x d matrix containing the
-        training examples, 'y' is a n-length vector containing the training targets,
-        (X_test, y_test) similarly form the test with `n_test` examples, and 'w_opt' is the "true"
-        model.
+        A training set `(X_train, y_train)`, test set `(X_test, y_test)`, and
+        the group-truth model `w_opt`.
     """
     rng = np.random.default_rng(seed=data_seed)
     # sample "true" model
@@ -150,21 +153,28 @@ def gen_sparse_regression_problem(
 ) -> Tuple[Dataset, Dataset, np.ndarray]:
     """Sample data from a feature-sparse planted model.
 
-    Create a realizable regression problem by sampling data from a simple planted model. A variety
-    of planted models are available; see `transform` argument. Inspired by code form Tolga Ergen.
+    Create a realizable regression problem by sampling data from a
+    simple planted model. A variety of planted models are available; see
+    the `transform` argument. Inspired by code form Tolga Ergen.
 
     Args:
         data_seed: the seed to use when generating the synthetic dataset.
         n: number of examples in dataset.
         n_test: number of test examples.
         d: number of features for each example.
-        sigma: variance of (Gaussian) noise added to targets. Defaults to `0` for a noiseless model.
-        kappa: condition number of E[X.T X]. Defaults to 1 (perfectly conditioned covariance).
-        num_zeros: number of exact zeros in the true model, so `that num_zeros / d` is the degree of
-            feature sparsity.
-        transform: a non-linear transformation
+        sigma: variance of (Gaussian) noise added to targets.
+            Defaults to `0` for a noiseless model.
+        kappa: condition number of E[X.T X].
+            Defaults to 1.
+        num_zeros: number of exact zeros in the true model, so that
+            `num_zeros / d` is the degree of feature sparsity.
+        transform: a non-linear transformation. This must be `None`,
+            `'cosine'`, `'polynomial'`, or a callable function that applies a
+            custom transformation.
 
     Returns:
+        A training set `(X_train, y_train)`, test set `(X_test, y_test)`, and
+        the group-truth model `w_opt`.
     """
 
     rng = np.random.default_rng(seed=data_seed)
@@ -196,7 +206,8 @@ def gen_sparse_regression_problem(
             y = transform(y)
         except TypeError:
             raise ValueError(
-                f"Transform {transform} not recognized. It must be a predefined transform, a callable function, or `None`."
+                f"Transform {transform} not recognized. It must be a \
+                        predefined transform, a callable function, or `None`."
             )
 
     # add noise
@@ -215,9 +226,9 @@ def sample_covariance_matrix(
     """Sample a covariance matrix with a specific condition number.
 
     This functions samples a symmetric positive-definite matrix
-    with condition number exactly `kappa`. The minimum eigenvalue is `1` and the
-    maximum is `kappa`, while the remaining eigenvalues are distributed uniformly
-    at random in the interval `[1, kappa]`.
+    with condition number exactly `kappa`. The minimum eigenvalue is `1` and
+    the maximum is `kappa`, while the remaining eigenvalues are distributed
+    uniformly at random in the interval `[1, kappa]`.
 
     Args:
         rng: a NumPy random number generator.
@@ -225,7 +236,8 @@ def sample_covariance_matrix(
         kappa: condition number of the covariance matrix.
 
     Returns:
-        :math:`\\Sigma`: a :math:`d \\times \\d` matrix with condition number `kappa`.
+        A (n,d) matrix :math:`\\Sigma` with condition number
+            `kappa`.
     """
 
     # sample random orthonormal matrix

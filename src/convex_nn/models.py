@@ -62,6 +62,61 @@ class Model:
     parameters: List[np.ndarray]
 
 
+class LinearModel(Model):
+    """Basic linear model.
+
+    This model has the prediction function :math:`g(X) = X W^\\top`, where
+    :math:`W \\in \\mathbb{R}^{c \\times d}` is a matrix of weights.
+
+
+    Attributes:
+        c: the output dimension.
+        d: the input dimension.
+        p: the number of neurons. This is is always `1` for a linear model.
+        parameters: a list of NumPy arrays comprising the model parameters.
+    """
+
+    def __init__(self, d: int, c: int):
+        """
+        Args:
+            d: the input dimension.
+            c: the output dimension.
+        """
+        self.d = d
+        self.c = c
+        self.p = 1
+
+        self.parameters = [np.zeros((c, d))]
+
+    def get_parameters(self) -> List[np.ndarray]:
+        """Get the model parameters."""
+        return self.parameters
+
+    def set_parameters(self, parameters: List[np.ndarray]):
+        """Set the model parameters.
+
+        This method safety checks the dimensionality of the new parameters.
+
+        Args:
+            parameters: the new model parameters.
+        """
+        assert parameters[0].shape == (self.c, self.d)
+
+        self.parameters = parameters
+
+    def __call__(self, X: np.ndarray) -> np.ndarray:
+        """Compute the model predictions for a given dataset.
+
+        Args:
+            X: an (n  d) array containing the data examples on
+                which to predict.
+
+        Returns:
+            g(X) --- the model predictions for X.
+        """
+        return X @ self.parameters[0].T
+
+
 class ConvexGatedReLU(Model):
     """Convex reformulation of a Gated ReLU Network with two-layers.
 

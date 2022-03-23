@@ -10,7 +10,6 @@ from .proximal_ops import (
     FeatureGroupL1,
     Orthant,
     GroupL1Orthant,
-    DiagonalGL1,
 )
 
 from .hier_prox import HierProx
@@ -25,5 +24,4 @@ __all__ = [
     "Orthant",
     "GroupL1Orthant",
     "HierProx",
-    "DiagonalGL1",
 ]

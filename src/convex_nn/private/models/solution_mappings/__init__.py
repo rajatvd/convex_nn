@@ -30,6 +30,7 @@ from convex_nn.private.models.convex import (
     ConvexMLP,
     ConvexLassoNet,
 )
+from convex_nn.private.models.linear import LinearRegression
 
 
 def is_compatible(torch_model: torch.nn.Module) -> bool:
@@ -56,7 +57,9 @@ def get_nc_formulation(
         return construct_nc_ln_manual(convex_model, grelu, remove_sparse)
     elif isinstance(convex_model, ConvexMLP):
         return construct_nc_manual(convex_model, grelu, remove_sparse)
+    elif isinstance(convex_model, LinearRegression):
+        return convex_model
     else:
         raise ValueError(
-            f"Implementation {implementation} not recognized. Please add it to 'solution_mappings.mlps.py'"
+            f"Model {convex_model} not recognized. Please add it to 'solution_mappings.mlps.py'"
         )

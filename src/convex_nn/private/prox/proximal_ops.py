@@ -11,6 +11,7 @@ TODO:
 """
 
 from typing import Optional
+import math
 
 import lab
 
@@ -183,6 +184,8 @@ class FeatureGroupL1(Regularizer):
             prox(w), the result of the proximal operator.
         """
         # compute the squared norms of each feature group.
+        scaling = math.sqrt(w.shape[-1])
+
         norms = lab.sqrt(
             lab.sum(
                 w ** 2,
@@ -192,56 +195,8 @@ class FeatureGroupL1(Regularizer):
         )
 
         w_plus = lab.multiply(
-            lab.safe_divide(w, norms), lab.smax(norms - self.lam * beta, 0)
-        )
-
-        return w_plus
-
-
-# Experimental
-
-
-class DiagonalGL1(Regularizer):
-
-    """The proximal operator for the group-l1 regularizer.
-
-    Given group indices :math:`\\calI`, the group-l1 regularizer is the sum of
-    l2-norms of the groups, :math:`r(w) = \\sum_{i \\in \\calI} \\|w_i\\|_2`.
-    The proximal operator is thus the unique solution to the following problem,
-
-    .. math:: \\min_x \\{\\|x - w\\|_A^2 + \\beta * \\lambda \\sum_{i=1 \\in \\calI} \\|x_i\\|_A\\}.
-
-    Groups are either defined to be the last axis of the point w.
-    """
-
-    def __init__(
-        self, lam: float, A: lab.Tensor, group_by_feature: bool = False
-    ):
-        """Initialize the proximal operator.
-        Args:
-            lam: parameter controlling the strength of the regularization.
-            A: diagonal matrix in which to compute the operator.
-        """
-        self.lam = lam
-        self.A = A
-
-    def __call__(self, w: lab.Tensor, beta: float) -> lab.Tensor:
-        """Evaluate the proximal operator given a point and a step-size.
-
-        Args:
-            w: the point at which the evaluate the operator.
-            beta: the step-size for the proximal step.
-
-        Returns:
-            prox(w), the result of the proximal operator.
-        """
-
-        # compute the squared norms of each group.
-        z = lab.multiply(self.A, w)
-        norms = lab.sqrt(lab.sum(z * w, axis=-1, keepdims=True))
-
-        w_plus = lab.multiply(
-            lab.safe_divide(w, norms), lab.smax(norms - self.lam * beta, 0)
+            lab.safe_divide(w, norms),
+            lab.smax(norms - scaling * self.lam * beta, 0),
         )
 
         return w_plus

@@ -48,9 +48,7 @@ class TestDataFormats(unittest.TestCase):
             (self.X_train, self.y_train),
             (self.X_test, self.y_test),
             _,
-        ) = gen_regression_data(
-            123, n_train, n_test, d, c, kappa=kappa, unitize_data_cols=False
-        )
+        ) = gen_regression_data(123, n_train, n_test, d, c, kappa=kappa)
 
         self.regularizer = NeuronGL1(0.0001)
 
@@ -146,9 +144,7 @@ class TestFunctionalInterface(unittest.TestCase):
             (self.X_train, self.y_train),
             (self.X_test, self.y_test),
             _,
-        ) = gen_regression_data(
-            123, n_train, n_test, d, c, kappa=kappa, unitize_data_cols=False
-        )
+        ) = gen_regression_data(123, n_train, n_test, d, c, kappa=kappa)
 
         self.regularizer = NeuronGL1(0.0001)
 
@@ -198,7 +194,7 @@ class TestOOInterface(unittest.TestCase):
             (self.X_test, self.y_test),
             _,
         ) = gen_regression_data(
-            123, n_train, n_test, self.d, self.c, kappa=kappa, unitize_data_cols=False
+            123, n_train, n_test, self.d, self.c, kappa=kappa
         )
         self.metrics = Metrics(
             metric_freq=25,
@@ -252,7 +248,9 @@ class TestOOInterface(unittest.TestCase):
         )
 
         self.assertTrue(
-            np.allclose(oo_model.get_parameters()[0], f_model.get_parameters()[0])
+            np.allclose(
+                oo_model.get_parameters()[0], f_model.get_parameters()[0]
+            )
         )
 
     def test_solving_gated_relu_path(self):
@@ -307,11 +305,15 @@ class TestOOInterface(unittest.TestCase):
         )
 
         self.assertTrue(
-            np.allclose(oo_model.get_parameters()[0], f_model.get_parameters()[0])
+            np.allclose(
+                oo_model.get_parameters()[0], f_model.get_parameters()[0]
+            )
         )
 
         self.assertTrue(
-            np.allclose(oo_model.get_parameters()[1], f_model.get_parameters()[1])
+            np.allclose(
+                oo_model.get_parameters()[1], f_model.get_parameters()[1]
+            )
         )
 
     def test_solving_relu_path(self):

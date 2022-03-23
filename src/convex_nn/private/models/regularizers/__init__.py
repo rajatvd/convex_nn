@@ -10,7 +10,6 @@ from .l1 import L1Regularizer
 from .orthant import OrthantConstraint
 from .lasso_net import LassoNetConstraint
 from .l1_squared import L1SquaredRegularizer
-from .diagonal_gl1 import DiagonalGL1Regularizer
 
 __all__ = [
     "Regularizer",
@@ -23,5 +22,4 @@ __all__ = [
     "OrthantConstraint",
     "LassoNetConstraint",
     "L1SquaredRegularizer",
-    "DiagonalGL1Regularizer",
 ]

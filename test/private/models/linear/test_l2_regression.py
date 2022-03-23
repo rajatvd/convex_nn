@@ -10,13 +10,13 @@ from parameterized import parameterized_class  # type: ignore
 
 import lab
 
-from convex_nn.private.models import L2Regression
+from convex_nn.private.models import LinearRegression
 from convex_nn.private.utils.linear import direct_solvers
 from convex_nn.private.utils.data import gen_regression_data
 
 
 @parameterized_class(lab.TEST_GRID)
-class TestL2Regression(unittest.TestCase):
+class TestLinearRegression(unittest.TestCase):
     """Tests for least squares regression."""
 
     d: int = 5
@@ -34,7 +34,7 @@ class TestL2Regression(unittest.TestCase):
         self.y = lab.squeeze(self.y)
 
         # initialize model
-        self.lr = L2Regression(self.d)
+        self.lr = LinearRegression(self.d)
 
         self.objective, self.grad = self.lr.get_closures(self.X, self.y)
 

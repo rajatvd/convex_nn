@@ -12,6 +12,7 @@ from typing import List
 
 from .models import (
     Model,
+    LinearModel,
     ConvexReLU,
     NonConvexReLU,
     ConvexGatedReLU,
@@ -70,7 +71,9 @@ class RFISTA(Optimizer):
             tol: the tolerance for terminating the optimization procedure.
         """
 
-        if not isinstance(model, (ConvexGatedReLU, NonConvexGatedReLU)):
+        if not isinstance(
+            model, (ConvexGatedReLU, NonConvexGatedReLU, LinearModel)
+        ):
             raise ValueError(
                 "R-FISTA can only be used to train Gated ReLU models."
             )

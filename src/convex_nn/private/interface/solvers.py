@@ -60,7 +60,7 @@ def build_prox_operator(
     elif isinstance(regularizer, NeuronGL1):
         op = prox.GroupL1(lam)
     elif isinstance(regularizer, FeatureGL1):
-        op = prox.GroupL1(lam, group_by_feature=True)
+        op = prox.FeatureGroupL1(lam)
     elif regularizer is None:
         op = prox.Identity()
     else:

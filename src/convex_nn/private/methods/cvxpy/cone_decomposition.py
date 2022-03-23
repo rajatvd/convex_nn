@@ -8,11 +8,7 @@ import cvxpy as cp
 
 import lab
 
-from convex_nn.private.models import (
-    Model,
-    ConvexMLP,
-    AL_MLP,
-)
+from convex_nn.private.models import Model, ConvexMLP, AL_MLP, ConvexLassoNet
 
 from .cvxpy_solver import CVXPYSolver
 
@@ -58,18 +54,22 @@ class DecompositionProgram(CVXPYSolver):
         A = 2 * D_np - np.ones_like(D_np)
 
         constraints = [
-            cp.multiply(A, X_np @ U[i * p : (i + 1) * p].T) >= 0 for i in range(c)
+            cp.multiply(A, X_np @ U[i * p : (i + 1) * p].T) >= 0
+            for i in range(c)
         ]
 
         constraints += [
-            cp.multiply(A, X_np @ V[i * p : (i + 1) * p].T) >= 0 for i in range(c)
+            cp.multiply(A, X_np @ V[i * p : (i + 1) * p].T) >= 0
+            for i in range(c)
         ]
 
         problem = cp.Problem(objective, constraints)
 
         verbose = root.level <= INFO
         # solve the optimization problem
-        problem.solve(solver=self.solver, verbose=verbose, **self.solver_kwargs)
+        problem.solve(
+            solver=self.solver, verbose=verbose, **self.solver_kwargs
+        )
 
         # extract solution
         decomp_weights = lab.stack(
@@ -79,7 +79,12 @@ class DecompositionProgram(CVXPYSolver):
             ]
         )
         relu_model = AL_MLP(
-            d, model.D, model.U, model.kernel, regularizer=model.regularizer, c=model.c
+            d,
+            model.D,
+            model.U,
+            model.kernel,
+            regularizer=model.regularizer,
+            c=model.c,
         )
         relu_model.weights = decomp_weights
 
@@ -97,7 +102,9 @@ class MinL2Decomposition(DecompositionProgram):
     """Decompose by minimize the sum of L2 norms."""
 
     def get_objective(self, V, U) -> cp.Minimize:
-        return cp.Minimize(cp.sum(cp.pnorm(U, p=2, axis=1) + cp.pnorm(V, p=2, axis=1)))
+        return cp.Minimize(
+            cp.sum(cp.pnorm(U, p=2, axis=1) + cp.pnorm(V, p=2, axis=1))
+        )
 
 
 class MinRelaxedL2Decomposition(DecompositionProgram):
@@ -111,7 +118,9 @@ class MinL1Decomposition(DecompositionProgram):
     """Decompose by minimize the sum of L2 norms."""
 
     def get_objective(self, V, U) -> cp.Minimize:
-        return cp.Minimize(cp.sum(cp.pnorm(U, p=1, axis=1) + cp.pnorm(V, p=1, axis=1)))
+        return cp.Minimize(
+            cp.sum(cp.pnorm(U, p=1, axis=1) + cp.pnorm(V, p=1, axis=1))
+        )
 
 
 class FeasibleDecomposition(DecompositionProgram):
@@ -166,18 +175,22 @@ class SOCPDecomposition(CVXPYSolver):
         A = 2 * D_np - np.ones_like(D_np)
 
         constraints += [
-            cp.multiply(A, X_np @ U[i * p : (i + 1) * p].T) >= 0 for i in range(c)
+            cp.multiply(A, X_np @ U[i * p : (i + 1) * p].T) >= 0
+            for i in range(c)
         ]
 
         constraints += [
-            cp.multiply(A, X_np @ V[i * p : (i + 1) * p].T) >= 0 for i in range(c)
+            cp.multiply(A, X_np @ V[i * p : (i + 1) * p].T) >= 0
+            for i in range(c)
         ]
 
         problem = cp.Problem(objective, constraints)
 
         verbose = root.level <= INFO
         # solve the optimization problem
-        problem.solve(solver=self.solver, verbose=verbose, **self.solver_kwargs)
+        problem.solve(
+            solver=self.solver, verbose=verbose, **self.solver_kwargs
+        )
 
         # extract solution
         decomp_weights = lab.stack(
@@ -187,7 +200,12 @@ class SOCPDecomposition(CVXPYSolver):
             ]
         )
         relu_model = AL_MLP(
-            d, model.D, model.U, model.kernel, regularizer=model.regularizer, c=model.c
+            d,
+            model.D,
+            model.U,
+            model.kernel,
+            regularizer=model.regularizer,
+            c=model.c,
         )
         relu_model.weights = decomp_weights
 

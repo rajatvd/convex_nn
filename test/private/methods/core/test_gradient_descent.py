@@ -12,7 +12,7 @@ import lab
 from convex_nn.private.methods.core import gradient_descent as gd
 from convex_nn.private.methods.line_search import backtrack, conditions
 from convex_nn.private.utils import solve_ne
-from convex_nn.private.models import L2Regression
+from convex_nn.private.models import LinearRegression
 from convex_nn.private.utils.data import gen_regression_data
 
 
@@ -50,8 +50,10 @@ class TestGradientDescent(unittest.TestCase):
         self.L = lab.sum(self.X ** 2) / len(self.y)
 
         # initialize model
-        self.lr = L2Regression(self.d)
-        self.lr.weights = lab.tensor(self.rng.standard_normal(self.d, dtype=self.dtype))
+        self.lr = LinearRegression(self.d)
+        self.lr.weights = lab.tensor(
+            self.rng.standard_normal(self.d, dtype=self.dtype)
+        )
 
         self.backtrack_fn = backtrack.MultiplicativeBacktracker(beta=self.beta)
         self.ls_cond = conditions.Armijo(rho=self.rho)

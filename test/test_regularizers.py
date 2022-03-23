@@ -29,9 +29,7 @@ class TestRegularizers(unittest.TestCase):
             (self.X_train, self.y_train),
             (self.X_test, self.y_test),
             _,
-        ) = gen_regression_data(
-            123, n_train, n_test, d, c, kappa=kappa, unitize_data_cols=False
-        )
+        ) = gen_regression_data(123, n_train, n_test, d, c, kappa=kappa)
         self.lam = 0.0001
 
     def test_l2_squared(self):

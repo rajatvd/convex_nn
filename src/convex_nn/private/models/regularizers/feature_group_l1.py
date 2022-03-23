@@ -1,5 +1,6 @@
 """Group L1 Regularizer."""
 from typing import Optional
+import math
 
 import lab
 
@@ -49,11 +50,16 @@ class FeatureGroupL1Regularizer(Regularizer):
         Returns:
             The value of the penalty at w.
         """
+        scaling = math.sqrt(w.shape[-1])
 
-        feature_norms = self.lam * lab.sqrt(
-            lab.sum(
-                w ** 2,
-                axis=tuple(range(len(w.shape) - 1)),
+        feature_norms = (
+            scaling
+            * self.lam
+            * lab.sqrt(
+                lab.sum(
+                    w ** 2,
+                    axis=tuple(range(len(w.shape) - 1)),
+                )
             )
         )
 
@@ -74,6 +80,7 @@ class FeatureGroupL1Regularizer(Regularizer):
         """
         # requires base_grad to compute minimum-norm subgradient
         assert base_grad is not None
+        scaling = math.sqrt(w.shape[-1])
 
         dims_to_sum = tuple(range(len(w.shape) - 1))
         weight_norms = lab.sqrt(
@@ -93,10 +100,10 @@ class FeatureGroupL1Regularizer(Regularizer):
 
         non_smooth_term = (
             base_grad
-            * lab.smin(self.lam / grad_norms, 1)
+            * lab.smin(scaling * self.lam / grad_norms, 1)
             * (weight_norms == 0)
         )
-        smooth_term = self.lam * lab.safe_divide(w, weight_norms)
+        smooth_term = scaling * self.lam * lab.safe_divide(w, weight_norms)
 
         # match input shape
         subgrad = smooth_term - non_smooth_term
