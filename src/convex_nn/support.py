@@ -29,6 +29,7 @@ class SupportFinder:
     def __call__(
         self,
         model: Model,
+        regularizer: Optional[Regularizer],
         solver: Optimizer,
         train_set: Tuple[np.ndarray, np.ndarray],
         device,
@@ -52,6 +53,7 @@ class LinearSupportFinder(SupportFinder):
     def __call__(
         self,
         model: Model,
+        regularizer: Optional[Regularizer],
         solver: Optimizer,
         train_set: Tuple[np.ndarray, np.ndarray],
         device,
