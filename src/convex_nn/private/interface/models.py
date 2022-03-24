@@ -90,9 +90,8 @@ def build_internal_model(
     if isinstance(model, LinearModel):
         return LinearRegression(d, c, regularizer=internal_reg)
 
-    G = lab.tensor(model.G, dtype=lab.get_dtype())
     D, G = lab.all_to_tensor(
-        compute_activation_patterns(lab.to_np(X_train), lab.to_np(G))
+        compute_activation_patterns(lab.to_np(X_train), model.G)
     )
 
     if isinstance(model, ConvexReLU):
@@ -101,22 +100,13 @@ def build_internal_model(
             D,
             G,
             "einsum",
-            1000,
+            delta=1000,
             regularizer=internal_reg,
             c=c,
-        )
-        internal_model.weights = lab.stack(
-            [
-                lab.tensor(model.parameters[0], dtype=lab.get_dtype()),
-                lab.tensor(model.parameters[1], dtype=lab.get_dtype()),
-            ]
         )
     elif isinstance(model, ConvexGatedReLU):
         internal_model = ConvexMLP(
             d, D, G, "einsum", regularizer=internal_reg, c=c
-        )
-        internal_model.weights = lab.tensor(
-            model.parameters[0], dtype=lab.get_dtype()
         )
     else:
         raise ValueError(f"Model object {model} not supported.")

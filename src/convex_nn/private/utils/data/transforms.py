@@ -3,11 +3,16 @@
 Public Functions:
 
     unitize_columns: unitize the columns of a training set, optionally, a test set.
+
+
+TODO:
+    - Cleanup comments in this file.
 """
 
 from typing import Tuple, Optional
 
 import lab
+import numpy as np
 
 
 Dataset = Tuple[lab.Tensor, lab.Tensor]
@@ -45,3 +50,23 @@ def unitize_columns(
         test_set = (test_set[0] / column_norms, test_set[1])
 
     return train_set, test_set, column_norms
+
+
+def train_test_split(X, y, valid_prop=0.2, split_seed=1995):
+    """ """
+    n = y.shape[0]
+    split_rng = np.random.default_rng(seed=split_seed)
+    num_test = int(np.floor(n * valid_prop))
+    indices = np.arange(n)
+    split_rng.shuffle(indices)
+    test_indices = indices[:num_test].tolist()
+    train_indices = indices[num_test:].tolist()
+
+    # subset the dataset
+    X_train = X[train_indices, :]
+    y_train = y[train_indices]
+
+    X_test = X[test_indices, :]
+    y_test = y[test_indices]
+
+    return (X_train, y_train), (X_test, y_test)

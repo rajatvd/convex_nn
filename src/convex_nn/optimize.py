@@ -224,7 +224,7 @@ def optimize_model(
     )
 
     if return_convex:
-        return update_public_model(model, internal_model), Metrics
+        return update_public_model(model, internal_model), metrics
 
     # convert into internal non-convex model
     nc_internal_model = get_nc_formulation(internal_model, remove_sparse=True)
