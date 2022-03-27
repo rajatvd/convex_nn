@@ -148,7 +148,7 @@ def gen_sparse_regression_problem(
     d: int,
     sigma: float = 0,
     kappa: float = 1,
-    num_zeros: int = 0,
+    nnz: Optional[int] = None,
     transform: Optional[Union[Transform, Callable]] = None,
 ) -> Tuple[Dataset, Dataset, np.ndarray]:
     """Sample data from a feature-sparse planted model.
@@ -166,8 +166,7 @@ def gen_sparse_regression_problem(
             Defaults to `0` for a noiseless model.
         kappa: condition number of E[X.T X].
             Defaults to 1.
-        num_zeros: number of exact zeros in the true model, so that
-            `num_zeros / d` is the degree of feature sparsity.
+        nnz: number of non-zeros zeros in the true model.
         transform: a non-linear transformation. This must be `None`,
             `'cosine'`, `'polynomial'`, or a callable function that applies a
             custom transformation.
@@ -182,8 +181,8 @@ def gen_sparse_regression_problem(
     w_opt = rng.standard_normal((d))
 
     # true model is sparse
-    if num_zeros > 0:
-        zero_indices = rng.choice(d, size=num_zeros, replace=False)
+    if nnz is not None:
+        zero_indices = rng.choice(d, size=d - nnz, replace=False)
         w_opt[zero_indices] = 0.0
 
     # sample covariance matrix.

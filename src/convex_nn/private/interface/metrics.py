@@ -53,16 +53,16 @@ def build_metrics_tuple(
         # use non-convex model for testing
         elif key == "test_mse":
             test_metrics.append("nc_squared_error")
-        elif key == "total_neurons":
+        elif key == "active_neurons":
             additional_metrics.append("active_neurons")
         elif key == "neuron_sparsity":
             additional_metrics.append("group_sparsity")
-        elif key == "total_features":
+        elif key == "active_features":
             additional_metrics.append("active_features")
         elif key == "feature_sparsity":
             additional_metrics.append("feature_sparsity")
-        elif key == "total_weights":
-            additional_metrics.append("total_weights")
+        elif key == "active_weights":
+            additional_metrics.append("active_weights")
         elif key == "weight_sparsity":
             additional_metrics.append("weight_sparsity")
 
@@ -108,15 +108,15 @@ def update_public_metrics(
         elif key == "test_nc_squared_error":
             metrics.test_mse = value
         elif key == "active_neurons":
-            metrics.total_neurons = value
+            metrics.active_neurons = value
         elif key == "group_sparsity":
             metrics.neuron_sparsity = value
         elif key == "active_features":
-            metrics.total_features = value
+            metrics.active_features = value
         elif key == "feature_sparsity":
             metrics.feature_sparsity = value
-        elif key == "total_weights":
-            metrics.total_weights = value
+        elif key == "active_weights":
+            metrics.active_weights = value
         elif key == "weight_sparsity":
             metrics.weight_sparsity = value
 

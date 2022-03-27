@@ -61,7 +61,8 @@ def process_data(X_train, y_train, X_test, y_test):
     # convert from input format into list of lists.
 
     X_train, y_train = [
-        lab.tensor(to_list(v), dtype=lab.get_dtype()) for v in [X_train, y_train]
+        lab.tensor(to_list(v), dtype=lab.get_dtype())
+        for v in [X_train, y_train]
     ]
 
     if X_test is None or y_test is None:
@@ -71,7 +72,8 @@ def process_data(X_train, y_train, X_test, y_test):
         y_test = y_train
     else:
         X_test, y_test = [
-            lab.tensor(to_list(v), dtype=lab.get_dtype()) for v in [X_test, y_test]
+            lab.tensor(to_list(v), dtype=lab.get_dtype())
+            for v in [X_test, y_test]
         ]
 
     # add extra target dimension if necessary

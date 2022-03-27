@@ -8,6 +8,7 @@ TODO:
 from typing import List, Tuple, Optional
 
 import numpy as np
+import lab
 
 from convex_nn.regularizers import L1, FeatureGL1, Regularizer
 from convex_nn.models import ConvexReLU, ConvexGatedReLU, LinearModel, Model
@@ -106,10 +107,17 @@ class LinearSupportFinder(SupportFinder):
                 best_index = i
 
         non_zeros = (
-            np.sum(np.abs(path_models[best_index].parameters[0]), axis=0) != 0
+            lab.sum(lab.abs(path_models[best_index].parameters[0]), axis=0)
+            != 0
         )
 
-        return np.arange(d)[non_zeros].tolist()
+        support = lab.arange(d)[non_zeros].tolist()
+
+        if len(support) == 0:
+            # failure mode
+            return lab.arange(d).tolist()
+        else:
+            return support
 
 
 class ForwardBackward(SupportFinder):

@@ -128,12 +128,14 @@ def update_public_model(model: Model, internal_model: InternalModel) -> Model:
     if isinstance(model, ConvexGatedReLU):
         assert isinstance(internal_model, ConvexMLP)
         model.parameters = [lab.to_np(internal_model.weights)]
+        model.G = lab.to_np(internal_model.U)
     elif isinstance(model, ConvexReLU):
         assert isinstance(internal_model, AL_MLP)
         model.parameters = [
             lab.to_np(internal_model.weights[0]),
             lab.to_np(internal_model.weights[1]),
         ]
+        model.G = lab.to_np(internal_model.U)
     elif isinstance(model, LinearModel):
         model.parameters = [internal_model.weights]
 

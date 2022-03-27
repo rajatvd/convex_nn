@@ -1,4 +1,5 @@
-"""Metrics that can be recorded while training models."""
+"""Metrics that can be recorded while training models.
+"""
 
 import numpy as np
 
@@ -26,12 +27,17 @@ class Metrics(object):
         train_mse: mean squared error on the training set.
         test_accuracy": accuracy on the test set.
         test_mse: means squared error on the test set.
-        total_neurons: total number of neurons in the model.
+        total_neurons: total number of neurons (active and inactive) in the
+            model.
         neuron_sparsity: proportion of neurons which are not used by the model
           (ie. all weights are exactly zero for those neurons).
-        active_features: number of features used by the model.
+        active_neurons: the number of neurons which are active (ie. the weights
+            for those neurons are not exactly zero).
+        total_features: total number of features in the dataset (both used and
+            not used by the model).
         feature_sparsity: proportion of features which are not used by the
             model (ie. all weights are exactly zero for those features).
+        active_features: the number of features currently used by the model.
         weight_sparsity: proportion of weights are which zero.
         metric_freq: the frequency (in iterations) at which metrics should be
             collected in iterations.
@@ -53,9 +59,11 @@ class Metrics(object):
     test_mse: np.ndarray
     total_neurons: np.ndarray
     neuron_sparsity: np.ndarray
+    active_neurons: np.ndarray
     total_features: np.ndarray
     feature_sparsity: np.ndarray
-    total_weights: np.ndarray
+    active_features: np.ndarray
+    active_weights: np.ndarray
     weight_sparsity: np.ndarray
 
     def __init__(
@@ -73,9 +81,11 @@ class Metrics(object):
         test_mse: bool = False,
         total_neurons: bool = False,
         neuron_sparsity: bool = False,
+        active_neurons: bool = False,
         total_features: bool = False,
         feature_sparsity: bool = False,
-        total_weights: bool = False,
+        active_features: bool = False,
+        active_weights: bool = False,
         weight_sparsity: bool = False,
     ):
         """
@@ -98,10 +108,15 @@ class Metrics(object):
             test_mse: means squared error on the test set.
             total_neurons: total number of neurons in the model.
             neuron_sparsity: proportion of neurons which are not used by the
-            model (ie. all weights are exactly zero for those neurons).
-            active_features: number of features used by the model.
+                model (ie. all weights are exactly zero for those neurons).
+            active_neurons: the number of neurons which are active (ie. the
+                weights for those neurons are not exactly zero).
+            total_features: total number of features in the dataset (both used
+                and not used by the model).
             feature_sparsity: proportion of features which are not used by the
                 model (ie. all weights are exactly zero for those features).
+            active_features: number of features used by the model.
+            active_features: number of features used by the model.
             weight_sparsity: proportion of weights are which zero.
         """
 
@@ -119,9 +134,11 @@ class Metrics(object):
             "test_mse": test_mse,
             "total_neurons": total_neurons,
             "neuron_sparsity": neuron_sparsity,
+            "active_neurons": active_neurons,
             "total_features": total_features,
             "feature_sparsity": feature_sparsity,
-            "total_weights": total_weights,
+            "active_features": active_features,
+            "active_weights": active_weights,
             "weight_sparsity": weight_sparsity,
         }
 
