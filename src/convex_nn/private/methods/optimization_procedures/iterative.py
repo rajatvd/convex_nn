@@ -22,7 +22,6 @@ from convex_nn.private.metrics import (
     merge_metric_lists,
 )
 from convex_nn.private.methods.termination_criteria import TerminationCriterion
-from convex_nn.private.methods.callbacks import ObservedSignPatterns
 
 
 class IterativeOptimizationProcedure(OptimizationProcedure):

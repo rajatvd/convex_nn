@@ -50,7 +50,12 @@ from .line_search import (
     Lassplore,
 )
 
-from .callbacks import ObservedSignPatterns, ConeDecomposition, ProximalCleanup
+from .callbacks import (
+    ObservedSignPatterns,
+    ConeDecomposition,
+    ProximalCleanup,
+    ApproximateConeDecomposition,
+)
 
 from .external_solver import LinearSolver
 
@@ -82,6 +87,7 @@ __all__ = [
     "DoubleLoopProcedure",
     "ObservedSignPatterns",
     "ConeDecomposition",
+    "ApproximateConeDecomposition",
     "ProximalCleanup",
     "ls",
     "gradient_step",

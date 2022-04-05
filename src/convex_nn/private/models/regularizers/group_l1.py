@@ -74,6 +74,7 @@ class GroupL1Regularizer(Regularizer):
         weight_norms = lab.sqrt(lab.sum(w ** 2, axis=-1, keepdims=True))
         grad_norms = lab.sqrt(lab.sum(base_grad ** 2, axis=-1, keepdims=True))
 
+        # TODO: use safe divide
         non_smooth_term = (
             base_grad
             * lab.smin(self.lam / grad_norms, 1)

@@ -3,6 +3,7 @@ from math import ceil
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import lab
+
 from convex_nn.private.loss_functions import squared_error
 from convex_nn.private.models.convex import operators
 from convex_nn.private.models.convex.convex_mlp import ConvexMLP

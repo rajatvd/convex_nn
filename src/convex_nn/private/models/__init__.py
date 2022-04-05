@@ -19,6 +19,8 @@ from .convex import (
     AL_LassoNet,
 )
 
+from .decompositions import QuadraticDecomposition
+
 from .one_vs_all import OneVsAllModel
 
 from .regularizers import (
@@ -55,6 +57,7 @@ __all__ = [
     "ConvexLassoNet",
     "AL_MLP",
     "AL_LassoNet",
+    "QuadraticDecomposition",
     "OneVsAllModel",
     "Regularizer",
     "Constraint",

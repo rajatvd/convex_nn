@@ -1,12 +1,23 @@
 """Callback functions to be executed after each iteration of optimization."""
 from typing import Tuple, Dict, Optional, Callable
+import logging
 
 import numpy as np
 
 import lab
 
-from convex_nn.private.models import Model
+from convex_nn.private.models import (
+    Model,
+    Regularizer,
+    QuadraticDecomposition,
+    AL_MLP,
+)
 from convex_nn.private.methods.optimizers.pgd import PGDLS
+from convex_nn.private.methods.optimization_procedures.iterative import (
+    IterativeOptimizationProcedure,
+)
+from convex_nn.private.methods.optimizers import FISTA
+from convex_nn.private.methods.termination_criteria import GradientNorm
 from convex_nn.private.methods.line_search import (
     QuadraticBound,
     MultiplicativeBacktracker,
@@ -55,7 +66,9 @@ class ObservedSignPatterns:
         new_patterns = patterns[:, indices_to_keep]
         new_weights = weights[indices_to_keep]
 
-        if model.activation_history is None or not hasattr(model, "activation_history"):
+        if model.activation_history is None or not hasattr(
+            model, "activation_history"
+        ):
             model.activation_history = new_patterns
             model.weight_history = new_weights
         else:
@@ -86,6 +99,88 @@ class ConeDecomposition:
         decomposed_model, _ = self.solver(model, X, y)
 
         return decomposed_model
+
+
+class ApproximateConeDecomposition:
+
+    """Convert a gated ReLU model into a ReLU model by approximating the cone
+    decomposition problem."""
+
+    def __init__(
+        self,
+        regularizer: Regularizer,
+        prox: ProximalOperator,
+        max_iters: int = 1000,
+        tol: float = 1e-6,
+    ):
+        """
+        Args:
+            regularizer: the regularizer to use in the approximation.
+            prox: the proximal operator to use for the given regularizer.
+        """
+
+        self.regularizer = regularizer
+        self.prox = prox
+
+        # create optimizer to use
+        self.optimizer = FISTA(
+            1.0,
+            QuadraticBound(),
+            MultiplicativeBacktracker(beta=0.8),
+            Lassplore(alpha=1.25, threshold=5.0),
+            prox=self.prox,
+        )
+
+        # construct optimization routine
+        self.opt_proc = IterativeOptimizationProcedure(
+            self.optimizer,
+            max_iters=max_iters,
+            term_criterion=GradientNorm(tol),
+            name="quadratic_decomp",
+        )
+
+    def __call__(self, model: Model, X: lab.Tensor, y: lab.Tensor) -> Model:
+
+        # create decomposition to solve
+        decomposition = QuadraticDecomposition(
+            model.d, model.D, self.regularizer
+        )
+
+        # form decomposition targets
+        targets = -decomposition(X, model.weights)
+        targets = lab.smax(targets, 0)
+
+        # get logger object
+        logger = logging.getLogger("convex_nn")
+
+        # don't change initialization
+        initializer = lambda x: x
+
+        _, decomposition, _ = self.opt_proc(
+            logger,
+            decomposition,
+            initializer,
+            (X, targets),
+            (X, targets),  # no test data, so pass train data.
+            (["objective", "grad_norm"], [], []),
+        )
+
+        # compute decomposed weights
+        w = decomposition.weights
+        v = model.weights + w
+
+        # extract ReLU network
+        relu_model = AL_MLP(
+            model.d,
+            model.D,
+            model.U,
+            model.kernel,
+            regularizer=model.regularizer,
+            c=model.c,
+        )
+        relu_model.weights = lab.stack([v, w])
+
+        return relu_model
 
 
 class ProximalCleanup:
