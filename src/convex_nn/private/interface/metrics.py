@@ -46,7 +46,7 @@ def build_metrics_tuple(
             train_metrics.append("accuracy")
         # use convex model for training (same as non-convex)
         elif key == "train_mse":
-            train_metrics.append("nc_squared_error")
+            train_metrics.append("squared_error")
         # use non-convex model for testing
         elif key == "test_accuracy":
             test_metrics.append("nc_accuracy")
