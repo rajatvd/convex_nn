@@ -117,8 +117,8 @@ class ConvexMLP(Model):
         :returns: the objective
         """
 
-        return squared_error(self._forward(X, w, D), y) / self._scaling(
-            y, scaling
+        return squared_error(self._forward(X, w, D), y) / (
+            2 * self._scaling(y, scaling)
         )
 
     def _grad(

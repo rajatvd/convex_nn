@@ -223,9 +223,7 @@ def compute_metric(
             X, y, batch_size=batch_size, ignore_lagrange_penalty=True
         )
         metric = lab.to_scalar(objective)
-    elif (
-        metric_name == "squared_error"
-    ):  # TODO: should not use half when computing this
+    elif metric_name == "squared_error":
         metric = lab.to_scalar(
             loss_fns.squared_error(model(X, batch_size=batch_size), y)
             / y.shape[0]

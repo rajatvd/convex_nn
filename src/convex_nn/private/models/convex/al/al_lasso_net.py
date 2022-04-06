@@ -150,7 +150,7 @@ class AL_LassoNet(AL_MLP):
 
         obj = (
             squared_error(self._forward(X, w, D), y)
-            / self._scaling(y, scaling)
+            / (2 * self._scaling(y, scaling))
             + skip_weights_penalty
         )
 
@@ -236,8 +236,8 @@ class AL_LassoNet(AL_MLP):
         w = self._weights(w).reshape(2, self.c, self.p + 1, self.d)
 
         # doesn't include regularization
-        obj = squared_error(self._forward(X, w, D), y) / self._scaling(
-            y, scaling
+        obj = squared_error(self._forward(X, w, D), y) / (
+            2 * self._scaling(y, scaling)
         )
 
         # regularization

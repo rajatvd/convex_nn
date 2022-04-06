@@ -54,7 +54,9 @@ class ConvexLassoNet(ConvexMLP):
         # separate out positive and negative skip weights.
         return w[:, : self.p], w[:, self.p :]
 
-    def _join_weights(self, network_w: lab.Tensor, skip_w: lab.Tensor) -> lab.Tensor:
+    def _join_weights(
+        self, network_w: lab.Tensor, skip_w: lab.Tensor
+    ) -> lab.Tensor:
 
         return lab.concatenate([network_w, skip_w], axis=1)
 
@@ -89,7 +91,9 @@ class ConvexLassoNet(ConvexMLP):
             Defaults to self.D or manual computation depending on the value of self._train.
         :returns: predictions for X.
         """
-        network_w, skip_w = self._split_weights(w.reshape(self.c, self.p + 2, self.d))
+        network_w, skip_w = self._split_weights(
+            w.reshape(self.c, self.p + 2, self.d)
+        )
 
         # combine positive and negative components
         skip_w = skip_w[:, 0] - skip_w[:, 1]
@@ -120,7 +124,8 @@ class ConvexLassoNet(ConvexMLP):
 
         skip_weights_penalty = self.gamma * lab.sum(w[:, -2:])
         return (
-            squared_error(self._forward(X, w, D), y) / self._scaling(y, scaling)
+            squared_error(self._forward(X, w, D), y)
+            / (2 * self._scaling(y, scaling))
             + skip_weights_penalty
         )
 
@@ -149,9 +154,9 @@ class ConvexLassoNet(ConvexMLP):
         w = w.reshape(self.c, self.p + 2, self.d)
         D = self._signs(X, D)
         residual = self._forward(X, w, D) - y
-        network_grad = lab.einsum("ij, il, ik->ljk", D, residual, X) / self._scaling(
-            y, scaling
-        )
+        network_grad = lab.einsum(
+            "ij, il, ik->ljk", D, residual, X
+        ) / self._scaling(y, scaling)
         skip_grad = X.T @ residual / self._scaling(y, scaling)
         skip_grad = lab.expand_dims(skip_grad.T, axis=1)
 

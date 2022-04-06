@@ -32,7 +32,9 @@ class TestExpandedModelKernels(unittest.TestCase):
         lab.set_backend(self.backend)
         lab.set_dtype(self.dtype)
 
-        train_set, _, _ = gen_regression_data(self.rng, self.n, 0, self.d, c=self.c)
+        train_set, _, _ = gen_regression_data(
+            self.rng, self.n, 0, self.d, c=self.c
+        )
         self.U = activations.sample_dense_gates(self.rng, self.d, 100)
         self.D, self.U = lab.all_to_tensor(
             activations.compute_activation_patterns(train_set[0], self.U)
@@ -60,7 +62,9 @@ class TestExpandedModelKernels(unittest.TestCase):
                 "hessian_mvp": hessian_mvp,
                 "bd_hessian_mvp": bd_hessian_mvp,
             }
-            data, hessian, bd_hessian = operators.get_matrix_builders(kernel_name)
+            data, hessian, bd_hessian = operators.get_matrix_builders(
+                kernel_name
+            )
 
             self.builders[kernel_name] = {
                 "data": data,
@@ -73,13 +77,17 @@ class TestExpandedModelKernels(unittest.TestCase):
         # check the gradient against finite differences
         for i, kernel_name in product(range(self.tries), self.kernels.keys()):
 
-            v = self.rng.standard_normal((self.c * self.P * self.d), dtype=self.dtype)
+            v = self.rng.standard_normal(
+                (self.c * self.P * self.d), dtype=self.dtype
+            )
 
             def loss_fn(v):
                 res = lab.to_np(
                     loss_fns.squared_error(
                         self.kernels[kernel_name]["data_mvp"](
-                            lab.tensor(v, dtype=lab.get_dtype()), self.X, self.D
+                            lab.tensor(v, dtype=lab.get_dtype()),
+                            self.X,
+                            self.D,
                         ),
                         self.y,
                     )
@@ -88,7 +96,8 @@ class TestExpandedModelKernels(unittest.TestCase):
 
             def grad_fn(v):
                 res = lab.to_np(
-                    self.kernels[kernel_name]["gradient"](
+                    2
+                    * self.kernels[kernel_name]["gradient"](
                         lab.tensor(v, dtype=lab.get_dtype()),
                         X=self.X,
                         y=self.y,
@@ -98,14 +107,20 @@ class TestExpandedModelKernels(unittest.TestCase):
                 return res
 
             self.assertTrue(
-                np.isclose(check_grad(loss_fn, grad_fn, v), 0.0, rtol=1e-5, atol=1e-5),
+                np.isclose(
+                    check_grad(loss_fn, grad_fn, v), 0.0, rtol=1e-5, atol=1e-5
+                ),
                 f"Gradient from kernel {kernel_name} did not match finite differences approximation.",
             )
 
             # check Hessian against finite differences by sampling random directional derivatives
-            v = self.rng.standard_normal(self.c * self.P * self.d, dtype=self.dtype)
+            v = self.rng.standard_normal(
+                self.c * self.P * self.d, dtype=self.dtype
+            )
             z = lab.tensor(
-                self.rng.standard_normal(self.c * self.P * self.d, dtype=self.dtype)
+                self.rng.standard_normal(
+                    self.c * self.P * self.d, dtype=self.dtype
+                )
             )
 
             def directional_derivative(w):
@@ -118,12 +133,17 @@ class TestExpandedModelKernels(unittest.TestCase):
 
             def hvp(w):
                 return lab.to_np(
-                    self.kernels[kernel_name]["hessian_mvp"](z, X=self.X, D=self.D)
+                    self.kernels[kernel_name]["hessian_mvp"](
+                        z, X=self.X, D=self.D
+                    )
                 )
 
             self.assertTrue(
                 np.isclose(
-                    check_grad(directional_derivative, hvp, v), 0, rtol=1e-5, atol=1e-5
+                    check_grad(directional_derivative, hvp, v),
+                    0,
+                    rtol=1e-5,
+                    atol=1e-5,
                 ),
                 f"Hessian from kernel {kernel_name} did not match finite differences approximation.",
             )
@@ -134,14 +154,18 @@ class TestExpandedModelKernels(unittest.TestCase):
         # check all kernels against reference implementation (direct).
         for i, kernel_name in product(range(self.tries), self.kernels.keys()):
             v = lab.tensor(
-                self.rng.standard_normal((self.c, self.P, self.d), dtype=self.dtype)
+                self.rng.standard_normal(
+                    (self.c, self.P, self.d), dtype=self.dtype
+                )
             )
 
             # check the forward map (ie. X w):
             self.assertTrue(
                 lab.allclose(
                     self.kernels[kernel_name]["data_mvp"](v, self.X, self.D),
-                    self.kernels[operators.DIRECT]["data_mvp"](v, self.X, self.D),
+                    self.kernels[operators.DIRECT]["data_mvp"](
+                        v, self.X, self.D
+                    ),
                 ),
                 f"The {kernel_name} matrix-vector operator for the expanded data matrix did not match the direct implementation.",
             )
@@ -151,7 +175,9 @@ class TestExpandedModelKernels(unittest.TestCase):
             self.assertTrue(
                 lab.allclose(
                     self.kernels[kernel_name]["data_t_mvp"](w, self.X, self.D),
-                    self.kernels[operators.DIRECT]["data_t_mvp"](w, self.X, self.D),
+                    self.kernels[operators.DIRECT]["data_t_mvp"](
+                        w, self.X, self.D
+                    ),
                 ),
                 f"The {kernel_name} matrix-vector operator for the transpose of the expanded data matrix did not match the direct implementation.",
             )
@@ -159,7 +185,9 @@ class TestExpandedModelKernels(unittest.TestCase):
             # check gradient
             self.assertTrue(
                 lab.allclose(
-                    self.kernels[kernel_name]["gradient"](v, self.X, self.y, self.D),
+                    self.kernels[kernel_name]["gradient"](
+                        v, self.X, self.y, self.D
+                    ),
                     self.kernels[operators.DIRECT]["gradient"](
                         v, self.X, self.y, self.D
                     ),
@@ -170,8 +198,12 @@ class TestExpandedModelKernels(unittest.TestCase):
             # check Hessian
             self.assertTrue(
                 lab.allclose(
-                    self.kernels[kernel_name]["hessian_mvp"](v, self.X, self.D),
-                    self.kernels[operators.DIRECT]["hessian_mvp"](v, self.X, self.D),
+                    self.kernels[kernel_name]["hessian_mvp"](
+                        v, self.X, self.D
+                    ),
+                    self.kernels[operators.DIRECT]["hessian_mvp"](
+                        v, self.X, self.D
+                    ),
                 ),
                 f"The {kernel_name} hessian operator did not match the direct implementation.",
             )
@@ -179,8 +211,12 @@ class TestExpandedModelKernels(unittest.TestCase):
             # check block-diagonal Hessian.
             self.assertTrue(
                 lab.allclose(
-                    self.kernels[kernel_name]["bd_hessian_mvp"](v, self.X, self.D),
-                    self.kernels[operators.DIRECT]["bd_hessian_mvp"](v, self.X, self.D),
+                    self.kernels[kernel_name]["bd_hessian_mvp"](
+                        v, self.X, self.D
+                    ),
+                    self.kernels[operators.DIRECT]["bd_hessian_mvp"](
+                        v, self.X, self.D
+                    ),
                 ),
                 f"The {kernel_name} block-diagonal hessian operator did not match the direct implementation.",
             )
@@ -198,7 +234,10 @@ class TestExpandedModelKernels(unittest.TestCase):
             # compute matrix blocks by hand and check for correctness.
             for i, j in product(range(self.P), range(self.P)):
                 H_ij = (
-                    self.X.T @ lab.diag(self.D[:, i]) @ lab.diag(self.D[:, j]) @ self.X
+                    self.X.T
+                    @ lab.diag(self.D[:, i])
+                    @ lab.diag(self.D[:, j])
+                    @ self.X
                 )
 
                 self.assertTrue(

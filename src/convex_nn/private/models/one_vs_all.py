@@ -33,7 +33,11 @@ class OneVsAllModel(Model):
         return weights
 
     def _forward(
-        self, X: lab.Tensor, w: lab.Tensor, D: Optional[lab.Tensor] = None, **kwargs
+        self,
+        X: lab.Tensor,
+        w: lab.Tensor,
+        D: Optional[lab.Tensor] = None,
+        **kwargs,
     ) -> lab.Tensor:
         """Compute forward pass.
 
@@ -43,7 +47,9 @@ class OneVsAllModel(Model):
             Defaults to self.D or manual computation depending on the value of self._train.
         :returns: predictions for X.
         """
-        return lab.concatenate([model(X) for model in self.per_class_models], axis=1)
+        return lab.concatenate(
+            [model(X) for model in self.per_class_models], axis=1
+        )
 
     def _objective(
         self,
@@ -61,7 +67,9 @@ class OneVsAllModel(Model):
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: objective L(f, (X, y)).
         """
-        return squared_error(self._forward(X, None), y) / self._scaling(y, scaling)
+        return squared_error(self._forward(X, None), y) / (
+            2 * self._scaling(y, scaling)
+        )
 
     def _grad(
         self,

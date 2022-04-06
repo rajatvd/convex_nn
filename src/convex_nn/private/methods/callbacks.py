@@ -143,7 +143,7 @@ class ApproximateConeDecomposition:
 
         # create decomposition to solve
         decomposition = QuadraticDecomposition(
-            model.d, model.D, self.regularizer
+            model.d, model.D, self.regularizer, c=model.c
         )
 
         # form decomposition targets

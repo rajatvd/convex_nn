@@ -19,7 +19,7 @@ def squared_error(preds: lab.Tensor, y: lab.Tensor) -> float:
     returns: squared-loss
     """
     residuals = y - preds
-    return lab.sum((residuals) ** 2) / 2
+    return lab.sum((residuals) ** 2)
 
 
 def logistic_loss(preds: lab.Tensor, y: lab.Tensor):
@@ -34,7 +34,9 @@ def logistic_loss(preds: lab.Tensor, y: lab.Tensor):
     return lab.sum(res)
 
 
-def binned_accuracy(preds: lab.Tensor, y: lab.Tensor, n_classes: Optional[int] = 10):
+def binned_accuracy(
+    preds: lab.Tensor, y: lab.Tensor, n_classes: Optional[int] = 10
+):
     """Compute the accuracy of classification method by binning the
     predictions.
 

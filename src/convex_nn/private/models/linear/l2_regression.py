@@ -64,8 +64,8 @@ class LinearRegression(Model):
         Returns:
             The objective at `w`.
         """
-        return loss_fns.squared_error(self._forward(X, w), y) / self._scaling(
-            y, scaling
+        return loss_fns.squared_error(self._forward(X, w), y) / (
+            2 * self._scaling(y, scaling)
         )
 
     def _grad(

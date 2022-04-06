@@ -92,7 +92,7 @@ class ReLUMLP(Model):
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: objective L(f, (X, y)).
         """
-        return squared_error(self._forward(X, w), y) / self._scaling(y, scaling)
+        return squared_error(self._forward(X, w), y) / (2 * self._scaling(y, scaling))
 
     def _grad(
         self,

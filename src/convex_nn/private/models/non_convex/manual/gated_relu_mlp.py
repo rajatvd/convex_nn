@@ -56,7 +56,9 @@ class GatedReLUMLP(ReLUMLP):
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: objective L(f, (X, y)).
         """
-        return squared_error(self._forward(X, w), y) / self._scaling(y, scaling)
+        return squared_error(self._forward(X, w), y) / (
+            2 * self._scaling(y, scaling)
+        )
 
     def _grad(
         self,
@@ -80,7 +82,9 @@ class GatedReLUMLP(ReLUMLP):
         Z = lab.multiply(D, X @ w1.T)
         residuals = Z @ w2.T - y
 
-        return self._grad_helper(X, residuals, w1, w2, D, Z) / self._scaling(y, scaling)
+        return self._grad_helper(X, residuals, w1, w2, D, Z) / self._scaling(
+            y, scaling
+        )
 
     def _grad_helper(
         self,

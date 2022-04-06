@@ -85,7 +85,9 @@ class ReLULassoNet(Model):
         self, network_weights: lab.Tensor, skip_weights: lab.Tensor
     ) -> lab.Tensor:
 
-        return lab.concatenate([lab.ravel(network_weights), lab.ravel(skip_weights)])
+        return lab.concatenate(
+            [lab.ravel(network_weights), lab.ravel(skip_weights)]
+        )
 
     def _forward(self, X: lab.Tensor, w: lab.Tensor, **kwargs) -> lab.Tensor:
         """Compute forward pass.
@@ -113,7 +115,9 @@ class ReLULassoNet(Model):
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: objective L(f, (X, y)).
         """
-        return squared_error(self._forward(X, w), y) / self._scaling(y, scaling)
+        return squared_error(self._forward(X, w), y) / (
+            2 * self._scaling(y, scaling)
+        )
 
     def _grad(
         self,
@@ -144,4 +148,6 @@ class ReLULassoNet(Model):
 
         skip_grad = residuals.T @ X
 
-        return self._join_weights(network_grad, skip_grad) / self._scaling(y, scaling)
+        return self._join_weights(network_grad, skip_grad) / self._scaling(
+            y, scaling
+        )

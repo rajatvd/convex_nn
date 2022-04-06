@@ -8,7 +8,7 @@ from convex_nn.private.models.model import Model
 from .gated_relu_mlp import GatedReLUMLP
 from .relu_lasso_net import ReLULassoNet
 from convex_nn.private.models.regularizers import Regularizer
-from convex_nn.private.loss_functions import squared_error, relu
+from convex_nn.private.loss_functions import relu
 
 
 class GatedLassoNet(ReLULassoNet):

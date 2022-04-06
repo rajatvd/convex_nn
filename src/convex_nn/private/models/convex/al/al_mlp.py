@@ -189,8 +189,8 @@ class AL_MLP(ConvexMLP):
         :param scaling: (optional) scaling parameter for the objective. Defaults to `n * c`.
         :returns: the objective
         """
-        obj = squared_error(self._forward(X, w, D), y) / self._scaling(
-            y, scaling
+        obj = squared_error(self._forward(X, w, D), y) / (
+            2 * self._scaling(y, scaling)
         )
         if not ignore_lagrange_penalty:
             obj += self.lagrange_penalty_objective(X, w, index_range, scaling)
@@ -260,8 +260,8 @@ class AL_MLP(ConvexMLP):
         w = self._weights(w).reshape(2, self.c, self.p, self.d)
 
         # doesn't include regularization
-        obj = squared_error(self._forward(X, w, D), y) / self._scaling(
-            y, scaling
+        obj = squared_error(self._forward(X, w, D), y) / (
+            2 * self._scaling(y, scaling)
         )
 
         # regularization

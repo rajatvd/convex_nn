@@ -37,8 +37,12 @@ class TestL2Regularizer(unittest.TestCase):
         # initialize model
         self.regularizer = L2Regularizer(lam=self.lam)
         self.lr = LinearRegression(self.d)
-        self.regularized_model = LinearRegression(self.d, regularizer=self.regularizer)
-        self.objective, self.grad = self.regularized_model.get_closures(self.X, self.y)
+        self.regularized_model = LinearRegression(
+            self.d, regularizer=self.regularizer
+        )
+        self.objective, self.grad = self.regularized_model.get_closures(
+            self.X, self.y
+        )
 
         def objective_fn(v):
             return self.objective(lab.tensor(v))
@@ -49,20 +53,23 @@ class TestL2Regularizer(unittest.TestCase):
         self.objective_fn = objective_fn
         self.grad_fn = grad_fn
 
-        random_weights = lab.tensor(self.rng.standard_normal(self.d, dtype=self.dtype))
+        random_weights = lab.tensor(
+            self.rng.standard_normal(self.d, dtype=self.dtype)
+        )
         self.regularized_model.weights = random_weights
 
     def test_objective(self):
         """Check that the regularized objective is computed properly"""
         random_weights = self.regularized_model.weights
 
-        regularized_loss = (lab.sum(((self.X @ random_weights) - self.y) ** 2)) / (
-            2 * len(self.y)
-        ) + (self.lam / 2) * lab.sum(random_weights ** 2)
+        regularized_loss = (
+            lab.sum(((self.X @ random_weights) - self.y) ** 2)
+        ) / (2 * len(self.y)) + (self.lam / 2) * lab.sum(random_weights ** 2)
 
         self.assertTrue(
             lab.allclose(
-                regularized_loss, self.regularized_model.objective(self.X, self.y)
+                regularized_loss,
+                self.regularized_model.objective(self.X, self.y),
             ),
             "The regularized model objective did not match direct computation!",
         )
@@ -84,7 +91,9 @@ class TestL2Regularizer(unittest.TestCase):
         )
 
         # check that the gradient is zero after the normal equations.
-        wopt = direct_solvers.solve_ne(self.X, self.y, lam=self.lam * len(self.y))
+        wopt = direct_solvers.solve_ne(
+            self.X, self.y, lam=self.lam * len(self.y)
+        )
         grad = self.regularized_model.grad(self.X, self.y, wopt)
         self.assertTrue(
             lab.allclose(grad, lab.zeros_like(grad)),
