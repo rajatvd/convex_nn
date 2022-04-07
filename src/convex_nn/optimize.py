@@ -29,7 +29,12 @@ from convex_nn.private.interface import (
 )
 from convex_nn.private.models.solution_mappings import get_nc_formulation
 from convex_nn.regularizers import Regularizer
-from convex_nn.solvers import AL, RFISTA, Optimizer
+from convex_nn.solvers import (
+    AL,
+    RFISTA,
+    ApproximateConeDecomposition,
+    Optimizer,
+)
 
 # Types
 

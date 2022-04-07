@@ -23,17 +23,20 @@ from convex_nn.private.methods import (
 )
 from convex_nn.private.methods import Optimizer as InteralOpt
 from convex_nn.private.methods import ProximalCleanup, QuadraticBound
+from convex_nn.private.methods import ApproximateConeDecomposition as ACD
 from convex_nn.regularizers import L1, L2, FeatureGL1, NeuronGL1, Regularizer
 from convex_nn.solvers import (
     AL,
     RFISTA,
-    ConeDecomposition,
+    ApproximateConeDecomposition,
     CVXPYSolver,
     LeastSquaresSolver,
     Optimizer,
 )
 
-from .models import ConvexGatedReLU, ConvexReLU
+from convex_nn.models import ConvexGatedReLU, ConvexReLU
+from convex_nn.regularizers import NeuronGL1
+from convex_nn.private.interface import build_internal_regularizer
 
 
 def build_prox_operator(
@@ -184,10 +187,22 @@ def build_optimizer(
 
         opt_proc = OptimizationProcedure(opt, post_process=post_process)
 
-    elif isinstance(optimizer, ConeDecomposition):
-        raise NotImplementedError(
-            "Optimization by Cone Decomposition is not supported yet!"
+    elif isinstance(optimizer, ApproximateConeDecomposition):
+        decomp_regularizer = NeuronGL1(optimizer.rho)
+        int_decomp_reg = build_internal_regularizer(decomp_regularizer)
+        int_decomp_prox = build_prox_operator(decomp_regularizer)
+        opt_proc = build_optimizer(optimizer.rfista, regularizer, metrics)
+
+        post_opt = ACD(
+            int_decomp_reg,
+            int_decomp_prox,
+            optimizer.d_max_iters,
+            optimizer.d_tol,
         )
+
+        opt_proc.post_process = post_opt
+
+        return opt_proc
     else:
         raise ValueError(f"Optimizer object {optimizer} not supported.")
 

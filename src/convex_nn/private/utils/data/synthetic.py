@@ -181,9 +181,12 @@ def gen_sparse_regression_problem(
     w_opt = rng.standard_normal((d))
 
     # true model is sparse
+    non_zero_indices = np.arange(d)
     if nnz is not None:
-        zero_indices = rng.choice(d, size=d - nnz, replace=False)
-        w_opt[zero_indices] = 0.0
+        non_zero_indices = rng.choice(d, size=nnz, replace=False)
+        mask = np.zeros_like(w_opt)
+        mask[non_zero_indices] = 1.0
+        w_opt = w_opt * mask
 
     # sample covariance matrix.
     Sigma = sample_covariance_matrix(rng, d, kappa)
@@ -197,9 +200,12 @@ def gen_sparse_regression_problem(
     elif transform == "cosine":
         # cosine transform
         y = np.cos(y)
-    elif transform == "polynomial":
+    elif transform == "cubic":
         # simple cubic
         y = y + (y ** 2) / 2 + (y ** 3) / 6
+    elif transform == "product":
+        print(X[:, non_zero_indices])
+        y = np.sign(np.prod(X[:, non_zero_indices], axis=1))
     else:
         try:
             y = transform(y)

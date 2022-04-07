@@ -71,11 +71,10 @@ class RFISTA(Optimizer):
             tol: the tolerance for terminating the optimization procedure.
         """
 
-        if not isinstance(
-            model, (ConvexGatedReLU, NonConvexGatedReLU, LinearModel)
-        ):
+        if not isinstance(model, (ConvexGatedReLU, LinearModel)):
             raise ValueError(
-                "R-FISTA can only be used to train Gated ReLU models."
+                "R-FISTA can only be used to train Gated ReLU models and \
+                        linear model."
             )
 
         super().__init__(model)
@@ -149,7 +148,7 @@ class AL(Optimizer):
                 satisfied.
             delta: the initial penalty strength.
         """
-        if not isinstance(model, (ConvexReLU, NonConvexReLU)):
+        if not isinstance(model, (ConvexReLU)):
             raise ValueError(
                 "The AL optimizer can only be used to train ReLU models."
             )
@@ -220,9 +219,9 @@ class LeastSquaresSolver(Optimizer):
             tol: the tolerance for terminating the optimization procedure
                 early.
         """
-        if not isinstance(model, (ConvexGatedReLU, NonConvexGatedReLU)):
+        if not isinstance(model, (ConvexGatedReLU)):
             raise ValueError(
-                "Iterative solvers only support Gated ReLU models."
+                "The least-squares solver only supports Gated ReLU models."
             )
 
         super().__init__(model)
@@ -305,7 +304,7 @@ class CVXPYSolver(Optimizer):
         return True
 
 
-class ConeDecomposition(Optimizer):
+class ExactConeDecomposition(Optimizer):
     """Two-step method for approximately optimizing ReLU models.
 
     ConeDecomposition first solves the Gated ReLU problem,
@@ -313,13 +312,71 @@ class ConeDecomposition(Optimizer):
     .. math:: \\min_{u} L\\left(\\sum_{D_i \\in \\mathcal{D}} D_i X u_{i}),
         y\\right) + \\lambda R(u),
 
-    and then decomposes the solution onto the Minkowski differences
-    :math:`K_i - K_i` to approximate the ReLU training problem. The resulting
-    solution is guaranteed to preserve the value of the loss :math:`L`, but
-    can substantially blow-up the model norm. As such, it is only an
-    approximation to the ReLU training problem when :math:`\\lambda > 0`.
+    and then decomposes the solution :math:`u^*` onto the Minkowski differences
+    :math:`K_i - K_i` to approximate the ReLU training problem. The cone
+    decomposition is solved exactly using interior-point methods and
+    CVXPY...
     """
 
-    def __init__(self, model: Model):
+    def __init__(self):
+        raise NotImplementedError(
+            "Exact cone decomposition is not \
+                implemented yet."
+        )
+
+
+class ApproximateConeDecomposition(Optimizer):
+    """Two-step method for approximately optimizing ReLU models.
+
+    ConeDecomposition first solves the Gated ReLU problem,
+
+    .. math:: \\min_{u} L\\left(\\sum_{D_i \\in \\mathcal{D}} D_i X u_{i}),
+        y\\right) + \\lambda R(u),
+
+    and then decomposes the solution :math:`u^*` onto the Minkowski differences
+    :math:`K_i - K_i` to approximate the ReLU training problem. The cone
+    decomposition is approximated by solving
+
+    .. math:: \\min_{w} \\sum_{D_i \\in \\mathcal{D}}\\left[
+        \\| \\left(\\tilde X_i w - \\min\\{\\tilde X_i u^*, 0\\}\\right)_+\\|_2^2
+        + \\rho \\|w_i\\|_2^2 \\right],
+
+    where :math:`\\tilde X_i = (2D_i - I) X`.
+    The regularization :math:`\\rho` controls the quality of the approximation;
+    taking :math:`\\rho \\rightarrow 0` will return a feasible solution.
+    A feasible solution is guaranteed to preserve the value of the loss
+    :math:`L`, but can substantially blow-up the model norm. As such, it is
+    only an approximation to the ReLU training problem when
+    :math:`\\lambda > 0`.
+
+    Attributes:
+        model: the model that should be optimized.
+        max_iters: the maximum number of iterations to run the R-FISTA sovler.
+        tol: the tolerance for terminating R-FISTA early.
+        rho: the strength of the penalty term in the decomposition program.
+        d_max_iters: the maximum number of iterations for the decomposition
+            program.
+        d_tol: the tolerance for terminating the decomposition program.
+    """
+
+    def __init__(
+        self,
+        model: Model,
+        max_iters: int = 10000,
+        tol: float = 1e-6,
+        rho: float = 1e-10,
+        d_max_iters: int = 10000,
+        d_tol: float = 1e-10,
+    ):
         """Initialize the optimizer."""
-        raise NotImplementedError("ConeDecomposition is not supported yet.")
+        if not isinstance(model, (ConvexGatedReLU)):
+            raise ValueError(
+                "Cone decomposition methods are only compatible with \
+                Gated ReLU models."
+            )
+
+        super().__init__(model)
+        self.rfista = RFISTA(model, max_iters, tol)
+        self.rho = rho
+        self.d_max_iters = d_max_iters
+        self.d_tol = d_tol
