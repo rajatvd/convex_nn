@@ -2,6 +2,7 @@
 
 TODO:
     - extract types into a new `types.py` module.
+    - add toggle for data normalization.
 """
 import math
 import os
@@ -145,6 +146,7 @@ def optimize_model(
     y_test: Optional[np.ndarray] = None,
     regularizer: Optional[Regularizer] = None,
     return_convex: bool = False,
+    unitize_data: bool = True,
     verbose: bool = False,
     log_file: str = None,
     device: Device = "cpu",
@@ -165,6 +167,8 @@ def optimize_model(
         regularizer: an optional regularizer for the convex reformulation.
         return_convex: whether or not to return the convex reformulation
             instead of the final non-convex model.
+        unitize_data: whether or not to unitize the column norms of the
+            training set. This can improve conditioning during optimization.
         verbose: whether or not the solver should print verbosely during
             optimization.
         log_file: a path to an optional log file.
@@ -202,6 +206,7 @@ def optimize_model(
         y_train,
         X_test,
         y_test,
+        unitize_data,
     )
 
     internal_model = build_internal_model(model, regularizer, X_train)
@@ -223,10 +228,11 @@ def optimize_model(
 
     # convert internal metrics
 
-    # transform model back to original data space.
-    internal_model.weights = normalized_into_input_space(
-        internal_model.weights, column_norms
-    )
+    # transform model back to original data space if necessary.
+    if unitize_data:
+        internal_model.weights = normalized_into_input_space(
+            internal_model.weights, column_norms
+        )
 
     if return_convex:
         return update_public_model(model, internal_model), metrics
@@ -250,6 +256,7 @@ def optimize_path(
     warm_start: bool = True,
     save_path: Optional[str] = None,
     return_convex: bool = False,
+    unitize_data: bool = True,
     verbose: bool = False,
     log_file: str = None,
     device: Device = "cpu",
@@ -276,6 +283,8 @@ def optimize_path(
             in memory and returned if `save_path = None`.
         return_convex: whether or not to return the convex reformulation
             instead of the final non-convex model.
+        unitize_data: whether or not to unitize the column norms of the
+            training set. This can improve conditioning during optimization.
         verbose: whether or not the solver should print verbosely during
             optimization.
         log_file: a path to an optional log file.
@@ -311,6 +320,7 @@ def optimize_path(
         y_train,
         X_test,
         y_test,
+        unitize_data,
     )
 
     internal_model = build_internal_model(model, path[0], X_train)
@@ -338,10 +348,11 @@ def optimize_path(
         # regularizer to_string to generate path
         metrics = update_public_metrics(metrics, internal_metrics)
         cur_weights = internal_model.weights
-        # transform model back to original data space.
-        internal_model.weights = normalized_into_input_space(
-            internal_model.weights, column_norms
-        )
+        # transform model back to original data space if necessary.
+        if unitize_data:
+            internal_model.weights = normalized_into_input_space(
+                internal_model.weights, column_norms
+            )
 
         if return_convex:
             model_to_save = update_public_model(model, internal_model)

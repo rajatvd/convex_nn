@@ -204,7 +204,6 @@ def gen_sparse_regression_problem(
         # simple cubic
         y = y + (y ** 2) / 2 + (y ** 3) / 6
     elif transform == "product":
-        print(X[:, non_zero_indices])
         y = np.sign(np.prod(X[:, non_zero_indices], axis=1))
     else:
         try:

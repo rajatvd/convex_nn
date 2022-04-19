@@ -41,7 +41,7 @@ def input_into_normalized_space(model_weights, column_norms):
     return model_weights * column_norms
 
 
-def process_data(X_train, y_train, X_test, y_test):
+def process_data(X_train, y_train, X_test, y_test, unitize_data: bool = True):
     """Process training and test data into a format suitable for optimization.
 
     The data can be input as a list of lists or in any format implementing a `to_list` method
@@ -52,6 +52,8 @@ def process_data(X_train, y_train, X_test, y_test):
         y_train: :math:`(n)` or :math:`(n \\times c)` vector of training targets.
         X_test: :math:`(m \\times d)` matrix of test examples.
         y_test: :math:`(m)` or :math:`(n \\times c)` vector of test targets.
+        unitize_data: whether or not to unitize the column norms of the
+            training matrix.
 
     Returns:
         The input data as lab.Tensor instances with the correct datatype.
@@ -81,7 +83,10 @@ def process_data(X_train, y_train, X_test, y_test):
         y_train = lab.expand_dims(y_train, axis=1)
         y_test = lab.expand_dims(y_test, axis=1)
 
-    return unitize_columns((X_train, y_train), (X_test, y_test))
+    if unitize_data:
+        return unitize_columns((X_train, y_train), (X_test, y_test))
+    else:
+        return (X_train, y_train), (X_test, y_test), None
 
 
 def to_list(v):

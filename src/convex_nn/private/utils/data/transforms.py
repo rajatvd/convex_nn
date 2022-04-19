@@ -18,6 +18,20 @@ import numpy as np
 Dataset = Tuple[lab.Tensor, lab.Tensor]
 
 
+def add_bias_col(dataset: Dataset) -> Dataset:
+    """Augment the feature matrix in a dataset with a bias column.
+
+    Args:
+        dataset: a (X, y) tuple defining a dataset.
+    """
+
+    X, y = dataset
+
+    X = lab.concatenate([X, lab.ones((X.shape[0], 1))], axis=1)
+
+    return (X, y)
+
+
 def unitize_columns(
     train_set: Dataset,
     test_set: Optional[Dataset] = None,
