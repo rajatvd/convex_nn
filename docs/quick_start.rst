@@ -29,12 +29,13 @@ The easiest way to solve this program is to call :func:`optimize <convex_nn.opti
 .. code:: python
    
    from convex_nn.optimize import optimize
+   from convex_nn.regularizers import NeuronGL1
 
    model, metrics = optimize(formulation="relu", 
                              max_neurons=500, 
-                             lam=0.001, 
                              X_train=X, 
                              y_train=y, 
+                             regularizer=NeuronGL1(0.001),
                              device="cpu") 
 
    # training accuracy

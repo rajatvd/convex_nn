@@ -53,6 +53,7 @@ def optimize(
     y_test: Optional[np.ndarray] = None,
     regularizer: Optional[Regularizer] = None,
     return_convex: bool = False,
+    unitize_data: bool = True,
     verbose: bool = False,
     log_file: str = None,
     device: Device = "cpu",
@@ -78,6 +79,8 @@ def optimize(
             Defaults to no regularization.
         return_convex: whether or not to return the convex reformulation
             instead of the final non-convex model.
+        unitize_data: whether or not to unitize the column norms of the
+            training set. This can improve conditioning during optimization.
         verbose: whether or not the solver should print verbosely during
             optimization.
         log_file: a path to an optional log file.
@@ -128,6 +131,7 @@ def optimize(
         y_test,
         regularizer,
         return_convex,
+        unitize_data,
         verbose,
         log_file,
         device,
