@@ -230,7 +230,7 @@ def compute_activation_patterns(
         # Gates must be augmented with a row of zeros to be valid.
         assert np.all(G[-1] == 0)
         # X must be augmented with a column of ones to be valid.
-        assert np.all(X[:, -1] == 1)
+        assert np.all(X[:, -1] == X[0, -1])
 
         # set bias terms in G
         quantiles = np.quantile(
