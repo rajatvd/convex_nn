@@ -13,6 +13,7 @@ from convex_nn.activations import (
     sample_gate_vectors,
     sample_sparse_gates,
     generate_index_lists,
+    compute_activation_patterns,
 )
 
 
@@ -83,6 +84,56 @@ class TestActivations(unittest.TestCase):
         n_sparse_indices = np.sum(G != 0, axis=0)
         self.assertTrue(
             np.all(np.logical_or(n_sparse_indices == 1, n_sparse_indices == 2))
+        )
+
+    def test_bias_terms(self):
+        """Test sampling gate vectors with bias terms."""
+
+        # manually compute activations:
+        def activations(X, G):
+            XG = np.matmul(X, G)
+            XG = np.maximum(XG, 0)
+            XG[XG > 0] = 1
+            return XG
+
+        # augment data with bias term
+        X = np.concatenate(
+            [self.X_train, np.ones((self.X_train.shape[0], 1))], axis=1
+        )
+
+        G = sample_gate_vectors(
+            123,
+            self.d,
+            self.n_gates,
+            gate_type="dense",
+        )
+
+        D, G_bias = compute_activation_patterns(
+            X, G, bias=True, active_proportion=0.5
+        )
+
+        self.assertTrue(
+            np.all(np.sum(D, axis=0) == X.shape[0] / 2),
+            "Half of the examples should be active for each hyperplane",
+        )
+
+        D_manual = activations(X, G_bias)
+        self.assertTrue(
+            np.all(D_manual == D), "The activations should be produced by G."
+        )
+
+        D, G_bias = compute_activation_patterns(
+            X, G, bias=True, active_proportion=0.1
+        )
+
+        self.assertTrue(
+            np.all(np.sum(D, axis=0) == X.shape[0] / 10),
+            "1/10 of the examples should be active for each hyperplane",
+        )
+
+        D_manual = activations(X, G_bias)
+        self.assertTrue(
+            np.all(D_manual == D), "The activations should be produced by G."
         )
 
 

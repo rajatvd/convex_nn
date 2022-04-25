@@ -33,7 +33,9 @@ class TestSolutionMappings(unittest.TestCase):
         lab.set_backend(self.backend)
         lab.set_dtype(self.dtype)
 
-        train_set, _, _ = gen_regression_data(self.rng, self.n, 0, self.d, c=self.c)
+        train_set, _, _ = gen_regression_data(
+            self.rng, self.n, 0, self.d, c=self.c
+        )
         self.U = activations.sample_dense_gates(self.rng, self.d, 100)
         self.D, self.U = lab.all_to_tensor(
             activations.compute_activation_patterns(train_set[0], self.U)
@@ -46,7 +48,9 @@ class TestSolutionMappings(unittest.TestCase):
         self.gated_convex_mlp = ConvexMLP(
             self.d, self.D, self.U, kernel="einsum", c=self.c
         )
-        self.relu_convex_mlp = AL_MLP(self.d, self.D, self.U, kernel="einsum", c=self.c)
+        self.relu_convex_mlp = AL_MLP(
+            self.d, self.D, self.U, kernel="einsum", c=self.c
+        )
 
     def test_is_relu_compatible(self):
         """Test compatibility for ReLU models."""
@@ -128,7 +132,8 @@ class TestSolutionMappings(unittest.TestCase):
         # check that predictions are identical for the two models
         self.assertTrue(
             torch.allclose(
-                torch_model(X), lab.torch_backend.torch_tensor(self.gated_convex_mlp(X))
+                torch_model(X),
+                lab.torch_backend.torch_tensor(self.gated_convex_mlp(X)),
             ),
             "The PyTorch version of the model did not have the same predictions!",
         )
@@ -152,7 +157,8 @@ class TestSolutionMappings(unittest.TestCase):
         # check that predictions are identical for the two models
         self.assertTrue(
             torch.allclose(
-                torch_model(X), lab.torch_backend.torch_tensor(self.gated_convex_mlp(X))
+                torch_model(X),
+                lab.torch_backend.torch_tensor(self.gated_convex_mlp(X)),
             ),
             "The PyTorch version of the model did not have the same predictions!",
         )
@@ -179,7 +185,8 @@ class TestSolutionMappings(unittest.TestCase):
         # check that predictions are identical for the two models
         self.assertTrue(
             torch.allclose(
-                torch_model(X), lab.torch_backend.torch_tensor(self.relu_convex_mlp(X))
+                torch_model(X),
+                lab.torch_backend.torch_tensor(self.relu_convex_mlp(X)),
             ),
             "The PyTorch version of the model did not have the same predictions!",
         )
@@ -204,7 +211,8 @@ class TestSolutionMappings(unittest.TestCase):
         # check that predictions are identical for the two models
         self.assertTrue(
             torch.allclose(
-                torch_model(X), lab.torch_backend.torch_tensor(self.relu_convex_mlp(X))
+                torch_model(X),
+                lab.torch_backend.torch_tensor(self.relu_convex_mlp(X)),
             ),
             "The PyTorch version of the model did not have the same predictions!",
         )

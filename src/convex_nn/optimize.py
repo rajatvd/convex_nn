@@ -2,7 +2,8 @@
 
 TODO:
     - extract types into a new `types.py` module.
-    - add toggle for data normalization.
+    - use_bias: update mapping for convex/non-convex models to support bias
+    terms without data augmentation.
 """
 import math
 import os
@@ -52,6 +53,7 @@ def optimize(
     X_test: Optional[np.ndarray] = None,
     y_test: Optional[np.ndarray] = None,
     regularizer: Optional[Regularizer] = None,
+    bias: bool = False,
     return_convex: bool = False,
     unitize_data: bool = True,
     verbose: bool = False,
@@ -77,6 +79,7 @@ def optimize(
         y_test: an :math:`n \\times c` or vector matrix of test targets.
         regularizer: an optional regularizer for the convex reformulation.
             Defaults to no regularization.
+        bias: whether or not to use a bias in the model.
         return_convex: whether or not to return the convex reformulation
             instead of the final non-convex model.
         unitize_data: whether or not to unitize the column norms of the
@@ -109,12 +112,12 @@ def optimize(
     # Instantiate convex model and other options.
     if formulation == "gated_relu":
         G = sample_gate_vectors(seed, d, max_neurons)
-        model = ConvexGatedReLU(G, c=c)
+        model = ConvexGatedReLU(G, c=c, bias=bias)
         solver = RFISTA(model)
     elif formulation == "relu":
         # ReLU models can have up to 2 * G neurons.
         G = sample_gate_vectors(seed, d, math.floor(max_neurons / 2))
-        model = ConvexReLU(G, c=c)
+        model = ConvexReLU(G, c=c, bias=bias)
         solver = AL(model)
     else:
         raise ValueError(f"Convex formulation {formulation} not recognized!")
@@ -211,6 +214,7 @@ def optimize_model(
         X_test,
         y_test,
         unitize_data,
+        model.bias,
     )
 
     internal_model = build_internal_model(model, regularizer, X_train)
@@ -245,7 +249,7 @@ def optimize_model(
     nc_internal_model = get_nc_formulation(internal_model, remove_sparse=True)
 
     # create non-convex model
-    return build_public_model(nc_internal_model), metrics
+    return build_public_model(nc_internal_model, model.bias), metrics
 
 
 def optimize_path(
@@ -364,7 +368,7 @@ def optimize_path(
             nc_internal_model = get_nc_formulation(
                 internal_model, remove_sparse=True
             )
-            model_to_save = build_public_model(nc_internal_model)
+            model_to_save = build_public_model(nc_internal_model, model.bias)
 
         if save_path is not None:
 

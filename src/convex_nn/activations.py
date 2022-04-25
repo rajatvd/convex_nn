@@ -64,10 +64,11 @@ def sample_gate_vectors(
             - 'feature_sparse': sample gate vectors which are sparse in
                 specific features.
 
-        order: the order maximum order of feature sparsity to consider.
-            Only used for
-            `gate_type='feature_sparse'`. See :func:`sample_sparse_gates`
-                for more details.
+        order: the maximum order of feature sparsity to consider.
+            Only used for `gate_type='feature_sparse'`. See
+            :func:`sample_sparse_gates` for more details.
+        use_bias: whether or not to include a fixed column of ones in the gate
+            vectors to implement a bias term.
 
     Notes:
         It is possible to obtain more than `n_samples` gate vectors when
@@ -193,6 +194,8 @@ def compute_activation_patterns(
     G: np.ndarray,
     filter_duplicates: bool = True,
     filter_zero: bool = True,
+    bias: bool = False,
+    active_proportion: Optional[float] = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Compute activation patterns corresponding to a set of gate vectors.
 
@@ -204,14 +207,40 @@ def compute_activation_patterns(
             patterns and the corresponding
         filter_zero: whether or not to filter the zero activation pattern and
             corresponding gates. Defaults to `True`.
+        bias: whether or not a bias should be included in the gate vectors.
+        active_proportion: force each gate to be active for
+            `active_proportion`*n of the training examples using a bias
+            term. This feature is only supported when `bias == True`.
+
     Returns:
-        `D`, an (n x p) matrix of (possibly unique) activation patterns where
-            :math:`p \\leq m` and `G`, a (d x b) matrix of gate vectors
-            generating `D`.
+        - `D`, an (n x p) matrix of (possibly unique) activation patterns where
+            :math:`p \\leq m`
+
+        - `G`, a (d x b) matrix of gate vectors generating `D`.
     """
     n, d = X.shape
 
-    XG = np.maximum(np.matmul(X, G), 0)
+    # need to extend the gates with zeros.
+    if bias and G.shape[0] + 1 == X.shape[1]:
+        G = np.concatenate([G, np.zeros((1, G.shape[1]))], axis=0)
+
+    XG = np.matmul(X, G)
+
+    if active_proportion is not None:
+        # Gates must be augmented with a row of zeros to be valid.
+        assert np.all(G[-1] == 0)
+        # X must be augmented with a column of ones to be valid.
+        assert np.all(X[:, -1] == 1)
+
+        # set bias terms in G
+        quantiles = np.quantile(
+            XG, q=1 - active_proportion, axis=0, keepdims=True
+        )
+        XG = XG - quantiles
+        G = G.copy()
+        G[-1] = -np.ravel(quantiles)
+
+    XG = np.maximum(XG, 0)
     XG[XG > 0] = 1
 
     if filter_duplicates:

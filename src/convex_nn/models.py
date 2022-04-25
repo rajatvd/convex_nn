@@ -41,7 +41,7 @@ Overview:
     reformulation when the output dimension satisfies :math:`c > 1`.
 """
 
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -53,13 +53,72 @@ class Model:
         c: the output dimension.
         d: the input dimension.
         p: the number of neurons.
+        bias: whether or not the model uses a bias term.
         parameters: a list of NumPy arrays comprising the model parameters.
     """
 
     d: int
     p: int
     c: int
+    bias: bool
     parameters: List[np.ndarray]
+
+
+class GatedModel(Model):
+    """Abstract class for models with fixed gate vectors.
+
+    Attributes:
+        c: the output dimension.
+        d: the input dimension.
+        p: the number of neurons. This is is always `1` for a linear model.
+        bias: whether or not the model uses a bias term.
+        G: the gate vectors for the Gated ReLU activation stored as a
+            (d x p) matrix.
+        G_bias: an optional vector of biases for the gates.
+    """
+
+    def __init__(
+        self,
+        G: np.ndarray,
+        c: int,
+        bias: bool = False,
+        G_bias: Optional[np.ndarray] = None,
+    ):
+        """Construct a new convex Gated ReLU model.
+
+        Args:
+            G: a (d x p) matrix of get vectors, where p is the
+                number neurons.
+            c: the output dimension.
+            bias: whether or not to include a bias term.
+            G_bias: a vector of bias parameters for the gates.
+                Note that `bias` must be True for this to be supported.
+        """
+        self.G = G
+        self.d, self.p = G.shape
+        self.c = c
+        self.bias = bias
+
+        if bias is None:
+            assert G_bias is None
+        self.G_bias = G_bias
+
+        if self.G_bias is None:
+            self.G_bias = np.zeros(self.p)
+
+    def compute_activations(self, X: np.ndarray) -> np.ndarray:
+        """Compute activations for models with fixed gate vectors.
+
+        Args:
+            X: (n x d) matrix of input examples.
+
+        Returns:
+            D: (n x p) matrix of activation patterns.
+        """
+        D = np.maximum(X @ self.G + self.G_bias, 0)
+        D[D > 0] = 1
+
+        return D
 
 
 class LinearModel(Model):
@@ -73,20 +132,26 @@ class LinearModel(Model):
         c: the output dimension.
         d: the input dimension.
         p: the number of neurons. This is is always `1` for a linear model.
+        bias: whether or not the model uses a bias term.
         parameters: a list of NumPy arrays comprising the model parameters.
     """
 
-    def __init__(self, d: int, c: int):
+    def __init__(self, d: int, c: int, bias: bool = False):
         """
         Args:
             d: the input dimension.
             c: the output dimension.
+            bias: whether or not to include a bias term.
         """
         self.d = d
         self.c = c
         self.p = 1
+        self.bias = bias
 
-        self.parameters = [np.zeros((c, d))]
+        if self.bias:
+            self.parameters = [np.zeros((c, d)), np.zeros((1))]
+        else:
+            self.parameters = [np.zeros((c, d))]
 
     def get_parameters(self) -> List[np.ndarray]:
         """Get the model parameters."""
@@ -102,6 +167,9 @@ class LinearModel(Model):
         """
         assert parameters[0].shape == (self.c, self.d)
 
+        if self.bias:
+            assert parameters[1].shape == (1)
+
         self.parameters = parameters
 
     def __call__(self, X: np.ndarray) -> np.ndarray:
@@ -112,12 +180,17 @@ class LinearModel(Model):
                 which to predict.
 
         Returns:
-            g(X) --- the model predictions for X.
+            - g(X): the model predictions for X.
         """
-        return X @ self.parameters[0].T
+        y_hat = X @ self.parameters[0].T
+
+        if self.bias:
+            y_hat = y_hat + self.parameters[1]
+
+        return y_hat
 
 
-class ConvexGatedReLU(Model):
+class ConvexGatedReLU(GatedModel):
     """Convex reformulation of a Gated ReLU Network with two-layers.
 
     This model has the prediction function
@@ -133,16 +206,19 @@ class ConvexGatedReLU(Model):
         c: the output dimension.
         d: the input dimension.
         p: the number of neurons.
+        bias: whether or not the model uses a bias term.
         G: the gate vectors for the Gated ReLU activation stored as a
             (d x p) matrix.
-        parameters: the parameters of the model stored as a list of one
-            (c x p x d) tensor.
+        G_bias: an optional vector of biases for the gates.
+        parameters: the parameters of the model stored as a list of tensors.
     """
 
     def __init__(
         self,
         G: np.ndarray,
         c: int = 1,
+        bias: bool = False,
+        G_bias: Optional[np.ndarray] = None,
     ) -> None:
         """Construct a new convex Gated ReLU model.
 
@@ -150,14 +226,21 @@ class ConvexGatedReLU(Model):
             G: a (d x p) matrix of get vectors, where p is the
                 number neurons.
             c: the output dimension.
+            bias: whether or not to include a bias term.
+            G_bias: a vector of bias parameters for the gates.
+                Note that `bias` must be True for this to be supported.
         """
 
-        self.G = G
-        self.d, self.p = G.shape
-        self.c = c
+        super().__init__(G, c, bias, G_bias)
 
         # one linear model per gate vector
-        self.parameters = [np.zeros((c, self.p, self.d))]
+        if self.bias:
+            self.parameters = [
+                np.zeros((c, self.p, self.d)),
+                np.zeros((c, self.p)),
+            ]
+        else:
+            self.parameters = [np.zeros((c, self.p, self.d))]
 
     def get_parameters(self) -> List[np.ndarray]:
         """Get the model parameters."""
@@ -173,6 +256,9 @@ class ConvexGatedReLU(Model):
         """
         assert parameters[0].shape == (self.c, self.p, self.d)
 
+        if self.bias:
+            assert parameters[1].shape == (self.c, self.p)
+
         self.parameters = parameters
 
     def __call__(self, X: np.ndarray) -> np.ndarray:
@@ -183,15 +269,23 @@ class ConvexGatedReLU(Model):
                 which to predict.
 
         Returns:
-            g(X) --- the model predictions for X.
+            - g(X): the model predictions for X.
         """
-        D = np.maximum(X @ self.G, 0)
-        D[D > 0] = 1
+        D = super().compute_activations(X)
 
-        return np.einsum("ij, lkj, ik->il", X, self.parameters[0], D)
+        if self.bias:
+            Z = (
+                np.einsum("ij, lkj->lik", X, self.parameters[0])
+                + self.parameters[1]
+            )
+
+            # TODO: need to check this computation.
+            return np.einsum("lik, ik->il", Z, D)
+        else:
+            return np.einsum("ij, lkj, ik->il", X, self.parameters[0], D)
 
 
-class NonConvexGatedReLU(Model):
+class NonConvexGatedReLU(GatedModel):
     """Convex reformulation of a Gated ReLU Network with two-layers.
 
     This model has the prediction function
@@ -203,39 +297,47 @@ class NonConvexGatedReLU(Model):
         c: the output dimension.
         d: the input dimension.
         p: the number of neurons.
+        bias: whether or not the model uses a bias term.
         G: the gate vectors for the Gated ReLU activation stored as a
             (d x p) matrix.
-        parameters: the parameters of the model stored as a list of matrices
-            with shapes: [(p x d), (c x p)]
+        G_bias: an optional vector of biases for the gates.
+        parameters: the parameters of the model stored as a list of tensors.
     """
 
     def __init__(
         self,
         G: np.ndarray,
         c: int = 1,
+        bias: bool = False,
+        G_bias: Optional[np.ndarray] = None,
     ) -> None:
-        """Construct a new convex Gated ReLU model.
-
+        """
         Args:
             G: (d x p) matrix of get vectors, where p is the number neurons.
             c: the output dimension.
+            bias: whether or not to include a bias term.
+            G_bias: a vector of bias parameters for the gates.
+                Note that `bias` must be True for this to be supported.
         """
-
-        self.G = G
-        self.d, self.p = G.shape
-        self.c = c
+        super().__init__(G, c, bias, G_bias)
 
         # one linear model per gate vector
-        self.parameters = [
-            np.zeros((self.p, self.d)),
-            np.zeros((self.c, self.p)),
-        ]
+        if self.bias:
+            self.parameters = [
+                np.zeros((self.p, self.d)),  # first layer weights
+                np.zeros((self.p)),  # first layer bias
+                np.zeros((self.c, self.p)),  # second layer weights
+            ]
+        else:
+            self.parameters = [
+                np.zeros((self.p, self.d)),
+                np.zeros((self.c, self.p)),
+            ]
 
     def get_parameters(self) -> List[np.ndarray]:
         """Get the model parameters.
 
-        Returns:
-            [W_1, W_2] --- a list of model parameters.
+        Returns: A list of model parameters.
         """
 
         return self.parameters
@@ -248,9 +350,14 @@ class NonConvexGatedReLU(Model):
         Args:
             parameters: the new model parameters.
         """
-        assert len(parameters) == 2
         assert parameters[0].shape == (self.p, self.d)
-        assert parameters[1].shape == (self.c, self.p)
+        if self.bias:
+            assert len(parameters) == 3
+            assert parameters[1].shape == (self.p,)
+            assert parameters[2].shape == (self.c, self.p)
+        else:
+            assert len(parameters) == 2
+            assert parameters[1].shape == (self.c, self.p)
 
         self.parameters = parameters
 
@@ -261,15 +368,19 @@ class NonConvexGatedReLU(Model):
             X: an (n,d) array containing the data examples on which to predict.
 
         Returns:
-            h(X) --- the model predictions for X.
+            - h(X): the model predictions for X.
         """
-        D = np.maximum(X @ self.G, 0)
-        D[D > 0] = 1
+        D = super().compute_activations(X)
 
-        return np.multiply(D, X @ self.parameters[0].T) @ self.parameters[1].T
+        Z = X @ self.parameters[0].T
+
+        if self.bias:
+            Z += self.parameters[1]
+
+        return np.multiply(D, Z) @ self.parameters[-1].T
 
 
-class ConvexReLU(Model):
+class ConvexReLU(GatedModel):
     """Convex reformulation of a ReLU Network with two-layers.
 
     This model has the prediction function
@@ -283,8 +394,10 @@ class ConvexReLU(Model):
         c: the output dimension.
         d: the input dimension.
         p: the number of neurons.
+        bias: whether or not the model uses a bias term.
         G: the gate vectors used to generate the activation patterns
             :math:`D_i`, stored as a (d x p) matrix.
+        G_bias: an optional vector of biases for the gates.
         parameters: the parameters of the model stored as a list of two
             (c x p x d) matrices.
     """
@@ -293,23 +406,34 @@ class ConvexReLU(Model):
         self,
         G: np.ndarray,
         c: int = 1,
+        bias: bool = False,
+        G_bias: Optional[np.ndarray] = None,
     ) -> None:
         """Construct a new convex Gated ReLU model.
 
         Args:
             G: (d x p) matrix of get vectors, where p is the number neurons.
             c: the output dimension.
+            bias: whether or not to include a bias term.
+            G_bias: a vector of bias parameters for the gates.
+                Note that `bias` must be True for this to be supported.
         """
 
-        self.G = G
-        self.d, self.p = G.shape
-        self.c = c
+        super().__init__(G, c, bias, G_bias)
 
         # one linear model per gate vector
-        self.parameters = [
-            np.zeros((c, self.p, self.d)),
-            np.zeros((c, self.p, self.d)),
-        ]
+        if self.bias:
+            self.parameters = [
+                np.zeros((c, self.p, self.d)),
+                np.zeros((c, self.p)),
+                np.zeros((c, self.p, self.d)),
+                np.zeros((c, self.p)),
+            ]
+        else:
+            self.parameters = [
+                np.zeros((c, self.p, self.d)),
+                np.zeros((c, self.p, self.d)),
+            ]
 
     def get_parameters(self) -> List[np.ndarray]:
         """Get the model parameters."""
@@ -323,9 +447,16 @@ class ConvexReLU(Model):
         Args:
             parameters: the new model parameters.
         """
-        assert len(parameters) == 2
-        assert parameters[0].shape == (self.c, self.p, self.d)
-        assert parameters[1].shape == (self.c, self.p, self.d)
+        if self.bias:
+            assert len(parameters) == 4
+            assert parameters[0].shape == (self.c, self.p, self.d)
+            assert parameters[2].shape == (self.c, self.p)
+            assert parameters[3].shape == (self.c, self.p, self.d)
+            assert parameters[4].shape == (self.c, self.p)
+        else:
+            assert len(parameters) == 2
+            assert parameters[0].shape == (self.c, self.p, self.d)
+            assert parameters[1].shape == (self.c, self.p, self.d)
 
         self.parameters = parameters
 
@@ -336,12 +467,23 @@ class ConvexReLU(Model):
             X: an (n,d) array containing the data examples on which to predict.
 
         Returns:
-            g(X) --- the model predictions for X.
+            - g(X): the model predictions for X.
         """
-        D = np.maximum(X @ self.G, 0)
-        D[D > 0] = 1
+        D = super().compute_activations(X)
+
         p_diff = self.parameters[0] - self.parameters[1]
-        return np.einsum("ij, lkj, ik->il", X, p_diff, D)
+
+        if self.bias:
+            bias_diff = self.parameters[1] - self.parameters[3]
+            p_diff = self.parameters[0] - self.parameters[2]
+
+            Z = np.einsum("ij, lkj->lik", X, p_diff) + bias_diff
+
+            # TODO: need to check this computation.
+            return np.einsum("lik, ik->il", Z, D)
+        else:
+            p_diff = self.parameters[0] - self.parameters[1]
+            return np.einsum("ij, lkj, ik->il", X, p_diff, D)
 
 
 class NonConvexReLU(Model):
@@ -355,6 +497,7 @@ class NonConvexReLU(Model):
         c: the output dimension.
         d: the input dimension.
         p: the number of neurons.
+        bias: whether or not the model uses a bias term.
         parameters: the parameters of the model stored as a list of matrices
             with shapes: [(p x d), (c x p)]
     """
@@ -364,6 +507,7 @@ class NonConvexReLU(Model):
         d: int,
         p: int,
         c: int = 1,
+        bias: bool = False,
     ) -> None:
         """Construct a new convex Gated ReLU model.
 
@@ -371,23 +515,30 @@ class NonConvexReLU(Model):
             d: the input dimension.
             p: the number of neurons or "hidden units" in the network.
             c: the output dimension.
+            bias: whether or not to include a bias term.
         """
 
         self.d = d
         self.p = p
         self.c = c
+        self.bias = bias
 
-        # one linear model per gate vector
-        self.parameters = [
-            np.zeros((self.p, self.d)),
-            np.zeros((self.c, self.p)),
-        ]
+        if self.bias:
+            self.parameters = [
+                np.zeros((self.p, self.d)),  # first layer weights
+                np.zeros((self.p)),  # first layer bias
+                np.zeros((self.c, self.p)),  # second layer weights
+            ]
+        else:
+            self.parameters = [
+                np.zeros((self.p, self.d)),  # first layer weights
+                np.zeros((self.c, self.p)),  # second layer weights
+            ]
 
     def get_parameters(self) -> List[np.ndarray]:
         """Get the model parameters.
 
-        Returns:
-            [W_1, W_2] --- a list of model parameters.
+        Returns: list of model parameters.
         """
 
         return self.parameters
@@ -400,9 +551,15 @@ class NonConvexReLU(Model):
         Args:
             parameters: the new model parameters.
         """
-        assert len(parameters) == 2
-        assert parameters[0].shape == (self.p, self.d)
-        assert parameters[1].shape == (self.c, self.p)
+        if self.bias:
+            assert len(parameters) == 3
+            assert parameters[0].shape == (self.p, self.d)
+            assert parameters[1].shape == (self.p,)
+            assert parameters[2].shape == (self.c, self.p)
+        else:
+            assert len(parameters) == 2
+            assert parameters[0].shape == (self.p, self.d)
+            assert parameters[1].shape == (self.c, self.p)
 
         self.parameters = parameters
 
@@ -413,7 +570,11 @@ class NonConvexReLU(Model):
             X: an (n,d) array containing the data examples on which to predict.
 
         Returns:
-            h(X) --- the model predictions for X.
+            - h(X): the model predictions for X.
         """
+        Z = X @ self.parameters[0].T
 
-        return np.max(X @ self.parameters[0].T, 0) @ self.parameters[1].T
+        if self.bias:
+            Z += self.parameters[1]
+
+        return np.max(Z, 0) @ self.parameters[-1].T

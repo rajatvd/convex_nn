@@ -6,7 +6,10 @@ TODO:
 
 import lab
 
-from convex_nn.private.utils.data.transforms import unitize_columns
+from convex_nn.private.utils.data.transforms import (
+    unitize_columns,
+    add_bias_col,
+)
 
 
 def normalized_into_input_space(
@@ -41,7 +44,14 @@ def input_into_normalized_space(model_weights, column_norms):
     return model_weights * column_norms
 
 
-def process_data(X_train, y_train, X_test, y_test, unitize_data: bool = True):
+def process_data(
+    X_train,
+    y_train,
+    X_test,
+    y_test,
+    unitize_data: bool = True,
+    bias: bool = False,
+):
     """Process training and test data into a format suitable for optimization.
 
     The data can be input as a list of lists or in any format implementing a `to_list` method
@@ -54,6 +64,7 @@ def process_data(X_train, y_train, X_test, y_test, unitize_data: bool = True):
         y_test: :math:`(m)` or :math:`(n \\times c)` vector of test targets.
         unitize_data: whether or not to unitize the column norms of the
             training matrix.
+        bias: whether or not to augment the data with a bias column.
 
     Returns:
         The input data as lab.Tensor instances with the correct datatype.
@@ -83,10 +94,15 @@ def process_data(X_train, y_train, X_test, y_test, unitize_data: bool = True):
         y_train = lab.expand_dims(y_train, axis=1)
         y_test = lab.expand_dims(y_test, axis=1)
 
+    train_set, test_set, col_norms = (X_train, y_train), (X_test, y_test), None
+
+    if bias:
+        train_set, test_set = add_bias_col(train_set), add_bias_col(test_set)
+
     if unitize_data:
-        return unitize_columns((X_train, y_train), (X_test, y_test))
-    else:
-        return (X_train, y_train), (X_test, y_test), None
+        train_set, test_set, col_norms = unitize_columns(train_set, test_set)
+
+    return train_set, test_set, col_norms
 
 
 def to_list(v):

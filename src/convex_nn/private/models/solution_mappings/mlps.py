@@ -4,8 +4,11 @@ import torch
 import lab
 
 from convex_nn.private.models.convex import ConvexMLP
-from convex_nn.private.models.non_convex import GatedReLULayer, GatedReLUMLP, ReLUMLP
-from convex_nn.private.models.one_vs_all import OneVsAllModel
+from convex_nn.private.models.non_convex import (
+    GatedReLULayer,
+    GatedReLUMLP,
+    ReLUMLP,
+)
 from convex_nn.private.models.regularizers.l2 import L2Regularizer
 
 
@@ -48,7 +51,8 @@ def grelu_solution_mapping(convex_model, remove_sparse: bool = False):
             lab.zeros_like(weight_norms[0]) for i in range(c)
         ]  # positive neurons
         post_zeros = [
-            lab.zeros_like(weight_norms[0]) for i in range(weights.shape[0] - c - 1)
+            lab.zeros_like(weight_norms[0])
+            for i in range(weights.shape[0] - c - 1)
         ]
 
         if first_layer is None:
@@ -74,7 +78,9 @@ def grelu_solution_mapping(convex_model, remove_sparse: bool = False):
         ).T
         second_layer.append(w2)
     second_layer = lab.concatenate(second_layer, axis=0)
-    U = lab.concatenate([convex_model.U for c in range(weights.shape[0])], axis=1)
+    U = lab.concatenate(
+        [convex_model.U for c in range(weights.shape[0])], axis=1
+    )
 
     if remove_sparse:
         sparse_indices = lab.sum(first_layer, axis=-1) != 0
@@ -102,7 +108,8 @@ def relu_solution_mapping(convex_model, remove_sparse: bool = False):
             lab.zeros_like(weight_norms[0, c]) for i in range(2 * c)
         ]  # positive neurons
         post_zeros = [
-            lab.zeros_like(weight_norms[0, c]) for i in range(2 * (num_classes - c - 1))
+            lab.zeros_like(weight_norms[0, c])
+            for i in range(2 * (num_classes - c - 1))
         ]
 
         if first_layer is None:
@@ -161,7 +168,9 @@ def convex_mlp_to_torch_mlp(
     else:
         assert is_relu_compatible(torch_model)
 
-        first_layer, second_layer = relu_solution_mapping(convex_model, remove_sparse)
+        first_layer, second_layer = relu_solution_mapping(
+            convex_model, remove_sparse
+        )
 
         (submodules[0].weight.data, submodules[2].weight.data,) = (
             lab.torch_backend.torch_tensor(first_layer),
@@ -197,15 +206,21 @@ def construct_nc_torch(
             second_layer,
         )
     else:
-        first_layer, second_layer = relu_solution_mapping(convex_model, remove_sparse)
+        first_layer, second_layer = relu_solution_mapping(
+            convex_model, remove_sparse
+        )
         first_layer, second_layer = (
             lab.torch_backend.torch_tensor(first_layer),
             lab.torch_backend.torch_tensor(second_layer),
         )
         torch_model = torch.nn.Sequential(
-            torch.nn.Linear(first_layer.shape[1], first_layer.shape[0], bias=False),
+            torch.nn.Linear(
+                first_layer.shape[1], first_layer.shape[0], bias=False
+            ),
             torch.nn.ReLU(),
-            torch.nn.Linear(second_layer.shape[1], second_layer.shape[0], bias=False),
+            torch.nn.Linear(
+                second_layer.shape[1], second_layer.shape[0], bias=False
+            ),
         )
         submodules = list(torch_model.children())
         (submodules[0].weight.data, submodules[2].weight.data,) = (
@@ -228,13 +243,19 @@ def convex_mlp_to_manual_mlp(
         )
         assert isinstance(manual_model, GatedReLUMLP)
 
-        manual_model.weights = manual_model._join_weights(first_layer, second_layer)
+        manual_model.weights = manual_model._join_weights(
+            first_layer, second_layer
+        )
         manual_model.U = U
         manual_model.p = U.shape[1]
     else:
-        first_layer, second_layer = relu_solution_mapping(convex_model, remove_sparse)
+        first_layer, second_layer = relu_solution_mapping(
+            convex_model, remove_sparse
+        )
         manual_model.p = first_layer.shape[0]
-        manual_model.weights = manual_model._join_weights(first_layer, second_layer)
+        manual_model.weights = manual_model._join_weights(
+            first_layer, second_layer
+        )
 
     return manual_model
 
@@ -252,7 +273,9 @@ def construct_nc_manual(
             c=convex_model.c,
         )
     else:
-        manual_model = ReLUMLP(convex_model.d, convex_model.p, c=convex_model.c)
+        manual_model = ReLUMLP(
+            convex_model.d, convex_model.p, c=convex_model.c
+        )
 
     nc_model = convex_mlp_to_manual_mlp(
         convex_model, manual_model, grelu, remove_sparse

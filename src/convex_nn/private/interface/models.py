@@ -1,7 +1,9 @@
 """Convert models from :module:`convex_nn.models` into internal representations
 and vice versa."""
 
-from typing import Optional
+from typing import Optional, List, Tuple
+
+import numpy as np
 
 import lab
 
@@ -84,14 +86,16 @@ def build_internal_model(
     assert isinstance(model, (LinearModel, ConvexReLU, ConvexGatedReLU))
 
     internal_model: InternalModel
-    d, c = model.d, model.c
+    d, c = model.d + model.bias, model.c
     internal_reg = build_internal_regularizer(regularizer)
 
     if isinstance(model, LinearModel):
         return LinearRegression(d, c, regularizer=internal_reg)
 
     D, G = lab.all_to_tensor(
-        compute_activation_patterns(lab.to_np(X_train), model.G)
+        compute_activation_patterns(
+            lab.to_np(X_train), model.G, bias=model.bias
+        )
     )
 
     if isinstance(model, ConvexReLU):
@@ -114,6 +118,34 @@ def build_internal_model(
     return internal_model
 
 
+def extract_bias(weights: lab.Tensor, bias: bool = False) -> List[np.ndarray]:
+    """Extract optional bias columns from model weights.
+
+    Args:
+        weights: the weights or parameters of the model.
+        bias: whether or not the weights contain a bias term.
+
+    Returns
+    """
+    weights = lab.to_np(weights)
+
+    if bias:
+        return [weights[..., 0:-1], weights[..., -1]]
+    else:
+        return [weights]
+
+
+def extract_gates_bias(
+    G: lab.Tensor, bias: bool = False
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+
+    G = lab.to_np(G)
+    if bias:
+        return (G[0:-1], G[-1])
+    else:
+        return (G, None)
+
+
 def update_public_model(model: Model, internal_model: InternalModel) -> Model:
     """Update public-facing model object to match state of internal model.
 
@@ -127,49 +159,61 @@ def update_public_model(model: Model, internal_model: InternalModel) -> Model:
 
     if isinstance(model, ConvexGatedReLU):
         assert isinstance(internal_model, ConvexMLP)
-        model.parameters = [lab.to_np(internal_model.weights)]
-        model.G = lab.to_np(internal_model.U)
+        model.set_parameters(extract_bias(internal_model.weights, model.bias))
+        model.G, model.G_bias = extract_gates_bias(
+            internal_model.U, model.bias
+        )
     elif isinstance(model, ConvexReLU):
         assert isinstance(internal_model, AL_MLP)
-        model.parameters = [
-            lab.to_np(internal_model.weights[0]),
-            lab.to_np(internal_model.weights[1]),
-        ]
-        model.G = lab.to_np(internal_model.U)
+        model.set_parameters(
+            extract_bias(internal_model.weights[0], model.bias)
+            + extract_bias(internal_model.weights[1], model.bias)
+        )
+
+        model.G, model.G_bias = extract_gates_bias(
+            internal_model.U, model.bias
+        )
     elif isinstance(model, LinearModel):
-        model.parameters = [internal_model.weights]
+        model.set_parameters(extract_bias(internal_model.weights, model.bias))
 
     return model
 
 
-def build_public_model(internal_model: InternalModel) -> Model:
+def build_public_model(
+    internal_model: InternalModel,
+    bias: bool = False,
+) -> Model:
     """Construct a public-facing model from an internal model representation.
 
     Args:
         internal_model: the internal model.
+        bias: whether or not the model contains a bias.
 
     Returns:
         A public-facing model with identical state.
     """
     model: Model
-
     if isinstance(internal_model, GatedReLUMLP):
-        U = lab.to_np(internal_model.U)
-        model = NonConvexGatedReLU(U, internal_model.c)
-        w1, w2 = internal_model._split_weights(internal_model.weights)
-
-        model.set_parameters([lab.to_np(w1), lab.to_np(w2)])
-
-    elif isinstance(internal_model, ReLUMLP):
-        model = NonConvexReLU(
-            internal_model.d, internal_model.p, internal_model.c
+        G, G_bias = extract_gates_bias(internal_model.U, bias)
+        model = NonConvexGatedReLU(
+            G, internal_model.c, bias=bias, G_bias=G_bias
         )
         w1, w2 = internal_model._split_weights(internal_model.weights)
+        parameters = extract_bias(w1, bias) + extract_bias(w2, False)
+        model.set_parameters(parameters)
 
-        model.set_parameters([lab.to_np(w1), lab.to_np(w2)])
+    elif isinstance(internal_model, ReLUMLP):
+        d = internal_model.d
+        if bias:
+            d = d - 1
+        model = NonConvexReLU(d, internal_model.p, internal_model.c, bias=bias)
+        w1, w2 = internal_model._split_weights(internal_model.weights)
+        parameters = extract_bias(w1, bias) + extract_bias(w2, False)
+
+        model.set_parameters(parameters)
     elif isinstance(internal_model, LinearRegression):
-        model = LinearModel(internal_model.d, internal_model.c)
-        model.parameters = [internal_model.weights]
+        model = LinearModel(internal_model.d, internal_model.c, bias=bias)
+        model.parameters = extract_bias(internal_model.weights, bias)
     else:
         raise ValueError(f"Model {internal_model} not supported.")
 

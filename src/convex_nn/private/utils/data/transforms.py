@@ -28,7 +28,6 @@ def add_bias_col(dataset: Dataset) -> Dataset:
     X, y = dataset
 
     X = lab.concatenate([X, lab.ones((X.shape[0], 1))], axis=1)
-    print(X)
 
     return (X, y)
 
